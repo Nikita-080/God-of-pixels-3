@@ -26,8 +26,11 @@ windowsettings::windowsettings(QString Currentpath,QWidget *parent) :
     int count=0;
     QPalette palette;
     palette.setColor(QPalette::WindowText,QColor(110,170,200));
+
+    numsettings=0;
     while (!dat.atEnd())
     {
+        numsettings+=1;
         QString line = dat.readLine();
         QCheckBox *box=new QCheckBox();
         box->setGeometry(10,10+count*25,200,20);
@@ -68,7 +71,7 @@ void windowsettings::EndWindow()
     settings.height=ui->lineEdit_2->text().toInt();
     settings.width=ui->lineEdit_3->text().toInt();
     settings.number=ui->lineEdit_5->text().toInt();
-    for (int i=0;i<30;i++) settings.isRndList.append(rndarr[i]->isChecked());
+    for (int i=0;i<numsettings;i++) settings.isRndList.append(rndarr[i]->isChecked());
     myparent->isdatarecieved=true;
     myparent->box=settings;
 
@@ -90,14 +93,14 @@ void windowsettings::AskDir()
 }
 void windowsettings::TakeAll()
 {
-    for (int i=0;i<30;i++)
+    for (int i=0;i<numsettings;i++)
     {
         rndarr[i]->setChecked(true);
     }
 }
 void windowsettings::TakeNothing()
 {
-    for (int i=0;i<30;i++)
+    for (int i=0;i<numsettings;i++)
     {
         rndarr[i]->setChecked(false);
     }

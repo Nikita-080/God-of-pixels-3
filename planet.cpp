@@ -482,6 +482,7 @@ void Planet::Calculator()
         world_heighth=fmax(world_heighth,matrix[i][k]);
     }
 }
+/*
 void Planet::ImageCreating()
 {
     img=QImage(world_size,world_size,QImage::Format_RGB32);
@@ -506,25 +507,46 @@ void Planet::ImageCreating()
         }
     }
 }
+*/
+void Planet::ImageCreating() //gradient version
+{
+    img=QImage(world_size,world_size,QImage::Format_RGB32);
+    img.fill(color_black);
+    QVector<double> level_aver;
+    for (int i=0;i<level_up.length();i++)
+    {
+        level_aver.append((level_up[i]+level_down[i])/2);
+    }
+    level_aver.append(0);
+    for (int i=0;i<world_size;i++)
+    {
+        for (int k=0;k<world_size;k++)
+        {
+            double Rad1=(i-world_size/2-1)*(i-world_size/2-1)+(k-world_size/2-1)*(k-world_size/2-1);
+            double Rad2=(world_size/2)*(world_size/2);
+            if (Rad1<=Rad2)
+            {
+                int index=0;
+                while (matrix[i][k]<level_aver[index]) index++;
+                if (index==0) img.setPixelColor(i,k,level_color[0]);
+                else if (index==level_aver.length()-1) img.setPixelColor(i,k,level_color.last());
+                else
+                {
+                    img.setPixelColor(i,k,TransparentColor(level_color[index],level_color[index-1],(matrix[i][k]-level_aver[index])/(level_aver[index-1]-level_aver[index])));
+                }
+
+
+            }
+        }
+    }
+}
 QColor Planet::TransparentColor(QColor color1, QColor color2, double koef)
 {
-    int res[3];
+    int r=qRound((1-koef)*color1.red()+koef*color2.red());
+    int g=qRound((1-koef)*color1.green()+koef*color2.green());
+    int b=qRound((1-koef)*color1.blue()+koef*color2.blue());
 
-
-    if (color2.red()>color1.red()) res[0]=qRound(1.0*color1.red()+koef*(color2.red()-color1.red()));
-    else if (color2.red()<color1.red()) res[0]=qRound(1.0*color1.red()-koef*(color1.red()-color2.red()));
-    else res[0]=color1.red();
-
-    if (color2.blue()>color1.blue()) res[2]=qRound(1.0*color1.blue()+koef*(color2.blue()-color1.blue()));
-    else if (color2.blue()<color1.blue()) res[2]=qRound(1.0*color1.blue()-koef*(color1.blue()-color2.blue()));
-    else res[2]=color1.blue();
-
-    if (color2.green()>color1.green()) res[1]=qRound(1.0*color1.green()+koef*(color2.green()-color1.green()));
-    else if (color2.green()<color1.green()) res[1]=qRound(1.0*color1.green()-koef*(color1.green()-color2.green()));
-    else res[1]=color1.green();
-
-    QColor otv=QColor(res[0],res[1],res[2]);
-    return otv;
+    return QColor(r,g,b);
 }
 QColor Planet::DispersionColor(QColor color, int disp)
 {

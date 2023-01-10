@@ -18,6 +18,8 @@ public:
     QString dirpath;
     QString currentpath;
     MainWindow* myparent;
+private:
+    int numsettings;
 public:
     explicit windowsettings(QString,QWidget *parent = nullptr);
     ~windowsettings();
