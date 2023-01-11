@@ -540,6 +540,7 @@ void Planet::ImageCreating() //gradient version
         }
     }
 }
+
 QColor Planet::TransparentColor(QColor color1, QColor color2, double koef)
 {
     int r=qRound((1-koef)*color1.red()+koef*color2.red());
