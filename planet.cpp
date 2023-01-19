@@ -67,7 +67,7 @@ QString Planet::Name_gop2()
 }
 QString Planet::Name_readable()
 {
-    QFile file(currentpath+"NameMatrix.txt");
+    QFile file(currentpath+"res/text/NameMatrix.txt");
     file.open(QIODevice::ReadOnly);
     QTextStream fileStream(&file);
     QString str;
@@ -199,7 +199,7 @@ void Planet::RMapCreating()
 void Planet::Plant()
 {
     green_square=0;
-    QImage diagram=QImage(currentpath+"plantmatrix.png");
+    QImage diagram=QImage(currentpath+"res/images/plantmatrix.png");
     for (int i=0;i<world_size;i++)
     {
         for (int k=0;k<world_size;k++)
@@ -482,7 +482,7 @@ void Planet::Calculator()
         world_heighth=fmax(world_heighth,matrix[i][k]);
     }
 }
-/*
+
 void Planet::ImageCreating()
 {
     img=QImage(world_size,world_size,QImage::Format_RGB32);
@@ -507,7 +507,7 @@ void Planet::ImageCreating()
         }
     }
 }
-*/
+/*
 void Planet::ImageCreating() //gradient version
 {
     img=QImage(world_size,world_size,QImage::Format_RGB32);
@@ -540,7 +540,7 @@ void Planet::ImageCreating() //gradient version
         }
     }
 }
-
+*/
 QColor Planet::TransparentColor(QColor color1, QColor color2, double koef)
 {
     int r=qRound((1-koef)*color1.red()+koef*color2.red());
@@ -619,9 +619,20 @@ void Planet::Ring()
         }
     }
 }
+void Planet::Noise()
+{
+    for (int i=0;i<world_size;i++)
+    {
+        for (int j=0;j<world_size;j++)
+        {
+            QColor color=img.pixelColor(i,j);
+            if (!isBlack(color)) img.setPixelColor(i,j,DispersionColor(color,10));
+        }
+    }
+}
 void Planet::Description()
 {
-    img_dsc=QImage(currentpath+"window.png");
+    img_dsc=QImage(currentpath+"res/images/window.png");
     QString classes="OBAFGKMCSLTY";
     QString s="";
 
@@ -700,7 +711,7 @@ bool Planet::Collis(int r_o, int r, QVector<QVector<int>> planets)
 }
 void Planet::SystemMap()
 {
-    img_sys=QImage(currentpath+"window.png");
+    img_sys=QImage(currentpath+"res/images/window.png");
     if (starclass==12)
     {
         QPainter p;
@@ -781,9 +792,9 @@ void Planet::SystemMap()
 }
 void Planet::GalaxyMap()
 {
-    QImage img_ptr=QImage(currentpath+"icon ptr.png");
-    QImage img_map=QImage(currentpath+"GalaxyMap.png");
-    img_gal=QImage(currentpath+"window.png");
+    QImage img_ptr=QImage(currentpath+"res/images/icon ptr.png");
+    QImage img_map=QImage(currentpath+"res/images/GalaxyMap.png");
+    img_gal=QImage(currentpath+"res/images/window.png");
     int x=RAND(0,218);
     int y=RAND(0,218);
 
@@ -805,8 +816,8 @@ void Planet::GalaxyMap()
 }
 void Planet::FinalImage()
 {
-    img_final=QImage(currentpath+"pattern.png");
-    QImage img_window=QImage(currentpath+"window.png");
+    img_final=QImage(currentpath+"res/images/pattern.png");
+    QImage img_window=QImage(currentpath+"res/images/window.png");
     QPainter p;
     p.begin(&img_final);
     p.drawImage(QRect(0,0,329,329),img_window);

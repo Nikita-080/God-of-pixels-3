@@ -20,7 +20,7 @@ windowsettings::windowsettings(QString Currentpath,QWidget *parent) :
     QFormLayout *formLayout = new QFormLayout();
     QGroupBox *groupBox = new QGroupBox();
 
-    QFile file(currentpath+"randomsettings.txt");
+    QFile file(currentpath+"res/text/randomsettings.txt");
     file.open(QIODevice::ReadOnly);
     QTextStream dat(&file);
     int count=0;

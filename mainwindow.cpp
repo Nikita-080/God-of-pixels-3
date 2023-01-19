@@ -31,7 +31,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     ui->tabWidget->setIconSize(QSize(60,60));
     for (int i=0;i<10;i++){
-        ui->tabWidget->setTabIcon(i,QIcon(currentpath+"TabIcon"+QString::number(i+1)+".png"));
+        ui->tabWidget->setTabIcon(i,QIcon(currentpath+"res/images/TabIcon"+QString::number(i+1)+".png"));
     }
 
     //виджеты
@@ -102,7 +102,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     //settings
     Settings_Get();//для начального заполнения "буфера" настроек
-    s.Load(currentpath+"settingsbase.txt");
+    s.Load(currentpath+"/res/text/settingsbase.txt");
     Settings_Set();
 
     //кнопки, вызывающие служебные функции
@@ -172,15 +172,15 @@ void MainWindow::SetStyle()
         QString name=a[i]->objectName();
         QString style="";
         style+="QPushButton {background-image: url(";
-        style+=currentpath+"buttonicons/"+name+"_m.png);\n";
+        style+=currentpath+"res/images/"+name+"_m.png);\n";
         style+="background-repeat: no-repeat;}\n";
 
         style+="QPushButton:hover {background-image: url(";
-        style+=currentpath+"buttonicons/"+name+"_t.png);\n";
+        style+=currentpath+"res/images/"+name+"_t.png);\n";
         style+="background-repeat: no-repeat;}\n";
 
         style+="QPushButton:pressed {background-image: url(";
-        style+=currentpath+"buttonicons/"+name+"_b.png);\n";
+        style+=currentpath+"res/images/"+name+"_b.png);\n";
         style+="background-repeat: no-repeat;}\n";
 
         a[i]->setStyleSheet(style);
@@ -357,6 +357,7 @@ void MainWindow::God(bool isCreateNew, QProgressBar *pb,Planet *p)
     if (s.is_atmo and s.atmo_transparent!=10) p->Atmosphere("out");
     pb->setValue(80);
     if (s.is_ring) p->Ring();
+    p->Noise(); //experimental
     pb->setValue(90);
     if (isCreateNew) p->Name();
     pb->setValue(95);
@@ -371,7 +372,7 @@ void MainWindow::God(bool isCreateNew, QProgressBar *pb,Planet *p)
 
 void MainWindow::M_Load_Base_Settings(){
     Settings_Get(); //для начального заполнения "буфера" настроек
-    s.Load(currentpath+"settingsbase.txt");
+    s.Load(currentpath+"res/text/settingsbase.txt");
     Settings_Set();
 }
 void MainWindow::SliderShow(){

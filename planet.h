@@ -57,6 +57,7 @@ public:
     void LevelCreating();
     void ImageCreating();
     void Ring();
+    void Noise();
     void Polar();
     void CloudMapCreating();
     void Cloud();
