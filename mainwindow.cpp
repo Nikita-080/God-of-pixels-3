@@ -62,8 +62,9 @@ MainWindow::MainWindow(QWidget *parent)
     sliders[9]=ui->horizontalSlider_12; labels[9]=ui->label_38;
     sliders[10]=ui->horizontalSlider_14; labels[10]=ui->label_37;
     sliders[11]=ui->horizontalSlider_4; labels[11]=ui->label_46;
+    sliders[12]=ui->horizontalSlider_5; labels[12]=ui->label_48;
     //коннекты
-    for (int i=0;i<12;i++){
+    for (int i=0;i<13;i++){
         connect(sliders[i],&QSlider::valueChanged,this,&MainWindow::SliderShow);
     }
     connect(ui->pushButton_26,&QPushButton::clicked,this,&MainWindow::ColorChoicer);
@@ -342,6 +343,7 @@ void MainWindow::God(bool isCreateNew, QProgressBar *pb,Planet *p)
     if (s.is_plant and p->water_level>0 and s.is_atmo) p->Plant();
     pb->setValue(45);
     if (p->water_level>0) p->Polar();
+    if (s.noise>0) p->Noise();
     pb->setValue(50);
     if (s.is_cloud)
     {
@@ -357,7 +359,6 @@ void MainWindow::God(bool isCreateNew, QProgressBar *pb,Planet *p)
     if (s.is_atmo and s.atmo_transparent!=10) p->Atmosphere("out");
     pb->setValue(80);
     if (s.is_ring) p->Ring();
-    p->Noise(); //experimental
     pb->setValue(90);
     if (isCreateNew) p->Name();
     pb->setValue(95);
@@ -377,7 +378,7 @@ void MainWindow::M_Load_Base_Settings(){
 }
 void MainWindow::SliderShow(){
     QSlider* slider = qobject_cast<QSlider*>(sender());
-    for (int i=0;i<12;i++){
+    for (int i=0;i<13;i++){
         if (slider==sliders[i]){
             labels[i]->setText(QString::number(slider->value()));
             break;
@@ -446,6 +447,8 @@ void MainWindow::Settings_Get(){
     s.beach_color=ColorFromButton(ui->pushButton_30);
     s.shallow_color=ColorFromButton(ui->pushButton_31);
     s.ocean_color=ColorFromButton(ui->pushButton_32);
+    s.noise=ui->horizontalSlider_5->value();
+    s.is_gradient=ui->checkBox_6->isChecked();
     s.is_plant=ui->checkBox_5->isChecked();
     s.shine=ui->horizontalSlider_6->value();
     s.point_of_shine=pc->GetData();
@@ -484,6 +487,8 @@ void MainWindow::Settings_Set(){
     ColorToButton(ui->pushButton_30,s.beach_color);
     ColorToButton(ui->pushButton_31,s.shallow_color);
     ColorToButton(ui->pushButton_32,s.ocean_color);
+    ui->horizontalSlider_5->setValue(s.noise);
+    ui->checkBox_6->setChecked(s.is_gradient);
     ui->checkBox_5->setChecked(s.is_plant);
     ui->horizontalSlider_6->setValue(s.shine);
     pc->SetData(s.point_of_shine);

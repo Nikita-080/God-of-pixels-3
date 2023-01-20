@@ -29,8 +29,8 @@ public:
     MultiSlider* ms;
     PointChoicer* pc;
     PointChoicer* pc2;
-    QSlider* sliders[12];
-    QLabel* labels[12];
+    QSlider* sliders[13];
+    QLabel* labels[13];
     QString currentpath;
 
     PlanetSettings s;

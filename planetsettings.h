@@ -22,6 +22,8 @@ public:
     QColor beach_color;
     QColor shallow_color;
     QColor ocean_color;
+    int noise;
+    bool is_gradient;
     bool is_plant;
     int shine;
     QVector<int> point_of_shine;

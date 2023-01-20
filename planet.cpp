@@ -26,11 +26,7 @@ void Planet::CreateMatrixNew()
 {
     world_size=pow(2,s.world_size)+1;
     TerraFactory factory(world_size,rnd);
-    if (s.terramode==0)
-    {
-        matrix=factory.diamondsquare(s.randomness*1.0/10);
-        ImageReport("ds",matrix,color_black,QColor(255,255,255));
-    }
+    if (s.terramode==0) matrix=factory.diamondsquare(s.randomness*1.0/10);
     else if (s.terramode==1) matrix=factory.foultformation(s.iterations);
 }
 void Planet::Name()
@@ -150,7 +146,7 @@ void Planet::LevelCreating()
         }
     }
 }
-void Planet::TMapCreating()
+void Planet::TMapCreating() //temperature
 {
     t_map.clear();
     for (int i=0;i<world_size;i++)
@@ -177,7 +173,7 @@ void Planet::TMapCreating()
         t_map.append(dataline);
     }
 }
-void Planet::RMapCreating()
+void Planet::RMapCreating() //rain
 {
     r_map.clear();
     for (int i=0;i<world_size;i++)
@@ -199,7 +195,9 @@ void Planet::RMapCreating()
 void Planet::Plant()
 {
     green_square=0;
-    QImage diagram=QImage(currentpath+"res/images/plantmatrix.png");
+    QImage diagram;
+    if (s.is_gradient) diagram=QImage(currentpath+"res/images/plantmatrixblur.png");
+    else diagram=QImage(currentpath+"res/images/plantmatrix.png");
     for (int i=0;i<world_size;i++)
     {
         for (int k=0;k<world_size;k++)
@@ -217,11 +215,8 @@ void Planet::Plant()
                     if (y<0) y=0;
                     if (y>59) y=59;
                     QColor color=diagram.pixelColor(x,y);
-                    if (color.red()!=252 || color.green()!=253 || color.blue()!=163)
-                    { //игнорирование цвета пустыни
-                        img.setPixelColor(i,k,color);
-                        green_square++;
-                    }
+                    img.setPixelColor(i,k,color);
+                    green_square++;
                 }
             }
         }
@@ -230,14 +225,18 @@ void Planet::Plant()
 void Planet::Polar()
 {
     QColor color=QColor(255,255,255);
+    QColor lowcolor=QColor(150,150,150);
     QVector <QColor> polar_color;
-    polar_color.append(color);
-    if (level_color.length()>1)
+    if (!s.is_gradient)
     {
-        for (int i=1;i<level_color.length();i++)
+        polar_color.append(color);
+        if (level_color.length()>1)
         {
-            if (level_up[i]<water_level) polar_color.append(polar_color[i-1]);
-            else polar_color.append(LowerColor(polar_color[i-1],0.9));
+            for (int i=1;i<level_color.length();i++)
+            {
+                if (level_up[i]<water_level) polar_color.append(polar_color[i-1]);
+                else polar_color.append(LowerColor(polar_color[i-1],0.9));
+            }
         }
     }
     for (int i=0;i<world_size;i++)
@@ -249,12 +248,20 @@ void Planet::Polar()
                 double T=t_map[i][j];
                 if (T<-15)
                 {
-                    for (int q=0;q<level_color.length();q++)
+                    if (s.is_gradient)
                     {
-                        if (level_up[q]>=matrix[i][j] and matrix[i][j]>=level_down[q])
+                        double koef=(matrix[i][j]-water_level)/(280-water_level);
+                        img.setPixelColor(i,j,TransparentColor(lowcolor,color,koef));
+                    }
+                    else
+                    {
+                        for (int q=0;q<level_color.length();q++)
                         {
-                            img.setPixelColor(i,j,polar_color[q]);
-                            break;
+                            if (level_up[q]>=matrix[i][j] and matrix[i][j]>=level_down[q])
+                            {
+                                img.setPixelColor(i,j,polar_color[q]);
+                                break;
+                            }
                         }
                     }
                 }
@@ -487,6 +494,15 @@ void Planet::ImageCreating()
 {
     img=QImage(world_size,world_size,QImage::Format_RGB32);
     img.fill(color_black);
+    QVector<double> level_aver;
+    if (s.is_gradient)
+    {
+        for (int i=0;i<level_up.length();i++)
+        {
+            level_aver.append((level_up[i]+level_down[i])/2);
+        }
+        level_aver.append(0);
+    }
     for (int i=0;i<world_size;i++)
     {
         for (int k=0;k<world_size;k++)
@@ -495,52 +511,38 @@ void Planet::ImageCreating()
             double Rad2=(world_size/2)*(world_size/2);
             if (Rad1<=Rad2)
             {
-                for (int j=0;j<level_up.length();j++)
+                if (s.is_gradient)
                 {
-                    if (matrix[i][k]<=level_up[j] and matrix[i][k]>=level_down[j])
+                    int index=0;
+                    while (matrix[i][k]<level_aver[index]) index++;
+                    if (index==0) img.setPixelColor(i,k,level_color[0]);
+                    else if (index==level_aver.length()-1) img.setPixelColor(i,k,level_color.last());
+                    else if (level_aver[index]<water_level && level_aver[index-1]>water_level)
                     {
-                        img.setPixelColor(i,k,level_color[j]);
-                        break;
+                        if (matrix[i][k]>=water_level) img.setPixelColor(i,k,level_color[index-1]);
+                        else img.setPixelColor(i,k,level_color[index]);
+                    }
+                    else
+                    {
+                        double koef=(matrix[i][k]-level_aver[index])/(level_aver[index-1]-level_aver[index]);
+                        img.setPixelColor(i,k,TransparentColor(level_color[index],level_color[index-1],koef));
+                    }
+                }
+                else
+                {
+                    for (int j=0;j<level_up.length();j++)
+                    {
+                        if (matrix[i][k]<=level_up[j] and matrix[i][k]>=level_down[j])
+                        {
+                            img.setPixelColor(i,k,level_color[j]);
+                            break;
+                        }
                     }
                 }
             }
         }
     }
 }
-/*
-void Planet::ImageCreating() //gradient version
-{
-    img=QImage(world_size,world_size,QImage::Format_RGB32);
-    img.fill(color_black);
-    QVector<double> level_aver;
-    for (int i=0;i<level_up.length();i++)
-    {
-        level_aver.append((level_up[i]+level_down[i])/2);
-    }
-    level_aver.append(0);
-    for (int i=0;i<world_size;i++)
-    {
-        for (int k=0;k<world_size;k++)
-        {
-            double Rad1=(i-world_size/2-1)*(i-world_size/2-1)+(k-world_size/2-1)*(k-world_size/2-1);
-            double Rad2=(world_size/2)*(world_size/2);
-            if (Rad1<=Rad2)
-            {
-                int index=0;
-                while (matrix[i][k]<level_aver[index]) index++;
-                if (index==0) img.setPixelColor(i,k,level_color[0]);
-                else if (index==level_aver.length()-1) img.setPixelColor(i,k,level_color.last());
-                else
-                {
-                    img.setPixelColor(i,k,TransparentColor(level_color[index],level_color[index-1],(matrix[i][k]-level_aver[index])/(level_aver[index-1]-level_aver[index])));
-                }
-
-
-            }
-        }
-    }
-}
-*/
 QColor Planet::TransparentColor(QColor color1, QColor color2, double koef)
 {
     int r=qRound((1-koef)*color1.red()+koef*color2.red());
@@ -626,7 +628,7 @@ void Planet::Noise()
         for (int j=0;j<world_size;j++)
         {
             QColor color=img.pixelColor(i,j);
-            if (!isBlack(color)) img.setPixelColor(i,j,DispersionColor(color,10));
+            if (!isBlack(color)) img.setPixelColor(i,j,DispersionColor(color,s.noise));
         }
     }
 }
