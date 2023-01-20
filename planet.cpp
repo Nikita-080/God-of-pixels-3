@@ -682,9 +682,10 @@ void Planet::Description()
 }
 QString Planet::Resources()
 {
-    QVector <QString> mas={"He","Li","Al","Si","Ti",
-                           "Fe","Co","Cu","Ag","Au",
-                           "Hg","Pb","Pu","Ni","Zn"};
+    QVector <QString> mas={"He","Li","Mg","Al","Si","Cl","Ar",
+                           "Ca","Ti","Cr","Fe","Co","Ni","Cu",
+                           "Zn","As","Ag","Cd","Sn","Xe","Cs",
+                           "Nd","Pt","Au","Hg","Pb","Rn","Pu"};
     QString res="";
     QVector <int> indexes={-1};
     int x=RAND(0,5);

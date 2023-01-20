@@ -336,7 +336,7 @@ void MainWindow::God(bool isCreateNew, QProgressBar *pb,Planet *p)
     pb->setValue(25);
     p->ImageCreating();
     pb->setValue(30);
-    p->UMapCreating();
+    if (isCreateNew) p->UMapCreating();
     p->TMapCreating();
     p->RMapCreating();
     pb->setValue(40);
@@ -347,7 +347,7 @@ void MainWindow::God(bool isCreateNew, QProgressBar *pb,Planet *p)
     pb->setValue(50);
     if (s.is_cloud)
     {
-        p->CloudMapCreating();
+        if (isCreateNew) p->CloudMapCreating();
         p->Cloud();
     }
     pb->setValue(60);
