@@ -208,13 +208,15 @@ void Planet::Plant()
                 double W=r_map[i][k];
                 if (W>=0 && W<=450 && T>=-15 && T<=35)
                 {
-                    int x=qRound(-1.2*T+42);
-                    int y=qRound(-0.13*W+60);
-                    if (x<0) x=0;
-                    if (x>59) x=59;
-                    if (y<0) y=0;
-                    if (y>59) y=59;
+                    int x=qRound(-1.18*T+41.3);
+                    int y=qRound(-0.13*W+59);
                     QColor color=diagram.pixelColor(x,y);
+                    if (s.is_gradient)
+                    {
+                        double min=1.0*qMin(qMin(x,y),qMin(59-x,59-y));
+                        //не <10 для удобства вычислений
+                        if (min<11) color=TransparentColor(img.pixelColor(i,k),color,min/10);
+                    }
                     img.setPixelColor(i,k,color);
                     green_square++;
                 }
@@ -251,7 +253,10 @@ void Planet::Polar()
                     if (s.is_gradient)
                     {
                         double koef=(matrix[i][j]-water_level)/(280-water_level);
-                        img.setPixelColor(i,j,TransparentColor(lowcolor,color,koef));
+                        QColor cur_color=TransparentColor(lowcolor,color,koef);
+                        koef=(-T-15)/(1+abs(-T-15)); //softsign function
+                        cur_color=TransparentColor(img.pixelColor(i,j),cur_color,koef);
+                        img.setPixelColor(i,j,cur_color);
                     }
                     else
                     {
@@ -517,11 +522,13 @@ void Planet::ImageCreating()
                     while (matrix[i][k]<level_aver[index]) index++;
                     if (index==0) img.setPixelColor(i,k,level_color[0]);
                     else if (index==level_aver.length()-1) img.setPixelColor(i,k,level_color.last());
+                    /*
                     else if (level_aver[index]<water_level && level_aver[index-1]>water_level)
                     {
                         if (matrix[i][k]>=water_level) img.setPixelColor(i,k,level_color[index-1]);
                         else img.setPixelColor(i,k,level_color[index]);
                     }
+                    */
                     else
                     {
                         double koef=(matrix[i][k]-level_aver[index])/(level_aver[index-1]-level_aver[index]);

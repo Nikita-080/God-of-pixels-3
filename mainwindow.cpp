@@ -224,7 +224,7 @@ void MainWindow::SetStyle()
     style+="QTabBar QToolButton{border:  2px solid #6EAAC8;color: #6EAAC8;}";
     ui->tabWidget->setStyleSheet(style);
 
-    ui->pushButton_8->setIcon(QIcon(currentpath+"logo.png"));
+    ui->pushButton_8->setIcon(QIcon(currentpath+"res/images/logo.png"));
 }
 void MainWindow::AutoGod()
 {
@@ -347,7 +347,7 @@ void MainWindow::God(bool isCreateNew, QProgressBar *pb,Planet *p)
     pb->setValue(50);
     if (s.is_cloud)
     {
-        if (isCreateNew) p->CloudMapCreating();
+        p->CloudMapCreating();
         p->Cloud();
     }
     pb->setValue(60);
