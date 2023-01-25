@@ -129,37 +129,19 @@ void MainWindow::M_About()
     msb.setText("название - God of Pixels 3\nверсия - 0.0.1\nавтор - Рябов Никита\nобратная связь - riabovnick080@yandex.ru");
     msb.exec();
 }
-void MainWindow::Img_Report() //служебная функция
-{
-    planet.ImageReport("t",planet.t_map,QColor(0,0,255),QColor(255,0,0));
-    planet.ImageReport("m",planet.matrix,QColor(0,0,0),QColor(255,255,255));
-    planet.ImageReport("r",planet.r_map,QColor(252,221,118),QColor(0,0,255));
-}
-void MainWindow::BiomGrad() //служебная функция
-{
-    for (int i=-50;i<=120;i++)
-    {
-        s.temperature=i;
-        God(false,ui->progressBar,&planet);
-        QString name=QString::number(i+50)+" ("+QString::number(i)+").png";
-        planet.img.save("C:/Users/Никита/Desktop/GoP Qt/biom grad 3/"+name);
-    }
-}
-void MainWindow::Report(QString s) //служебная функция
-{
-    QFile file("C:/Users/Никита/Desktop/DATA.txt");
-    if (file.open(QIODevice::ReadWrite))
-    {
-        QTextStream stream(&file);
-        stream<<s<<"\n";
-        file.close();
-    }
-}
 QString MainWindow::CurrentPath()
 {
     //TODO change for release
     return "C:/qtprojects/GodOfPixels3/";
     //return QDir::currentPath();
+}
+QString MainWindow::ReadFile(QString path)
+{
+    QFile file(path);
+    QByteArray data;
+    if (!file.open(QIODevice::ReadOnly)) return "";
+    data = file.readAll();
+    return QString(data);
 }
 void MainWindow::SetStyle()
 {
@@ -168,25 +150,18 @@ void MainWindow::SetStyle()
     ui->pushButton_3,ui->pushButton_4,
     ui->pushButton_5};
 
+    QString sliderstyle=ReadFile(currentpath+"res/text/sliderstyle.css");
+    QString menubarstyle=ReadFile(currentpath+"res/text/menubarstyle.css");
+    QString tabwidgetstyle=ReadFile(currentpath+"res/text/tabwidgetstyle.css");
+    QString buttonstyle=ReadFile(currentpath+"res/text/buttonstyle.css");
+
     for (int i=0;i<7;i++)
     {
         QString name=a[i]->objectName();
-        QString style="";
-        style+="QPushButton {background-image: url(";
-        style+=currentpath+"res/images/"+name+"_m.png);\n";
-        style+="background-repeat: no-repeat;}\n";
-
-        style+="QPushButton:hover {background-image: url(";
-        style+=currentpath+"res/images/"+name+"_t.png);\n";
-        style+="background-repeat: no-repeat;}\n";
-
-        style+="QPushButton:pressed {background-image: url(";
-        style+=currentpath+"res/images/"+name+"_b.png);\n";
-        style+="background-repeat: no-repeat;}\n";
-
+        QString style=buttonstyle;
+        style.replace("[currentpath]",currentpath);
+        style.replace("[name]",name);
         a[i]->setStyleSheet(style);
-        //a[i]->repaint();
-        //Report(style);
     }
 
     foreach(QObject* i, this->findChildren<QObject*>())
@@ -194,7 +169,7 @@ void MainWindow::SetStyle()
         if (i->inherits("QWidget"))
         {
             if (i->inherits("QLabel") || i->inherits("QGroupBox") ||
-                    i->inherits("QRadioButton") || i->inherits("QCheckBox"))
+                i->inherits("QRadioButton") || i->inherits("QCheckBox"))
             {
                 QWidget* k=static_cast<QWidget *>(i);
                 QPalette palette;
@@ -203,27 +178,14 @@ void MainWindow::SetStyle()
             }
             else if (i->inherits("QSlider"))
             {
-                QString style="";
-                style+="QSlider::handle:horizontal {background-color: rgb(0,255,0);\n";
-                style+="border-radius: 7px;border-color: rgb(0, 255, 127);}\n";
-                style+="QSlider::add-page:horizontal  {background: rgb(200,200,200);margin: 5px;\n";
-                style+="margin-right: 0px;}\n";
-                style+="QSlider::sub-page:horizontal {background: rgb(0,255,0);\n";
-                style+="margin: 5px;margin-left: 0px;}\n";
                 QSlider* k=static_cast<QSlider *>(i);
-                k->setStyleSheet(style);
+                k->setStyleSheet(sliderstyle);
             }
         }
     }
 
-    ui->menubar->setStyleSheet("color: rgb(255,0,0);");
-    QString style="";
-    style+="QTabWidget::pane{background-color: black; border: 3px solid #808080;}\n";
-    style+="QTabBar::tab {background-color: black;}\n";
-    //style+="QTabBar::tab:selected {border: 2px solid #00ff7f; padding: 2px}\n";
-    style+="QTabBar QToolButton{border:  2px solid #6EAAC8;color: #6EAAC8;}";
-    ui->tabWidget->setStyleSheet(style);
-
+    ui->menubar->setStyleSheet(menubarstyle);
+    ui->tabWidget->setStyleSheet(tabwidgetstyle);
     ui->pushButton_8->setIcon(QIcon(currentpath+"res/images/logo.png"));
 }
 void MainWindow::AutoGod()
@@ -531,6 +493,32 @@ void MainWindow::M_Load_Settings(){
     s.Load(filename);
     Settings_Set();
     update();
+}
+void MainWindow::Img_Report() //служебная функция
+{
+    planet.ImageReport("t",planet.t_map,QColor(0,0,255),QColor(255,0,0));
+    planet.ImageReport("m",planet.matrix,QColor(0,0,0),QColor(255,255,255));
+    planet.ImageReport("r",planet.r_map,QColor(252,221,118),QColor(0,0,255));
+}
+void MainWindow::BiomGrad() //служебная функция
+{
+    for (int i=-50;i<=120;i++)
+    {
+        s.temperature=i;
+        God(false,ui->progressBar,&planet);
+        QString name=QString::number(i+50)+" ("+QString::number(i)+").png";
+        planet.img.save("C:/Users/Никита/Desktop/GoP Qt/biom grad 3/"+name);
+    }
+}
+void MainWindow::Report(QString s) //служебная функция
+{
+    QFile file("C:/Users/Никита/Desktop/DATA.txt");
+    if (file.open(QIODevice::ReadWrite))
+    {
+        QTextStream stream(&file);
+        stream<<s<<"\n";
+        file.close();
+    }
 }
 MainWindow::~MainWindow()
 {

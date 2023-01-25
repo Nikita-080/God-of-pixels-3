@@ -813,7 +813,7 @@ color: rgb(255, 255, 255);</string>
      <enum>QTabWidget::West</enum>
     </property>
     <property name="currentIndex">
-     <number>2</number>
+     <number>0</number>
     </property>
     <property name="iconSize">
      <size>
@@ -8075,14 +8075,11 @@ color: rgb(255, 255, 255);</string>
     </rect>
    </property>
    <property name="styleSheet">
-    <string notr="true">color: rgb(255, 0, 0);
-
-</string>
+    <string notr="true">color: #ff0000;</string>
    </property>
    <widget class="QMenu" name="menu">
     <property name="styleSheet">
-     <string notr="true">QMenuBar::item:hover{
-	background-color: rgb(150, 150, 150);}</string>
+     <string notr="true"/>
     </property>
     <property name="title">
      <string>Файл</string>

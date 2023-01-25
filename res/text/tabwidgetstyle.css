@@ -1,0 +1,14 @@
+QTabWidget::pane
+{
+	background-color: black;
+	border: 3px solid #808080;
+}
+QTabBar::tab
+{
+	background-color: black;
+}
+QTabBar QToolButton
+{
+	border:  2px solid #6EAAC8;
+	color: #6EAAC8;
+}

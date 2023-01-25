@@ -1,0 +1,20 @@
+QMenuBar::item:selected 
+{
+	background-color: rgb(200,200,200);
+	color: rgb(255,0,0);
+}
+QMenuBar 
+{
+	background-color: rgb(0,0,0);
+	color: rgb(255,0,0);
+}
+QMenu::item:selected 
+{
+	background-color: rgb(200,200,200);
+	color: rgb(255,0,0);
+}
+QMenu 
+{
+	background-color: rgb(0,0,0);
+	color: rgb(255,0,0);
+}
