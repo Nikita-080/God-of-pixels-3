@@ -1,14 +1,29 @@
 QTabWidget::pane
 {
-	background-color: black;
-	border: 3px solid #808080;
+	border: 3px solid rgb(128,128,128);
 }
 QTabBar::tab
 {
 	background-color: black;
+	margin: 0px;
+	padding: 1px;
 }
-QTabBar QToolButton
+QTabBar::tab:hover
 {
-	border:  2px solid #6EAAC8;
-	color: #6EAAC8;
+	background-color: black;
+	border: 1px solid rgb(0,255,0);
+	margin: 0px;
+	padding: 1px;
+}
+QTabBar::tab:selected
+{
+	background-color: black;
+	border: 1px solid rgb(255,0,0);
+	margin: 0px;
+	padding: 1px;
+}
+QToolButton
+{
+	border:  2px solid rgb(110,170,200);
+	color: rgb(110,170,200);
 }

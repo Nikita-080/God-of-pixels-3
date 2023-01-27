@@ -1,0 +1,17 @@
+QComboBox
+{
+	background-color: black;
+	color: rgb(0,255,127);
+        border: 2px solid rgb(110, 170, 200);
+}
+QComboBox QAbstractItemView
+{
+	color: rgb(110, 170, 200);
+	selection-background-color: rgb(50,50,50);
+	selection-color: rgb(110, 170, 200);
+}
+
+
+
+
+

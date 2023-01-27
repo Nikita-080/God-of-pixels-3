@@ -1,6 +1,6 @@
 QMenuBar::item:selected 
 {
-	background-color: rgb(200,200,200);
+	background-color: rgb(50,50,50);
 	color: rgb(255,0,0);
 }
 QMenuBar 
@@ -10,7 +10,7 @@ QMenuBar
 }
 QMenu::item:selected 
 {
-	background-color: rgb(200,200,200);
+	background-color: rgb(50,50,50);
 	color: rgb(255,0,0);
 }
 QMenu 

@@ -154,6 +154,7 @@ void MainWindow::SetStyle()
     QString menubarstyle=ReadFile(currentpath+"res/text/menubarstyle.css");
     QString tabwidgetstyle=ReadFile(currentpath+"res/text/tabwidgetstyle.css");
     QString buttonstyle=ReadFile(currentpath+"res/text/buttonstyle.css");
+    QString comboboxstyle=ReadFile(currentpath+"res/text/comboboxstyle.css");
 
     for (int i=0;i<7;i++)
     {
@@ -184,6 +185,7 @@ void MainWindow::SetStyle()
         }
     }
 
+    ui->comboBox->setStyleSheet(comboboxstyle);
     ui->menubar->setStyleSheet(menubarstyle);
     ui->tabWidget->setStyleSheet(tabwidgetstyle);
     ui->pushButton_8->setIcon(QIcon(currentpath+"res/images/logo.png"));
