@@ -201,9 +201,13 @@ void MainWindow::AutoGod()
         Settings_Get();
         if (box.save_type==1) //коллаж
         {
+            int delta;
+            if (box.picturetype) delta=658;
+            else delta=257;
+
             int count=0;
             double percent=1.0*box.height*box.width/100;
-            QImage image=QImage(box.width*257,box.height*257,QImage::Format_RGB32);
+            QImage image=QImage(box.width*delta,box.height*delta,QImage::Format_RGB32);
             QPainter p;
             p.begin(&image);
             for (int i=0;i<box.height;i++) //высота
@@ -212,7 +216,8 @@ void MainWindow::AutoGod()
                 {
                     s.Random(box.isRndList,pc);
                     God(true,ui->progressBar_3,&autoplanet);
-                    p.drawImage(k*257,i*257,autoplanet.img_nonscale);
+                    if (box.picturetype) p.drawImage(k*delta,i*delta,autoplanet.img_final);
+                    else p.drawImage(k*delta,i*delta,autoplanet.img_nonscale);
                     count++;
                     ui->progressBar_2->setValue(qRound(1.0*count/percent));
                 }
@@ -228,7 +233,10 @@ void MainWindow::AutoGod()
                 s.Random(box.isRndList,pc);
                 God(true,ui->progressBar_3,&autoplanet);
                 ui->progressBar_2->setValue(qRound(1.0*k/percent));
-                autoplanet.img_final.save(box.path+"\\"+autoplanet.name+".png");
+                QImage photo;
+                if (box.picturetype) photo=autoplanet.img_final;
+                else photo=autoplanet.img_nonscale;
+                photo.save(box.path+"\\"+autoplanet.name+".png");
             }
             ui->progressBar_2->setValue(100);
         }
@@ -247,25 +255,21 @@ void MainWindow::CreatePlanet()
 void MainWindow::ShowPlanet()
 {
     QImage img=planet.img;
-    QIcon icon;
     ui->pushButton_2->setIcon(QIcon(QPixmap::fromImage(img)));
 }
 void MainWindow::ShowDescription()
 {
     QImage img=planet.img_dsc;
-    QIcon icon;
     ui->pushButton_2->setIcon(QIcon(QPixmap::fromImage(img)));
 }
 void MainWindow::ShowSystem()
 {
     QImage img=planet.img_sys;
-    QIcon icon;
     ui->pushButton_2->setIcon(QIcon(QPixmap::fromImage(img)));
 }
 void MainWindow::ShowMap()
 {
     QImage img=planet.img_gal;
-    QIcon icon;
     ui->pushButton_2->setIcon(QIcon(QPixmap::fromImage(img)));
 }
 void MainWindow::M_Save_Image()

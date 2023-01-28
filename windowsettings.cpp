@@ -66,6 +66,7 @@ void windowsettings::EndWindow()
     AutoGodSettings settings;
 
     settings.save_type=ui->radioButton->isChecked();
+    settings.picturetype=ui->checkBox->isChecked();
     if (ui->radioButton->isChecked()) settings.path=filepath;
     else settings.path=dirpath;
     settings.height=ui->lineEdit_2->text().toInt();

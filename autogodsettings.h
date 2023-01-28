@@ -7,6 +7,7 @@ class AutoGodSettings
 {
 public:
     bool save_type;
+    bool picturetype;
     QString path;
     int height;
     int width;

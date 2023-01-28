@@ -826,7 +826,7 @@ void Planet::GalaxyMap()
 }
 void Planet::FinalImage()
 {
-    img_final=QImage(currentpath+"res/images/pattern.png");
+    img_final=QImage(658,658,QImage::Format_RGB32);
     QImage img_window=QImage(currentpath+"res/images/window.png");
     QPainter p;
     p.begin(&img_final);
