@@ -1,6 +1,11 @@
 #include "mainwindow.h"
 #include <QApplication>
+#include <QStyleFactory>
+
 int main(int argc, char *argv[]){
+    //строки ниже портят программу, и я не помню, зачем их писал. надо разобраться
+    //QApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
+    //QApplication::setStyle(QStyleFactory::create("Fusion"));
     QApplication a(argc, argv);
     MainWindow w;
     w.show();
