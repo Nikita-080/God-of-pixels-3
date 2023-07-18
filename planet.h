@@ -4,11 +4,13 @@
 #include <QImage>
 #include <QRandomGenerator>
 #include <planetsettings.h>
+#include <facts.h>
 class Planet
 {
 public:
     QString currentpath;
     QRandomGenerator rnd;
+    Facts facts;
     int starclass;
     QVector <QVector <double>> matrix;
     double world_heighth;
@@ -42,7 +44,10 @@ public:
     QVector <QVector <double>> r_map; //rain - осадки
     QVector <QVector <QVector<int>>> u_map; //преобразование в сферу
     QColor color_black;
-    int green_square;
+
+    int plant_pixel_count;
+    int water_pixel_count;
+    int ice_pixel_count;
 
     PlanetSettings s;
 public:
@@ -67,7 +72,9 @@ public:
     void Plant();
     void Shadow();
     void SystemMap();
-    void Description();
+    void GenerateDescription();
+    void CalculateDescription();
+    void DrawDescription();
     void GalaxyMap();
     void FinalImage();
     void ImagesScale();

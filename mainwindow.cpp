@@ -330,7 +330,9 @@ void MainWindow::God(bool isCreateNew, QProgressBar *pb,Planet *p)
     pb->setValue(90);
     if (isCreateNew) p->Name();
     pb->setValue(95);
-    p->Description();
+    if (isCreateNew) p->GenerateDescription();
+    p->CalculateDescription();
+    p->DrawDescription();
     p->SystemMap();
     p->GalaxyMap();
     p->FinalImage();

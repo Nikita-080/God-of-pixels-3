@@ -11,6 +11,7 @@ CONFIG += c++11
 SOURCES += \
     autogodsettings.cpp \
     cloudfactory.cpp \
+    facts.cpp \
     main.cpp \
     mainwindow.cpp \
     multislider.cpp \
@@ -23,6 +24,7 @@ SOURCES += \
 HEADERS += \
     autogodsettings.h \
     cloudfactory.h \
+    facts.h \
     mainwindow.h \
     multislider.h \
     planet.h \

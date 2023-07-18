@@ -13,13 +13,14 @@ Planet::Planet(QRandomGenerator Rnd,QString Currentpath)
     currentpath=Currentpath;
     rnd=Rnd;
     color_black=QColor(0,0,0);
+    facts=Facts();
 }
 Planet::Planet()
 {
 
 }
 int Planet::RAND(int a, int b){
-    return rnd.generate()%((b+1)-a)+a;
+    return rnd.bounded(a,b+1);
 }
 
 void Planet::CreateMatrixNew()
@@ -194,7 +195,7 @@ void Planet::RMapCreating() //rain
 }
 void Planet::Plant()
 {
-    green_square=0;
+    plant_pixel_count=0;
     QImage diagram;
     if (s.is_gradient) diagram=QImage(currentpath+"res/images/plantmatrixblur.png");
     else diagram=QImage(currentpath+"res/images/plantmatrix.png");
@@ -218,7 +219,7 @@ void Planet::Plant()
                         if (min<11) color=TransparentColor(img.pixelColor(i,k),color,min/10);
                     }
                     img.setPixelColor(i,k,color);
-                    green_square++;
+                    plant_pixel_count++;
                 }
             }
         }
@@ -250,6 +251,7 @@ void Planet::Polar()
                 double T=t_map[i][j];
                 if (T<-15)
                 {
+                    ice_pixel_count++;
                     if (s.is_gradient)
                     {
                         double koef=(matrix[i][j]-water_level)/(280-water_level);
@@ -467,7 +469,9 @@ bool Planet::isBlack(QColor color)
 }
 void Planet::Calculator()
 {
-    green_square=0;
+    plant_pixel_count=0;
+    ice_pixel_count=0;
+    water_pixel_count=0;
     if (s.temperature==-90) starclass=RAND(0,12);
     else starclass=RAND(0,11);
     R_planet=world_size/2*2*1.0/3.1415;
@@ -512,6 +516,7 @@ void Planet::ImageCreating()
     {
         for (int k=0;k<world_size;k++)
         {
+            if (matrix[i][k]<water_level) water_pixel_count++;
             double Rad1=(i-world_size/2-1)*(i-world_size/2-1)+(k-world_size/2-1)*(k-world_size/2-1);
             double Rad2=(world_size/2)*(world_size/2);
             if (Rad1<=Rad2)
@@ -639,7 +644,22 @@ void Planet::Noise()
         }
     }
 }
-void Planet::Description()
+void Planet::GenerateDescription()
+{
+    facts.day=QString::number(RAND(5,100));
+    facts.year=QString::number(RAND(1,50));
+    facts.gravitation=QString::number(RAND(0,2))+"."+QString::number(RAND(0,9));
+    facts.resources=Resources();
+    facts.radiation=RAND(0,10);
+}
+void Planet::CalculateDescription()
+{
+    int pixel_count=3.1415*(world_size*1.0/2)*(world_size*1.0/2);
+    facts.life=qFloor(plant_pixel_count*10.0/(pixel_count-water_pixel_count));
+    facts.ice=qFloor(ice_pixel_count*10.0/pixel_count);
+    facts.water=qFloor(water_pixel_count*10.0/pixel_count);
+}
+void Planet::DrawDescription()
 {
     img_dsc=QImage(currentpath+"res/images/window.png");
     QString classes="OBAFGKMCSLTY";
@@ -653,36 +673,37 @@ void Planet::Description()
     s+="имя        - "+name+"\n";
 
     if (starclass==12) s+="день       - [не найдено]\n";
-    else s+="день       - "+QString::number(RAND(5,100))+"ч\n";
+    else s+="день       - "+facts.day+"ч\n";
 
     if (starclass==12) s+="год        - [не найдено]\n";
-    else s+="год        - "+QString::number(RAND(1,50))+"г\n";
+    else s+="год        - "+facts.year+"г\n";
 
-    s+="гравитация - "+QString::number(RAND(0,2))+"."+QString::number(RAND(0,9))+"g\n";
+    s+="гравитация - "+facts.gravitation+"g\n";
 
     if (starclass==12) s+="звезда     - [не найдено]\n";
     else s+="звезда     - "+classes[starclass]+"\n";
 
-    s+="ресурсы    - "+Resources();
+    s+="ресурсы    - "+facts.resources;
     s+="\n";
     QString level1;
     QString level2;
     int x;
-    int y=qFloor(green_square*10.0/(3.1415*(world_size*1.0/2)*(world_size*1.0/2)));
+    int y=facts.life;
     level1.fill('#',y);
     level2.fill(' ',10-y);
-    s+="жизнь:\n";
-    s+="   |"+level1+level2+"|\n";
-    x=RAND(0,10);
+    s+="жизнь:    |"+level1+level2+"|\n";
+    x=facts.water;
     level1.fill('#',x);
     level2.fill(' ',10-x);
-    s+="сейсмичность:\n";
-    s+="   |"+level1+level2+"|\n";
-    x=RAND(0,10);
+    s+="вода:     |"+level1+level2+"|\n";
+    x=facts.ice;
     level1.fill('#',x);
     level2.fill(' ',10-x);
-    s+="радиация:\n";
-    s+="   |"+level1+level2+"|\n";
+    s+="лед:      |"+level1+level2+"|\n";
+    x=facts.radiation;
+    level1.fill('#',x);
+    level2.fill(' ',10-x);
+    s+="радиация: |"+level1+level2+"|\n";
 
     p.drawText(QRect(40,27,400,400), s);
     p.end();
