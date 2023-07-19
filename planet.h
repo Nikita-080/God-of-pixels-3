@@ -85,6 +85,7 @@ private:
     QString Name_gop2();
     QString Name_readable();
     QString Name_random();
+    void Level(QString,int,int,QString,QPainter&);
     QColor DispersionColor(QColor color, int disp);
     QColor TransparentColor(QColor color1, QColor color2, double koef);
     QColor LowerColor(QColor color, double koef);

@@ -52,6 +52,8 @@ public:
     void M_Load_Base_Settings();
     void M_Save_Image();
     void M_Save_Planet();
+    void M_Load_Planet();
+    void M_Save_Full_Image();
     void M_About();
     void CreatePlanet();
     void AutoGod();

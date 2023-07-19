@@ -14,6 +14,8 @@ public:
     int water;
     int ice;
     int radiation;
+    int temperature;
+    int seismicity;
     QString resources;
 };
 

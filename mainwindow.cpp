@@ -10,6 +10,7 @@
 #include <windowsettings.h>
 #include <QPainter>
 #include <QMessageBox>
+#include <QSet>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -96,6 +97,8 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->action,&QAction::triggered,this,&MainWindow::M_Save_Image);
     connect(ui->action_2,&QAction::triggered,this,&MainWindow::M_Save_Planet);
     connect(ui->action_6,&QAction::triggered,this,&MainWindow::M_About);
+    connect(ui->action_8,&QAction::triggered,this,&MainWindow::M_Save_Full_Image);
+    connect(ui->action_9,&QAction::triggered,this,&MainWindow::M_Load_Planet);
 
     ui->pushButton_2->setIconSize(QSize(465,465));
 
@@ -282,14 +285,73 @@ void MainWindow::M_Save_Image()
         planet.img.save(filename);
     }
 }
+void MainWindow::M_Save_Full_Image()
+{
+    QString filename = QFileDialog::getSaveFileName(this,
+                                QString::fromUtf8("Сохранить полное изображение"),
+                                planet.name,
+                                "Image (*.png);;All files (*.*)");
+    if (filename.length()!=0){
+        planet.img_final.save(filename);
+    }
+}
+void MainWindow::M_Load_Planet()
+{
+    QString filename = QFileDialog::getOpenFileName(this,
+                                QString::fromUtf8("Загрузить планету"),
+                                                    "./",
+                                "Planet (*.planet);;All files (*.*)");
+    if (filename.length()!=0)
+    {
+        QFile readFile(filename);
+        readFile.open(QFile::ReadOnly);
+        QDataStream outFile(&readFile);
+        //outFile.setVersion(QDataStream::Qt_4_8);
+        outFile >> planet.matrix;
+        outFile >> planet.name;
+        outFile >> planet.u_map;
+        outFile >> planet.facts.day;
+        outFile >> planet.facts.year;
+        outFile >> planet.facts.gravitation;
+        outFile >> planet.facts.radiation;
+        outFile >> planet.facts.resources;
+        outFile >> planet.facts.seismicity;
+
+        Settings_Get();
+        God(false,ui->progressBar,&planet);
+        QImage img=planet.img;
+        ui->pushButton_2->setIcon(QIcon(QPixmap::fromImage(img)));
+        ui->label_7->setText(planet.name);
+        isEmtyPlanet=false;
+
+        readFile.close();
+    }
+}
+
 void MainWindow::M_Save_Planet()
 {
     QString filename = QFileDialog::getSaveFileName(this,
                                 QString::fromUtf8("Сохранить планету"),
                                 planet.name,
-                                "Image (*.png);;All files (*.*)");
-    if (filename.length()!=0){
-        planet.img_final.save(filename);
+                                "Planet (*.planet);;All files (*.*)");
+    if (filename.length()!=0)
+    {
+        QFile file(filename);
+        file.open(QFile::Append);
+        QDataStream infile(&file);
+
+        infile << planet.matrix;
+        infile << planet.name;
+        infile << planet.u_map;
+        infile << planet.facts.day;
+        infile << planet.facts.year;
+        infile << planet.facts.gravitation;
+        infile << planet.facts.radiation;
+        infile << planet.facts.resources;
+        infile << planet.facts.seismicity;
+
+        file.flush();
+        file.close();
     }
 }
 void MainWindow::God(bool isCreateNew, QProgressBar *pb,Planet *p)
@@ -319,6 +381,7 @@ void MainWindow::God(bool isCreateNew, QProgressBar *pb,Planet *p)
         p->Cloud();
     }
     pb->setValue(60);
+    //planet.img.save("./img.png");
     p->UV();
     pb->setValue(70);
     if (s.is_atmo and s.atmo_transparent!=10) p->Atmosphere("in");
@@ -485,7 +548,7 @@ void MainWindow::Settings_Set(){
 void MainWindow::M_Save_Settings(){
     QString filename = QFileDialog::getSaveFileName(this,
                                 QString::fromUtf8("Сохранить файл"),
-                                QDir::currentPath(),
+                                                    "./",
                                 "Texts (*.txt);;All files (*.*)");
     if (filename.length()!=0){
         Settings_Get();
@@ -495,7 +558,7 @@ void MainWindow::M_Save_Settings(){
 void MainWindow::M_Load_Settings(){
     QString filename = QFileDialog::getOpenFileName(this,
                                 QString::fromUtf8("Открыть файл"),
-                                QDir::currentPath(),
+                                "./",
                                 "Texts (*.txt);;All files (*.*)");
     Settings_Get();//для начального заполнения "буфера" настроек
     s.Load(filename);

@@ -785,7 +785,7 @@ color: rgb(255, 255, 255);</string>
      <enum>QTabWidget::West</enum>
     </property>
     <property name="currentIndex">
-     <number>3</number>
+     <number>0</number>
     </property>
     <property name="iconSize">
      <size>
@@ -8066,7 +8066,9 @@ color: rgb(255, 255, 255);</string>
      <string>Файл</string>
     </property>
     <addaction name="action"/>
+    <addaction name="action_8"/>
     <addaction name="action_2"/>
+    <addaction name="action_9"/>
    </widget>
    <widget class="QMenu" name="menu_2">
     <property name="title">
@@ -8120,6 +8122,16 @@ color: rgb(255, 255, 255);</string>
   <action name="action_7">
    <property name="text">
     <string>Помощь</string>
+   </property>
+  </action>
+  <action name="action_8">
+   <property name="text">
+    <string>Сохранить полное изображение</string>
+   </property>
+  </action>
+  <action name="action_9">
+   <property name="text">
+    <string>Загрузить планету</string>
    </property>
   </action>
  </widget>

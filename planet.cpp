@@ -7,6 +7,7 @@
 #include <QTextStream>
 #include <QtMath>
 #include <QPainter>
+#include<QDebug>
 #include <QFontDatabase>
 Planet::Planet(QRandomGenerator Rnd,QString Currentpath)
 {
@@ -516,11 +517,11 @@ void Planet::ImageCreating()
     {
         for (int k=0;k<world_size;k++)
         {
-            if (matrix[i][k]<water_level) water_pixel_count++;
             double Rad1=(i-world_size/2-1)*(i-world_size/2-1)+(k-world_size/2-1)*(k-world_size/2-1);
             double Rad2=(world_size/2)*(world_size/2);
             if (Rad1<=Rad2)
             {
+                if (matrix[i][k]<water_level) water_pixel_count++;
                 if (s.is_gradient)
                 {
                     int index=0;
@@ -650,14 +651,51 @@ void Planet::GenerateDescription()
     facts.year=QString::number(RAND(1,50));
     facts.gravitation=QString::number(RAND(0,2))+"."+QString::number(RAND(0,9));
     facts.resources=Resources();
-    facts.radiation=RAND(0,10);
+    facts.radiation=RAND(0,12);
+    facts.seismicity=RAND(0,12);
 }
 void Planet::CalculateDescription()
 {
     int pixel_count=3.1415*(world_size*1.0/2)*(world_size*1.0/2);
-    facts.life=qFloor(plant_pixel_count*10.0/(pixel_count-water_pixel_count));
-    facts.ice=qFloor(ice_pixel_count*10.0/pixel_count);
-    facts.water=qFloor(water_pixel_count*10.0/pixel_count);
+    facts.life=qRound(plant_pixel_count*12.0/(pixel_count-water_pixel_count));
+    facts.ice=qRound(ice_pixel_count*12.0/pixel_count);
+    facts.water=qRound(water_pixel_count*12.0/pixel_count);
+    facts.temperature=qRound((s.temperature+90)*12.0/230);
+}
+void Planet::Level(QString start,int string,int lvl,QString type,QPainter& p)
+{
+    p.setPen(QPen(QColor(110,170,200)));
+    QString s;
+    s.fill('\n',string-1);
+    s+=start+"|            |";
+    p.drawText(QRect(40,27,400,400), s);
+    QColor color;
+    if (type=="good")
+    {
+        if (lvl<=4) color=QColor(200,0,0);
+        else if (lvl>=9) color=QColor(0,200,0);
+        else color=QColor(200,200,0);
+    }
+    else if (type=="neutral")
+    {
+        if (lvl<=2 || lvl>=11) color=QColor(200,0,0);
+        else if (lvl<=4 || lvl>=9) color=QColor(200,200,0);
+        else color=QColor(0,200,0);
+    }
+    if (type=="bad")
+    {
+        if (lvl<=4) color=QColor(0,200,0);
+        else if (lvl>=9) color=QColor(200,0,0);
+        else color=QColor(200,200,0);
+    }
+    p.setPen(QPen(color));
+    s.fill('\n',string-1);
+    QString a(start.length()+1,' ');
+    QString b(lvl,'#');
+    s+=a+b;
+
+
+    p.drawText(QRect(40,27,400,400), s);
 }
 void Planet::DrawDescription()
 {
@@ -684,28 +722,13 @@ void Planet::DrawDescription()
     else s+="звезда     - "+classes[starclass]+"\n";
 
     s+="ресурсы    - "+facts.resources;
-    s+="\n";
-    QString level1;
-    QString level2;
-    int x;
-    int y=facts.life;
-    level1.fill('#',y);
-    level2.fill(' ',10-y);
-    s+="жизнь:    |"+level1+level2+"|\n";
-    x=facts.water;
-    level1.fill('#',x);
-    level2.fill(' ',10-x);
-    s+="вода:     |"+level1+level2+"|\n";
-    x=facts.ice;
-    level1.fill('#',x);
-    level2.fill(' ',10-x);
-    s+="лед:      |"+level1+level2+"|\n";
-    x=facts.radiation;
-    level1.fill('#',x);
-    level2.fill(' ',10-x);
-    s+="радиация: |"+level1+level2+"|\n";
-
     p.drawText(QRect(40,27,400,400), s);
+    Level("жизнь        ",8,facts.life,"good",p);
+    Level("вода         ",9,facts.water,"neutral",p);
+    Level("лед          ",10,facts.ice,"bad",p);
+    Level("радиация     ",11,facts.radiation,"bad",p);
+    Level("температура  ",12,facts.temperature,"neutral",p);
+    Level("сейсмичность ",13,facts.seismicity,"bad",p);
     p.end();
 }
 QString Planet::Resources()
