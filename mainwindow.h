@@ -64,7 +64,7 @@ public:
     void God(bool isCreateNew,QProgressBar *pb,Planet *p);
     void SetStyle();
     QString CurrentPath();
-    QString ReadFile(QString path);
+    QString ReadText(QString);
     void Report(QString s); //служебная функция
     void Img_Report(); //служебная функция
     void BiomGrad(); //служебная функция

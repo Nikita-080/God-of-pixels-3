@@ -7,7 +7,7 @@
 #include <QTextStream>
 #include <QtMath>
 #include <QPainter>
-#include<QDebug>
+#include <QDebug>
 #include <QFontDatabase>
 Planet::Planet(QRandomGenerator Rnd,QString Currentpath)
 {

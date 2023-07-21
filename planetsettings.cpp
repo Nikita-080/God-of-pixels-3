@@ -13,7 +13,7 @@ int PlanetSettings::RAND(int a, int b)
 {
     return rnd.generate()%((b+1)-a)+a;
 }
-void PlanetSettings::Save(QString path){
+bool PlanetSettings::Save(QString path){
 
     QFile file(path);
     if (file.open(QFile::WriteOnly|QFile::Text)){
@@ -57,9 +57,11 @@ void PlanetSettings::Save(QString path){
         stream<<QString::number(point_of_polar[0])<<"\n";
         stream<<QString::number(point_of_polar[1])<<"\n";
         file.close();
+        return true;
     }
+    return false;
 }
-void PlanetSettings::Load(QString path){
+bool PlanetSettings::Load(QString path){
     QFile file(path);
     if(file.open(QFile::ReadOnly|QFile::Text)){
         QTextStream stream(&file);
@@ -103,7 +105,9 @@ void PlanetSettings::Load(QString path){
         stream>>a; ring_color.setNamedColor(a);
         stream>>a; point_of_polar[0]=a.toDouble();
         stream>>a; point_of_polar[1]=a.toDouble();
+        return true;
     }
+    return false;
 }
 void PlanetSettings::Random(QVector<bool> isRnd,PointChoicer* pc){
     if (isRnd[0]) terramode=RAND(0,1);

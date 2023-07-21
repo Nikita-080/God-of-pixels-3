@@ -49,8 +49,8 @@ public:
 public:
     PlanetSettings();
     PlanetSettings(QRandomGenerator);
-    void Load(QString);
-    void Save(QString);
+    bool Load(QString);
+    bool Save(QString);
     void Random(QVector<bool>,PointChoicer* pc);
 private:
     QRandomGenerator rnd;

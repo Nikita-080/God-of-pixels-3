@@ -10,7 +10,6 @@
 #include <windowsettings.h>
 #include <QPainter>
 #include <QMessageBox>
-#include <QSet>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -29,7 +28,6 @@ MainWindow::MainWindow(QWidget *parent)
 
     ui->setupUi(this);
     // настройки
-
     ui->tabWidget->setIconSize(QSize(60,60));
     for (int i=0;i<10;i++){
         ui->tabWidget->setTabIcon(i,QIcon(currentpath+"res/images/TabIcon"+QString::number(i+1)+".png"));
@@ -106,12 +104,23 @@ MainWindow::MainWindow(QWidget *parent)
 
     //settings
     Settings_Get();//для начального заполнения "буфера" настроек
-    s.Load(currentpath+"/res/text/settingsbase.txt");
+    s.Load(currentpath+"/res/text/settingsbase.txt"); //protected
     Settings_Set();
 
     //кнопки, вызывающие служебные функции
     ui->pushButton_6->hide();
     ui->pushButton_7->hide();
+}
+QString MainWindow::ReadText(QString path)
+{
+    QFile file(path);
+    QByteArray data;
+    if (file.open(QIODevice::ReadOnly))
+    {
+        data = file.readAll();
+        return QString(data);
+    }
+    else return "";
 }
 void MainWindow::AlgorithmChange()
 {
@@ -138,14 +147,7 @@ QString MainWindow::CurrentPath()
     return "C:/qtprojects/GodOfPixels3/";
     //return QDir::currentPath();
 }
-QString MainWindow::ReadFile(QString path)
-{
-    QFile file(path);
-    QByteArray data;
-    if (!file.open(QIODevice::ReadOnly)) return "";
-    data = file.readAll();
-    return QString(data);
-}
+
 void MainWindow::SetStyle()
 {
     QPushButton* a[]{ui->pushButton,ui->pushButton_18,
@@ -153,11 +155,11 @@ void MainWindow::SetStyle()
     ui->pushButton_3,ui->pushButton_4,
     ui->pushButton_5};
 
-    QString sliderstyle=ReadFile(currentpath+"res/text/sliderstyle.css");
-    QString menubarstyle=ReadFile(currentpath+"res/text/menubarstyle.css");
-    QString tabwidgetstyle=ReadFile(currentpath+"res/text/tabwidgetstyle.css");
-    QString buttonstyle=ReadFile(currentpath+"res/text/buttonstyle.css");
-    QString comboboxstyle=ReadFile(currentpath+"res/text/comboboxstyle.css");
+    QString sliderstyle=ReadText(currentpath+"res/text/sliderstyle.css");
+    QString menubarstyle=ReadText(currentpath+"res/text/menubarstyle.css");
+    QString tabwidgetstyle=ReadText(currentpath+"res/text/tabwidgetstyle.css");
+    QString buttonstyle=ReadText(currentpath+"res/text/buttonstyle.css");
+    QString comboboxstyle=ReadText(currentpath+"res/text/comboboxstyle.css");
 
     for (int i=0;i<7;i++)
     {
@@ -281,8 +283,10 @@ void MainWindow::M_Save_Image()
                                 QString::fromUtf8("Сохранить изображение"),
                                 planet.name,
                                 "Image (*.png);;All files (*.*)");
-    if (filename.length()!=0){
+    try {
         planet.img.save(filename);
+    }  catch (...) {
+        QMessageBox::critical(nullptr,"Ошибка","не удалось сохранить файл");
     }
 }
 void MainWindow::M_Save_Full_Image()
@@ -291,8 +295,10 @@ void MainWindow::M_Save_Full_Image()
                                 QString::fromUtf8("Сохранить полное изображение"),
                                 planet.name,
                                 "Image (*.png);;All files (*.*)");
-    if (filename.length()!=0){
+    try {
         planet.img_final.save(filename);
+    }  catch (...) {
+        QMessageBox::critical(nullptr,"Ошибка","не удалось сохранить файл");
     }
 }
 void MainWindow::M_Load_Planet()
@@ -301,8 +307,7 @@ void MainWindow::M_Load_Planet()
                                 QString::fromUtf8("Загрузить планету"),
                                                     "./",
                                 "Planet (*.planet);;All files (*.*)");
-    if (filename.length()!=0)
-    {
+    try {
         QFile readFile(filename);
         readFile.open(QFile::ReadOnly);
         QDataStream outFile(&readFile);
@@ -325,6 +330,8 @@ void MainWindow::M_Load_Planet()
         isEmtyPlanet=false;
 
         readFile.close();
+    }  catch (...) {
+        QMessageBox::critical(nullptr,"Ошибка","не удалось загрузить файл");
     }
 }
 
@@ -334,8 +341,7 @@ void MainWindow::M_Save_Planet()
                                 QString::fromUtf8("Сохранить планету"),
                                 planet.name,
                                 "Planet (*.planet);;All files (*.*)");
-    if (filename.length()!=0)
-    {
+    try {
         QFile file(filename);
         file.open(QFile::Append);
         QDataStream infile(&file);
@@ -352,6 +358,8 @@ void MainWindow::M_Save_Planet()
 
         file.flush();
         file.close();
+    }  catch (...) {
+        QMessageBox::critical(nullptr,"Ошибка","не удалось сохранить файл");
     }
 }
 void MainWindow::God(bool isCreateNew, QProgressBar *pb,Planet *p)
@@ -406,8 +414,11 @@ void MainWindow::God(bool isCreateNew, QProgressBar *pb,Planet *p)
 
 void MainWindow::M_Load_Base_Settings(){
     Settings_Get(); //для начального заполнения "буфера" настроек
-    s.Load(currentpath+"res/text/settingsbase.txt");
-    Settings_Set();
+    if (s.Load(currentpath+"res/text/settingsbase.txt"))
+    {
+        Settings_Set();
+    }
+    else QMessageBox::critical(nullptr,"Ошибка","не удалось загрузить файл");
 }
 void MainWindow::SliderShow(){
     QSlider* slider = qobject_cast<QSlider*>(sender());
@@ -550,10 +561,8 @@ void MainWindow::M_Save_Settings(){
                                 QString::fromUtf8("Сохранить файл"),
                                                     "./",
                                 "Texts (*.txt);;All files (*.*)");
-    if (filename.length()!=0){
-        Settings_Get();
-        s.Save(filename);
-    }
+    Settings_Get();
+    if (!s.Save(filename)) QMessageBox::critical(nullptr,"Ошибка","не удалось сохранить файл");
 }
 void MainWindow::M_Load_Settings(){
     QString filename = QFileDialog::getOpenFileName(this,
@@ -561,9 +570,12 @@ void MainWindow::M_Load_Settings(){
                                 "./",
                                 "Texts (*.txt);;All files (*.*)");
     Settings_Get();//для начального заполнения "буфера" настроек
-    s.Load(filename);
-    Settings_Set();
-    update();
+    if (s.Load(filename))
+    {
+        Settings_Set();
+        update();
+    }
+    else QMessageBox::critical(nullptr,"Ошибка","не удалось загрузить файл");
 }
 void MainWindow::Img_Report() //служебная функция
 {
