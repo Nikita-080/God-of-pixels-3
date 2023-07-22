@@ -473,8 +473,13 @@ void Planet::Calculator()
     plant_pixel_count=0;
     ice_pixel_count=0;
     water_pixel_count=0;
-    if (s.temperature==-90) starclass=RAND(0,12);
-    else starclass=RAND(0,11);
+
+    starclass.clear();
+    int numstars;
+    if (s.temperature==-90) numstars=RAND(0,2);
+    else numstars=RAND(1,2);
+    for (int i=0;i<numstars;i++) starclass.append(RAND(0,11));
+
     R_planet=world_size/2*2*1.0/3.1415;
     if (s.is_atmo) R_atmo=R_planet*(81+s.atmo_size)/81;
     else R_atmo=R_planet;
@@ -710,16 +715,25 @@ void Planet::DrawDescription()
 
     s+="имя        - "+name+"\n";
 
-    if (starclass==12) s+="день       - [не найдено]\n";
+    if (starclass.isEmpty()) s+="день       - [не найдено]\n";
     else s+="день       - "+facts.day+"ч\n";
 
-    if (starclass==12) s+="год        - [не найдено]\n";
+    if (starclass.isEmpty()) s+="год        - [не найдено]\n";
     else s+="год        - "+facts.year+"г\n";
 
     s+="гравитация - "+facts.gravitation+"g\n";
 
-    if (starclass==12) s+="звезда     - [не найдено]\n";
-    else s+="звезда     - "+classes[starclass]+"\n";
+    if (starclass.isEmpty()) s+="звезда     - [не найдено]\n";
+    else
+    {
+        s+="звезда     - ";
+        for (int i=0;i<starclass.length();i++)
+        {
+            s+=classes[starclass[i]];
+            s+=' ';
+        }
+        s+='\n';
+    }
 
     s+="ресурсы    - "+facts.resources;
     p.drawText(QRect(40,27,400,400), s);
@@ -765,83 +779,143 @@ bool Planet::Collis(int r_o, int r, QVector<QVector<int>> planets)
 }
 void Planet::SystemMap()
 {
+    if (starclass.length()==0) SystemMap_0star();
+    else if (starclass.length()==1) SystemMap_1star();
+    else SystemMap_2star();
+}
+void Planet::SystemMap_0star()
+{
     img_sys=QImage(currentpath+"res/images/window.png");
-    if (starclass==12)
+    QPainter p;
+    p.begin(&img_sys);
+    int r;
+    r=RAND(4,8);
+    p.setPen(Qt::PenStyle::NoPen);
+    p.setBrush(QBrush(QColor("#ff0000")));
+    p.drawEllipse(165-r,165-r,2*r,2*r);
+    p.end();
+}
+void Planet::SystemMap_1star()
+{
+    img_sys=QImage(currentpath+"res/images/window.png");
+    QVector <QString> color_star={"#E7ECFE","#F5F7FF","#FEFEFE","#FFFBE5",
+                                  "#FFF3BD","#FFD48A","#FFA38A","#F7805F",
+                                  "#EE4F3A","#DF3C26","#C53320","#AF3627"};
+    QPainter p;
+    p.begin(&img_sys);
+
+    int r_star=RAND(8,25); //радиус звезды
+
+    p.setPen(Qt::PenStyle::NoPen);
+    p.setBrush(QBrush(QColor(color_star[starclass[0]])));
+    p.drawEllipse(165-r_star,165-r_star,r_star*2,r_star*2);
+
+    int r=RAND(4,8);
+    int r_o=qRound((140-s.temperature)*(125-r-r-r_star)*1.0/230+r+r_star);
+    DrawPlanets(&p,165,165,r_star,125,4,8,r_o,r);
+
+    p.end();
+}
+void Planet::SystemMap_2star()
+{
+    img_sys=QImage(currentpath+"res/images/window.png");
+    QVector <QString> color_star={"#E7ECFE","#F5F7FF","#FEFEFE","#FFFBE5",
+                                  "#FFF3BD","#FFD48A","#FFA38A","#F7805F",
+                                  "#EE4F3A","#DF3C26","#C53320","#AF3627"};
+    QPainter p;
+    p.begin(&img_sys);
+
+    //star1
+    double angle=rnd.bounded(6.283);
+    int r_o_s=27; //14 55 111 {2x*2=y1 2x*4=y2 2x+2y2=250} 2x - между звездами y1-y2 - от звезды жо внешней планеты
+    int r_star=8;
+    int x_s1=qRound(r_o_s*cos(angle))+165;
+    int y_s1=165-qRound(r_o_s*sin(angle));
+    p.setPen(Qt::PenStyle::NoPen);
+    p.setBrush(QBrush(QColor(color_star[starclass[0]])));
+    p.drawEllipse(x_s1-r_star,y_s1-r_star,r_star*2,r_star*2);
+
+    //star2
+    angle+=3.1415;
+    int x_s2=qRound(r_o_s*cos(angle))+165;
+    int y_s2=165-qRound(r_o_s*sin(angle));
+    p.setBrush(QBrush(QColor(color_star[starclass[1]])));
+    p.drawEllipse(x_s2-r_star,y_s2-r_star,r_star*2,r_star*2);
+
+    //planets
+    int r_o=-1;
+    int r_p=4;
+    int r_o_max=27;//55-r_p-r_star;
+    if (s.temperature==-90) r_o=RAND(55+r_p,111-r_p);
+    DrawPlanets(&p,165,165,55,111,4,4,r_o,r_p);
+    if (s.temperature==-90) r_o=-1;
+    else r_o=qRound((140-s.temperature)*(r_o_max-r_p-r_p-r_star)*1.0/230+r_p+r_star);
+    DrawPlanets(&p,x_s1,y_s1,r_star,r_o_max,4,4,r_o,r_p);
+    r_o=-1;
+    DrawPlanets(&p,x_s2,y_s2,r_star,r_o_max,4,4,r_o,r_p);
+
+    p.end();
+}
+void Planet::DrawPlanets(QPainter* p, int x, int y, int r_o_min, int r_o_max, int r_p_min, int r_p_max, int r_o, int r_p)
+{
+    /*
+     * объект для рисования
+     * координаты точки, вокруг которой вращаются планеты
+     * границы радиуса орбиты
+     * границы радиуса планеты
+     * параметры планеты, которая обязательно должна быть
+    */
+    int x_p,y_p;
+    double angle;
+    QVector<QVector<int>> planets;
+    QVector<int> vec;
+    //main planet
+    if (r_o!=-1)
     {
-        QPainter p;
-        p.begin(&img_sys);
-        int r;
-        r=RAND(4,8);
-        p.setPen(Qt::PenStyle::NoPen);
-        p.setBrush(QBrush(QColor("#ff0000")));
-        p.drawEllipse(165-r,165-r,2*r,2*r);
-        p.end();
+        double angle=rnd.bounded(6.283);
+        int x_p=qRound(r_o*cos(angle))+x;
+        int y_p=y-qRound(r_o*sin(angle));
+        vec={r_o-r_p,r_o+r_p};
+        planets.append(vec);
+        p->setPen(QPen(QColor("#f2e8c9"),2));
+        p->setBrush(Qt::BrushStyle::NoBrush);
+        p->drawEllipse(x-r_o,y-r_o,2*r_o,2*r_o);
+
+        p->setPen(Qt::PenStyle::NoPen);
+        p->setBrush(QBrush(QColor("#ff0000")));
+        p->drawEllipse(x_p-r_p,y_p-r_p,2*r_p,2*r_p);
     }
-    else
+
+    //planets
+    int num_planet=RAND(0,9);
+    for (int i=0;i<num_planet;i++)
     {
-        QVector <QString> color_star={"#E7ECFE","#F5F7FF","#FEFEFE","#FFFBE5",
-                                      "#FFF3BD","#FFD48A","#FFA38A","#F7805F",
-                                      "#EE4F3A","#DF3C26","#C53320","#AF3627"};
-        QVector <QVector<int>> planets;
-
-        QPainter p;
-        p.begin(&img_sys);
-
-        int r_star=RAND(8,25); //радиус звезды
-
-        p.setPen(Qt::PenStyle::NoPen);
-        p.setBrush(QBrush(QColor(color_star[starclass])));
-        p.drawEllipse(165-r_star,165-r_star,r_star*2,r_star*2);
-
-        //main planet begin
-        int x,y,r;
-        r=RAND(4,8);
-        int r_o=qRound((140-s.temperature)*(125-r-r-r_star)*1.0/230+r+r_star);
-        int angle=RAND(0,7);
-        x=qRound(r_o*cos(angle))+165;
-        y=165-qRound(r_o*sin(angle));
-        QVector<int> vec={r_o-r,r_o+r};
+        x_p=0;
+        y_p=0;
+        r_p=0;
+        r_o=0;
+        int count=0;
+        while (r_o+r_p>r_o_max or r_o-r_p<r_o_min or !Collis(r_o,r_p,planets))
+        {
+            r_p=RAND(r_p_min,r_p_max);
+            r_o=RAND(r_o_min,r_o_max);
+            count++;
+            if (count>15) break;
+        }
+        if (count>15) break;
+        angle=rnd.bounded(6.283);
+        x_p=qRound(r_o*cos(angle))+x;
+        y_p=y-qRound(r_o*sin(angle));
+        vec={r_o-r_p,r_o+r_p};
         planets.append(vec);
 
-        p.setPen(QPen(QColor("#f2e8c9"),2));
-        p.setBrush(Qt::BrushStyle::NoBrush);
-        p.drawEllipse(165-r_o,165-r_o,2*r_o,2*r_o);
+        p->setPen(QPen(QColor("#f2e8c9"),2));
+        p->setBrush(Qt::BrushStyle::NoBrush);
+        p->drawEllipse(x-r_o,y-r_o,2*r_o,2*r_o);
 
-        p.setPen(Qt::PenStyle::NoPen);
-        p.setBrush(QBrush(QColor("#ff0000")));
-        p.drawEllipse(x-r,y-r,2*r,2*r);
-
-        //main planet end
-        int num_planet=RAND(0,9);
-        for (int i=0;i<num_planet;i++)
-        {
-            x=0;
-            y=0;
-            r=0;
-            r_o=0;
-            int count=0;
-            while (r_o+r>125 or r_o-r<r_star or Collis(r_o,r,planets)==false)
-            {
-                r=RAND(4,8);
-                x=RAND(r,328-r);
-                y=RAND(r,328-r);
-                r_o=qRound(sqrt(1.0*(x-165)*(x-165)+(y-165)*(y-165)));
-                count++;
-                if (count>15) break;
-            }
-            if (count>15) continue;
-            vec={r_o-r,r_o+r};
-            planets.append(vec);
-
-            p.setPen(QPen(QColor("#f2e8c9"),2));
-            p.setBrush(Qt::BrushStyle::NoBrush);
-            p.drawEllipse(165-r_o,165-r_o,2*r_o,2*r_o);
-
-            p.setPen(Qt::PenStyle::NoPen);
-            p.setBrush(QBrush(QColor("#808080")));
-            p.drawEllipse(x-r,y-r,2*r,2*r);
-        }
-        p.end();
+        p->setPen(Qt::PenStyle::NoPen);
+        p->setBrush(QBrush(QColor("#808080")));
+        p->drawEllipse(x_p-r_p,y_p-r_p,2*r_p,2*r_p);
     }
 }
 void Planet::GalaxyMap()

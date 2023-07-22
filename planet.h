@@ -11,7 +11,7 @@ public:
     QString currentpath;
     QRandomGenerator rnd;
     Facts facts;
-    int starclass;
+    QVector <int> starclass;
     QVector <QVector <double>> matrix;
     double world_heighth;
     int world_size;
@@ -95,6 +95,10 @@ private:
     QString Resources();
     bool Collis(int,int,QVector<QVector<int>>);
     double ArcDistance(int x, int y, QString mode);
+    void SystemMap_0star();
+    void SystemMap_1star();
+    void SystemMap_2star();
+    void DrawPlanets(QPainter* p, int x, int y, int r_o_min, int r_o_max, int r_p_min, int r_p_max, int r_o, int r_p);
 public:
     Planet(QRandomGenerator,QString);
     Planet();

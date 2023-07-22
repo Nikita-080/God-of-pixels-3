@@ -364,6 +364,19 @@ void MainWindow::M_Save_Planet()
 }
 void MainWindow::God(bool isCreateNew, QProgressBar *pb,Planet *p)
 {
+    /* //systems pics generator
+    for (int i=0;i<100;i++)
+    {
+        s.temperature=rnd.bounded(-9,15)*10;
+        p->s=s;
+        p->CreateMatrixNew();
+        p->Calculator();
+        p->SystemMap();
+        p->img_sys.save("C:/Users/Никита/Desktop/systems/"+QString::number(i)+".png");
+    }
+    return;
+    */
+
     pb->setValue(0);
     p->s=s;
     if (isCreateNew) p->CreateMatrixNew();
