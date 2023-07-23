@@ -94,7 +94,7 @@ private:
     bool isBlack(QColor);
     QString Resources();
     bool Collis(int,int,QVector<QVector<int>>);
-    double ArcDistance(int x, int y, QString mode);
+    double ArcPolarDistance(int x, int y);
     void SystemMap_0star();
     void SystemMap_1star();
     void SystemMap_2star();

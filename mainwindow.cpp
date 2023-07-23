@@ -108,8 +108,8 @@ MainWindow::MainWindow(QWidget *parent)
     Settings_Set();
 
     //кнопки, вызывающие служебные функции
-    ui->pushButton_6->hide();
-    ui->pushButton_7->hide();
+    //ui->pushButton_6->hide();
+    //ui->pushButton_7->hide();
 }
 QString MainWindow::ReadText(QString path)
 {

@@ -158,14 +158,11 @@ void Planet::TMapCreating() //temperature
         {
             if (!isBlack(img.pixelColor(i,k)))
             {
-                double e_len=2*3.1415*R_planet/4;//четверть длины экватора
-                double tmp_len=ArcDistance(i,k,"polar"); //предполагаемое расстояние до полюса
-                double r_e; //расстояние до полюса
-                if (tmp_len>e_len) r_e=(2*e_len-tmp_len)/e_len;
-                else r_e=tmp_len/e_len;
+                double angle_cos=ArcPolarDistance(i,k); //угловое расстояние до полюса
+                double angle_sin=sqrt(1-angle_cos*angle_cos);
                 double r_w=matrix[i][k]-water_level; //относительная высота
                 r_w*=31.6; //преобразование в метры 70.86
-                double T=56*r_e-28; //среднегодовая температура у поверхности
+                double T=56*angle_sin-28; //среднегодовая температура у поверхности
                 T-=0.6*(r_w)/100; //падение температуры с высотой
                 T+=s.temperature-15; //настройки пользователя преобразованная из средней в корректирующую
                 dataline.append(T);
@@ -327,32 +324,14 @@ void Planet::UMapCreating()
         u_map.append(data_line);
     }
 }
-double Planet::ArcDistance(int x, int y, QString mode)
+double Planet::ArcPolarDistance(int x, int y)
 {
-    double xc,yc,zc;
-    if (mode=="polar")
-    {
-        xc=x_polar;
-        yc=y_polar;
-        zc=z_polar;
-    }
-    else if (mode=="shine")
-    {
-        xc=x_shine;
-        yc=y_shine;
-        zc=z_shine;
-    }
-    else
-    {
-        return 0;
-    }
     double xn=u_map[x][y][0];
     double yn=u_map[x][y][1];
     xn-=world_size/2;
     yn=world_size/2-yn;
-    double zn=sqrt(R_planet*R_planet-xn*xn-yn*yn);
-    double angle_cos=(xn*xc+yn*yc+zn*zc)/sqrt(xn*xn+yn*yn+zn*zn)/sqrt(xc*xc+yc*yc+zc*zc);
-    return acos(angle_cos)*R_planet;
+    double zn=sqrt(R_planet*R_planet-xn*xn-yn*yn); //BUG
+    return (xn*x_polar+yn*y_polar+zn*z_polar)/sqrt(xn*xn+yn*yn+zn*zn)/sqrt(x_polar*x_polar+y_polar*y_polar+z_polar*z_polar);
 }
 void Planet::Atmosphere(QString mode)
 {
