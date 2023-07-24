@@ -297,7 +297,7 @@ void Planet::UMapCreating()
     u_map.clear();
     for (int i=0;i<world_size;i++)
     {
-        QVector<QVector<int>> data_line;
+        QVector<QVector<double>> data_line;
         for (int k=0;k<world_size;k++)
         {
             double xn;
@@ -318,7 +318,7 @@ void Planet::UMapCreating()
                 xn=xn+world_size/2;
                 yn=world_size/2-yn;
             }
-            QVector <int> result={qRound(xn),qRound(yn)};
+            QVector <double> result={xn,yn};
             data_line.append(result);
         }
         u_map.append(data_line);
@@ -330,7 +330,7 @@ double Planet::ArcPolarDistance(int x, int y)
     double yn=u_map[x][y][1];
     xn-=world_size/2;
     yn=world_size/2-yn;
-    double zn=sqrt(R_planet*R_planet-xn*xn-yn*yn); //BUG
+    double zn=sqrt(R_planet*R_planet-xn*xn-yn*yn);
     return (xn*x_polar+yn*y_polar+zn*z_polar)/sqrt(xn*xn+yn*yn+zn*zn)/sqrt(x_polar*x_polar+y_polar*y_polar+z_polar*z_polar);
 }
 void Planet::Atmosphere(QString mode)
@@ -393,8 +393,9 @@ void Planet::UV()
         {
             if (!isBlack(img2.pixelColor(i,k)))
             {
-                QVector <int> v=u_map[i][k];
-                img.setPixelColor(v[0],v[1],img2.pixelColor(i,k));
+                int v1=qRound(u_map[i][k][0]);
+                int v2=qRound(u_map[i][k][1]);
+                img.setPixelColor(v1,v2,img2.pixelColor(i,k));
             }
         }
     }

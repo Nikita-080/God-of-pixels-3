@@ -598,12 +598,12 @@ void MainWindow::Img_Report() //служебная функция
 }
 void MainWindow::BiomGrad() //служебная функция
 {
-    for (int i=-50;i<=120;i++)
+    for (int i=-50;i<=50;i++)
     {
         s.temperature=i;
         God(false,ui->progressBar,&planet);
         QString name=QString::number(i+50)+" ("+QString::number(i)+").png";
-        planet.img.save("C:/Users/Никита/Desktop/GoP Qt/biom grad 3/"+name);
+        planet.img.save("C:/Users/Никита/Desktop/biom/"+name);
     }
 }
 void MainWindow::Report(QString s) //служебная функция

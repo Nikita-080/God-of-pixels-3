@@ -42,7 +42,7 @@ public:
     QVector <QVector <double>> c_map; //cloud - облака
     QVector <QVector <double>> t_map; //temperature - температура
     QVector <QVector <double>> r_map; //rain - осадки
-    QVector <QVector <QVector<int>>> u_map; //преобразование в сферу
+    QVector <QVector <QVector<double>>> u_map; //преобразование в сферу
     QColor color_black;
 
     int plant_pixel_count;
