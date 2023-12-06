@@ -5,7 +5,7 @@ PointChoicer::PointChoicer(QRandomGenerator Rnd,QWidget *parent) : QWidget(paren
 {
     dx=20;
     dy=30;
-    R=175;
+    R=160;
     x_pos=95+dx;
     y_pos=190+dy;
     capture=false;

@@ -31,7 +31,6 @@ public:
     PointChoicer* pc2;
     QSlider* sliders[13];
     QLabel* labels[13];
-    QString currentpath;
 
     PlanetSettings s;
 
@@ -63,7 +62,6 @@ public:
     void ShowMap();
     void God(bool isCreateNew,QProgressBar *pb,Planet *p);
     void SetStyle();
-    QString CurrentPath();
     QString ReadText(QString);
     void Report(QString s); //служебная функция
     void Img_Report(); //служебная функция

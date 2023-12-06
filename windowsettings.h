@@ -16,12 +16,11 @@ public:
     QVector <QCheckBox*> rndarr;
     QString filepath;
     QString dirpath;
-    QString currentpath;
     MainWindow* myparent;
 private:
     int numsettings;
 public:
-    explicit windowsettings(QString,QWidget *parent = nullptr);
+    explicit windowsettings(QWidget *parent = nullptr);
     ~windowsettings();
     void ChangeType();
     void TakeAll();
