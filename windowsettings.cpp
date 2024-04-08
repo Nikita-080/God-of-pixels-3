@@ -8,11 +8,10 @@
 #include <QFileDialog>
 #include <mainwindow.h>
 #include <autogodsettings.h>
-windowsettings::windowsettings(QString Currentpath,QWidget *parent) :
+windowsettings::windowsettings(QWidget *parent) :
     QDialog(parent),
     ui(new Ui::windowsettings)
 {
-    currentpath=Currentpath;
     myparent=(MainWindow*)parent;
 
     ui->setupUi(this);
@@ -20,7 +19,7 @@ windowsettings::windowsettings(QString Currentpath,QWidget *parent) :
     QFormLayout *formLayout = new QFormLayout();
     QGroupBox *groupBox = new QGroupBox();
 
-    QFile file(currentpath+"res/text/randomsettings.txt");
+    QFile file(":/txt_files/res/txt_files/randomsettings.txt");
     file.open(QIODevice::ReadOnly);
     QTextStream dat(&file);
     int count=0;

@@ -19,18 +19,15 @@ MainWindow::MainWindow(QWidget *parent)
     rnd.seed(midnight.secsTo(QTime::currentTime()));
 
     isEmtyPlanet=true;
-    currentpath=CurrentPath();
-    planet=Planet(rnd,currentpath);
-    autoplanet=Planet(rnd,currentpath);
+    planet=Planet(rnd);
+    autoplanet=Planet(rnd);
     s=PlanetSettings(rnd);
-
-    planet=Planet(rnd,CurrentPath());
 
     ui->setupUi(this);
     // настройки
     ui->tabWidget->setIconSize(QSize(60,60));
     for (int i=0;i<10;i++){
-        ui->tabWidget->setTabIcon(i,QIcon(currentpath+"res/images/TabIcon"+QString::number(i+1)+".png"));
+        ui->tabWidget->setTabIcon(i,QIcon(":/images/res/images/TabIcon"+QString::number(i+1)+".png"));
     }
 
     //виджеты
@@ -104,12 +101,12 @@ MainWindow::MainWindow(QWidget *parent)
 
     //settings
     Settings_Get();//для начального заполнения "буфера" настроек
-    s.Load(currentpath+"/res/text/settingsbase.txt"); //protected
+    s.Load(":/txt_files/res/txt_files/settingsbase.txt");
     Settings_Set();
 
     //кнопки, вызывающие служебные функции
-    //ui->pushButton_6->hide();
-    //ui->pushButton_7->hide();
+    ui->pushButton_6->hide();
+    ui->pushButton_7->hide();
 }
 QString MainWindow::ReadText(QString path)
 {
@@ -141,12 +138,6 @@ void MainWindow::M_About()
     msb.setText("название - God of Pixels 3\nверсия - 0.0.1\nавтор - Рябов Никита\nобратная связь - riabovnick080@yandex.ru");
     msb.exec();
 }
-QString MainWindow::CurrentPath()
-{
-    //TODO change for release
-    return "C:/qtprojects/GodOfPixels3/";
-    //return QDir::currentPath();
-}
 
 void MainWindow::SetStyle()
 {
@@ -155,17 +146,16 @@ void MainWindow::SetStyle()
     ui->pushButton_3,ui->pushButton_4,
     ui->pushButton_5};
 
-    QString sliderstyle=ReadText(currentpath+"res/text/sliderstyle.css");
-    QString menubarstyle=ReadText(currentpath+"res/text/menubarstyle.css");
-    QString tabwidgetstyle=ReadText(currentpath+"res/text/tabwidgetstyle.css");
-    QString buttonstyle=ReadText(currentpath+"res/text/buttonstyle.css");
-    QString comboboxstyle=ReadText(currentpath+"res/text/comboboxstyle.css");
+    QString sliderstyle=ReadText(":/css_files/res/css_files/slider.css");
+    QString menubarstyle=ReadText(":/css_files/res/css_files/menubar.css");
+    QString tabwidgetstyle=ReadText(":/css_files/res/css_files/tabwidget.css");
+    QString buttonstyle=ReadText(":/css_files/res/css_files/button.css");
+    QString comboboxstyle=ReadText(":/css_files/res/css_files/combobox.css");
 
     for (int i=0;i<7;i++)
     {
         QString name=a[i]->objectName();
         QString style=buttonstyle;
-        style.replace("[currentpath]",currentpath);
         style.replace("[name]",name);
         a[i]->setStyleSheet(style);
     }
@@ -193,11 +183,11 @@ void MainWindow::SetStyle()
     ui->comboBox->setStyleSheet(comboboxstyle);
     ui->menubar->setStyleSheet(menubarstyle);
     ui->tabWidget->setStyleSheet(tabwidgetstyle);
-    ui->pushButton_8->setIcon(QIcon(currentpath+"res/images/logo.png"));
+    ui->pushButton_8->setIcon(QIcon(":/images/res/images/logo.png"));
 }
 void MainWindow::AutoGod()
 {
-    windowsettings win(CurrentPath(),this);
+    windowsettings win(this);
     isdatarecieved=false;
     win.exec();
     if (isdatarecieved)
@@ -427,7 +417,7 @@ void MainWindow::God(bool isCreateNew, QProgressBar *pb,Planet *p)
 
 void MainWindow::M_Load_Base_Settings(){
     Settings_Get(); //для начального заполнения "буфера" настроек
-    if (s.Load(currentpath+"res/text/settingsbase.txt"))
+    if (s.Load(":/txt_files/res/txt_files/settingsbase.txt"))
     {
         Settings_Set();
     }

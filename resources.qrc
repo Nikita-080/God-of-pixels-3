@@ -1,0 +1,54 @@
+<RCC>
+    <qresource prefix="/images">
+        <file>res/images/GalaxyMap.png</file>
+        <file>res/images/icon ptr.png</file>
+        <file>res/images/logo.png</file>
+        <file>res/images/plantmatrix.png</file>
+        <file>res/images/plantmatrixblur.png</file>
+        <file>res/images/pushButton_3_b.png</file>
+        <file>res/images/pushButton_3_m.png</file>
+        <file>res/images/pushButton_3_t.png</file>
+        <file>res/images/pushButton_4_b.png</file>
+        <file>res/images/pushButton_4_m.png</file>
+        <file>res/images/pushButton_4_t.png</file>
+        <file>res/images/pushButton_5_b.png</file>
+        <file>res/images/pushButton_5_m.png</file>
+        <file>res/images/pushButton_5_t.png</file>
+        <file>res/images/pushButton_18_b.png</file>
+        <file>res/images/pushButton_18_m.png</file>
+        <file>res/images/pushButton_18_t.png</file>
+        <file>res/images/pushButton_19_b.png</file>
+        <file>res/images/pushButton_19_m.png</file>
+        <file>res/images/pushButton_19_t.png</file>
+        <file>res/images/pushButton_20_b.png</file>
+        <file>res/images/pushButton_20_m.png</file>
+        <file>res/images/pushButton_20_t.png</file>
+        <file>res/images/pushButton_b.png</file>
+        <file>res/images/pushButton_m.png</file>
+        <file>res/images/pushButton_t.png</file>
+        <file>res/images/TabIcon1.png</file>
+        <file>res/images/TabIcon2.png</file>
+        <file>res/images/TabIcon3.png</file>
+        <file>res/images/TabIcon4.png</file>
+        <file>res/images/TabIcon5.png</file>
+        <file>res/images/TabIcon6.png</file>
+        <file>res/images/TabIcon7.png</file>
+        <file>res/images/TabIcon8.png</file>
+        <file>res/images/TabIcon9.png</file>
+        <file>res/images/TabIcon10.png</file>
+        <file>res/images/window.png</file>
+    </qresource>
+    <qresource prefix="/css_files">
+        <file>res/css_files/button.css</file>
+        <file>res/css_files/combobox.css</file>
+        <file>res/css_files/menubar.css</file>
+        <file>res/css_files/progressbar.css</file>
+        <file>res/css_files/slider.css</file>
+        <file>res/css_files/tabwidget.css</file>
+    </qresource>
+    <qresource prefix="/txt_files">
+        <file>res/txt_files/NameMatrix.txt</file>
+        <file>res/txt_files/randomsettings.txt</file>
+        <file>res/txt_files/settingsbase.txt</file>
+    </qresource>
+</RCC>

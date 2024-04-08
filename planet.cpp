@@ -9,9 +9,8 @@
 #include <QPainter>
 #include <QDebug>
 #include <QFontDatabase>
-Planet::Planet(QRandomGenerator Rnd,QString Currentpath)
+Planet::Planet(QRandomGenerator Rnd)
 {
-    currentpath=Currentpath;
     rnd=Rnd;
     color_black=QColor(0,0,0);
     facts=Facts();
@@ -65,7 +64,7 @@ QString Planet::Name_gop2()
 }
 QString Planet::Name_readable()
 {
-    QFile file(currentpath+"res/text/NameMatrix.txt");
+    QFile file(":/txt_files/res/txt_files/NameMatrix.txt");
     file.open(QIODevice::ReadOnly);
     QTextStream fileStream(&file);
     QString str;
@@ -195,8 +194,8 @@ void Planet::Plant()
 {
     plant_pixel_count=0;
     QImage diagram;
-    if (s.is_gradient) diagram=QImage(currentpath+"res/images/plantmatrixblur.png");
-    else diagram=QImage(currentpath+"res/images/plantmatrix.png");
+    if (s.is_gradient) diagram=QImage(":/images/res/images/plantmatrixblur.png");
+    else diagram=QImage(":/images/res/images/plantmatrix.png");
     for (int i=0;i<world_size;i++)
     {
         for (int k=0;k<world_size;k++)
@@ -684,7 +683,7 @@ void Planet::Level(QString start,int string,int lvl,QString type,QPainter& p)
 }
 void Planet::DrawDescription()
 {
-    img_dsc=QImage(currentpath+"res/images/window.png");
+    img_dsc=QImage(":/images/res/images/window.png");
     QString classes="OBAFGKMCSLTY";
     QString s="";
 
@@ -765,7 +764,7 @@ void Planet::SystemMap()
 }
 void Planet::SystemMap_0star()
 {
-    img_sys=QImage(currentpath+"res/images/window.png");
+    img_sys=QImage(":/images/res/images/window.png");
     QPainter p;
     p.begin(&img_sys);
     int r;
@@ -777,7 +776,7 @@ void Planet::SystemMap_0star()
 }
 void Planet::SystemMap_1star()
 {
-    img_sys=QImage(currentpath+"res/images/window.png");
+    img_sys=QImage(":/images/res/images/window.png");
     QVector <QString> color_star={"#E7ECFE","#F5F7FF","#FEFEFE","#FFFBE5",
                                   "#FFF3BD","#FFD48A","#FFA38A","#F7805F",
                                   "#EE4F3A","#DF3C26","#C53320","#AF3627"};
@@ -798,7 +797,7 @@ void Planet::SystemMap_1star()
 }
 void Planet::SystemMap_2star()
 {
-    img_sys=QImage(currentpath+"res/images/window.png");
+    img_sys=QImage(":/images/res/images/window.png");
     QVector <QString> color_star={"#E7ECFE","#F5F7FF","#FEFEFE","#FFFBE5",
                                   "#FFF3BD","#FFD48A","#FFA38A","#F7805F",
                                   "#EE4F3A","#DF3C26","#C53320","#AF3627"};
@@ -900,9 +899,9 @@ void Planet::DrawPlanets(QPainter* p, int x, int y, int r_o_min, int r_o_max, in
 }
 void Planet::GalaxyMap()
 {
-    QImage img_ptr=QImage(currentpath+"res/images/icon ptr.png");
-    QImage img_map=QImage(currentpath+"res/images/GalaxyMap.png");
-    img_gal=QImage(currentpath+"res/images/window.png");
+    QImage img_ptr=QImage(":/images/res/images/icon ptr.png");
+    QImage img_map=QImage(":/images/res/images/GalaxyMap.png");
+    img_gal=QImage(":/images/res/images/window.png");
     int x=RAND(0,218);
     int y=RAND(0,218);
 
@@ -925,7 +924,7 @@ void Planet::GalaxyMap()
 void Planet::FinalImage()
 {
     img_final=QImage(658,658,QImage::Format_RGB32);
-    QImage img_window=QImage(currentpath+"res/images/window.png");
+    QImage img_window=QImage(":/images/res/images/window.png");
     QPainter p;
     p.begin(&img_final);
     p.drawImage(QRect(0,0,329,329),img_window);

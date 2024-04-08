@@ -8,7 +8,6 @@
 class Planet
 {
 public:
-    QString currentpath;
     QRandomGenerator rnd;
     Facts facts;
     QVector <int> starclass;
@@ -100,7 +99,7 @@ private:
     void SystemMap_2star();
     void DrawPlanets(QPainter* p, int x, int y, int r_o_min, int r_o_max, int r_p_min, int r_p_max, int r_o, int r_p);
 public:
-    Planet(QRandomGenerator,QString);
+    Planet(QRandomGenerator);
     Planet();
 };
 
