@@ -49,6 +49,6 @@
     <qresource prefix="/txt_files">
         <file>res/txt_files/NameMatrix.txt</file>
         <file>res/txt_files/randomsettings.txt</file>
-        <file>res/txt_files/settingsbase.txt</file>
+        <file>res/txt_files/settingsbase.json</file>
     </qresource>
 </RCC>

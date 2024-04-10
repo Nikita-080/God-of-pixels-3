@@ -10,18 +10,17 @@
 #include <windowsettings.h>
 #include <QPainter>
 #include <QMessageBox>
+#include <QJsonObject>
+#include <QJsonDocument>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
-{
-    QTime midnight(0,0,0);
-    rnd.seed(midnight.secsTo(QTime::currentTime()));
-
+{ 
     isEmtyPlanet=true;
-    planet=Planet(rnd);
-    autoplanet=Planet(rnd);
-    s=PlanetSettings(rnd);
+    planet=Planet();
+    autoplanet=Planet();
+    s=PlanetSettings();
 
     ui->setupUi(this);
     // настройки
@@ -32,8 +31,8 @@ MainWindow::MainWindow(QWidget *parent)
 
     //виджеты
     ms=new MultiSlider();
-    pc=new PointChoicer(rnd);
-    pc2=new PointChoicer(rnd);
+    pc=new PointChoicer();
+    pc2=new PointChoicer();
 
     ms->setParent(ui->tab_2);
     pc->setParent(ui->tab_5);
@@ -101,7 +100,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     //settings
     Settings_Get();//для начального заполнения "буфера" настроек
-    s.Load(":/txt_files/res/txt_files/settingsbase.txt");
+    s.Load(":/txt_files/res/txt_files/settingsbase.json");
     Settings_Set();
 
     //кнопки, вызывающие служебные функции
@@ -297,30 +296,25 @@ void MainWindow::M_Load_Planet()
                                 QString::fromUtf8("Загрузить планету"),
                                                     "./",
                                 "Planet (*.planet);;All files (*.*)");
-    try {
-        QFile readFile(filename);
-        readFile.open(QFile::ReadOnly);
-        QDataStream outFile(&readFile);
-        //outFile.setVersion(QDataStream::Qt_4_8);
-        outFile >> planet.matrix;
-        outFile >> planet.name;
-        outFile >> planet.u_map;
-        outFile >> planet.facts.day;
-        outFile >> planet.facts.year;
-        outFile >> planet.facts.gravitation;
-        outFile >> planet.facts.radiation;
-        outFile >> planet.facts.resources;
-        outFile >> planet.facts.seismicity;
+    QFile file(filename);
+    if(file.open(QFile::ReadOnly|QFile::Text)){
+        QString a;
+        a=file.readAll();
+        QJsonObject jobject=QJsonDocument::fromJson(a.toUtf8()).object();
 
-        Settings_Get();
-        God(false,ui->progressBar,&planet);
+        s.JSON_deserialize(jobject["settings"].toObject());
+        Settings_Set();
+
+        God(true,ui->progressBar,&planet,jobject["seed"].toInt());
         QImage img=planet.img;
         ui->pushButton_2->setIcon(QIcon(QPixmap::fromImage(img)));
         ui->label_7->setText(planet.name);
         isEmtyPlanet=false;
 
-        readFile.close();
-    }  catch (...) {
+        file.close();
+    }
+    else
+    {
         QMessageBox::critical(nullptr,"Ошибка","не удалось загрузить файл");
     }
 }
@@ -331,28 +325,23 @@ void MainWindow::M_Save_Planet()
                                 QString::fromUtf8("Сохранить планету"),
                                 planet.name,
                                 "Planet (*.planet);;All files (*.*)");
-    try {
-        QFile file(filename);
-        file.open(QFile::Append);
-        QDataStream infile(&file);
+    QFile file(filename);
+    if (file.open(QFile::WriteOnly|QFile::Text)){
+        QTextStream stream(&file);
 
-        infile << planet.matrix;
-        infile << planet.name;
-        infile << planet.u_map;
-        infile << planet.facts.day;
-        infile << planet.facts.year;
-        infile << planet.facts.gravitation;
-        infile << planet.facts.radiation;
-        infile << planet.facts.resources;
-        infile << planet.facts.seismicity;
+        QJsonObject jobject;
+        jobject["seed"]=planet.seed;
+        jobject["settings"]=planet.s.JSON_serialize();
+        stream<<QJsonDocument(jobject).toJson();
 
-        file.flush();
         file.close();
-    }  catch (...) {
+    }
+    else
+    {
         QMessageBox::critical(nullptr,"Ошибка","не удалось сохранить файл");
     }
 }
-void MainWindow::God(bool isCreateNew, QProgressBar *pb,Planet *p)
+void MainWindow::God(bool isCreateNew, QProgressBar *pb,Planet *p,int seed)
 {
     /* //systems pics generator
     for (int i=0;i<100;i++)
@@ -369,6 +358,7 @@ void MainWindow::God(bool isCreateNew, QProgressBar *pb,Planet *p)
 
     pb->setValue(0);
     p->s=s;
+    p->ResetSeed(seed);
     if (isCreateNew) p->CreateMatrixNew();
     pb->setValue(10);
     p->Calculator();
@@ -417,7 +407,7 @@ void MainWindow::God(bool isCreateNew, QProgressBar *pb,Planet *p)
 
 void MainWindow::M_Load_Base_Settings(){
     Settings_Get(); //для начального заполнения "буфера" настроек
-    if (s.Load(":/txt_files/res/txt_files/settingsbase.txt"))
+    if (s.Load(":/txt_files/res/txt_files/settingsbase.json"))
     {
         Settings_Set();
     }
@@ -563,7 +553,7 @@ void MainWindow::M_Save_Settings(){
     QString filename = QFileDialog::getSaveFileName(this,
                                 QString::fromUtf8("Сохранить файл"),
                                                     "./",
-                                "Texts (*.txt);;All files (*.*)");
+                                "Texts (*.json);;All files (*.*)");
     Settings_Get();
     if (!s.Save(filename)) QMessageBox::critical(nullptr,"Ошибка","не удалось сохранить файл");
 }
@@ -571,7 +561,7 @@ void MainWindow::M_Load_Settings(){
     QString filename = QFileDialog::getOpenFileName(this,
                                 QString::fromUtf8("Открыть файл"),
                                 "./",
-                                "Texts (*.txt);;All files (*.*)");
+                                "Texts (*.json);;All files (*.*)");
     Settings_Get();//для начального заполнения "буфера" настроек
     if (s.Load(filename))
     {

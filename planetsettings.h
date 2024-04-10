@@ -4,10 +4,12 @@
 #include <QVector>
 #include <QRandomGenerator>
 #include <pointchoicer.h>
+#include <QJsonArray>
 
 class PlanetSettings
 {
 public:
+    QRandomGenerator rnd;
     int terramode; //relocate
     int iterations;
 
@@ -48,13 +50,15 @@ public:
     QVector <double> true_structure;
 public:
     PlanetSettings();
-    PlanetSettings(QRandomGenerator);
     bool Load(QString);
     bool Save(QString);
+    QJsonObject JSON_serialize();
+    void JSON_deserialize(QJsonObject);
     void Random(QVector<bool>,PointChoicer* pc);
 private:
-    QRandomGenerator rnd;
     int RAND(int x, int y);
+    QJsonArray VecToJson(QVector<int>);
+    QVector<int> JsonToVec(QJsonArray);
 };
 
 #endif // PLANETSETTINGS_H

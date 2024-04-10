@@ -8,16 +8,26 @@
 #include <QtMath>
 #include <QPainter>
 #include <QDebug>
+#include "QTime"
 #include <QFontDatabase>
-Planet::Planet(QRandomGenerator Rnd)
+Planet::Planet()
 {
-    rnd=Rnd;
     color_black=QColor(0,0,0);
     facts=Facts();
 }
-Planet::Planet()
+void Planet::ResetSeed(int value)
 {
-
+    if (value==0)
+    {
+    QTime midnight(0,0,0);
+    seed=midnight.secsTo(QTime::currentTime());
+    rnd.seed(seed);
+    }
+    else
+    {
+        seed=value;
+        rnd.seed(seed);
+    }
 }
 int Planet::RAND(int a, int b){
     return rnd.bounded(a,b+1);

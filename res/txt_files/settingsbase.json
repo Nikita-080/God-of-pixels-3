@@ -1,0 +1,51 @@
+{
+    "R_external_ring": 3,
+    "R_internal_ring": 3,
+    "atmo_color": "#b7edfd",
+    "atmo_size": 5,
+    "atmo_transparent": 5,
+    "beach_color": "#fcdd76",
+    "cloud_color": "#d9d9d9",
+    "cloud_quality": 3,
+    "cloud_size": 2,
+    "cloud_transparent": 0,
+    "correction": true,
+    "ice_color": "#464646",
+    "is_atmo": false,
+    "is_cloud": false,
+    "is_gradient": false,
+    "is_plant": false,
+    "is_ring": false,
+    "iterations": 500,
+    "mountain_color": "#b4b4b4",
+    "name_algorithm": 2,
+    "noise": 0,
+    "ocean_color": "#000080",
+    "plain_color": "#b4b480",
+    "point_of_polar": [
+        195,
+        35
+    ],
+    "point_of_shine": [
+        120,
+        205
+    ],
+    "randomness": 2,
+    "ring_color": "#e6b060",
+    "rock_color": "#808080",
+    "shallow_color": "#2828ff",
+    "shine": 5,
+    "structure": [
+        40,
+        95,
+        150,
+        205,
+        260,
+        315,
+        370,
+        425
+    ],
+    "temperature": 15,
+    "terramode": 0,
+    "world_size": 8
+}

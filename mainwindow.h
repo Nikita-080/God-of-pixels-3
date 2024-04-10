@@ -21,7 +21,6 @@ class MainWindow : public QMainWindow
 {
     Q_OBJECT
 public:
-    QRandomGenerator rnd;
     Planet planet;
     Planet autoplanet;
     bool isEmtyPlanet;
@@ -60,7 +59,7 @@ public:
     void ShowDescription();
     void ShowSystem();
     void ShowMap();
-    void God(bool isCreateNew,QProgressBar *pb,Planet *p);
+    void God(bool isCreateNew,QProgressBar *pb,Planet *p,int seed=0);
     void SetStyle();
     QString ReadText(QString);
     void Report(QString s); //служебная функция

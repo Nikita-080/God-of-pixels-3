@@ -9,6 +9,7 @@ class Planet
 {
 public:
     QRandomGenerator rnd;
+    int seed;
     Facts facts;
     QVector <int> starclass;
     QVector <QVector <double>> matrix;
@@ -78,6 +79,7 @@ public:
     void FinalImage();
     void ImagesScale();
     void ImageReport(QString name,QVector<QVector<double>> data,QColor lowcolor,QColor highcolor); //служебная функция
+    void ResetSeed(int value=0);
 private:
     double Shadow_step(int x,int y, int R);
     QChar char2char(QChar,QVector<QVector<int>>);
@@ -99,7 +101,6 @@ private:
     void SystemMap_2star();
     void DrawPlanets(QPainter* p, int x, int y, int r_o_min, int r_o_max, int r_p_min, int r_p_max, int r_o, int r_p);
 public:
-    Planet(QRandomGenerator);
     Planet();
 };
 

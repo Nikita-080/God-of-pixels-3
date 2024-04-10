@@ -1,7 +1,8 @@
 #include "pointchoicer.h"
 #include <QPainter>
 #include <QMouseEvent>
-PointChoicer::PointChoicer(QRandomGenerator Rnd,QWidget *parent) : QWidget(parent)
+#include <QTime>
+PointChoicer::PointChoicer(QWidget *parent) : QWidget(parent)
 {
     dx=20;
     dy=30;
@@ -9,7 +10,6 @@ PointChoicer::PointChoicer(QRandomGenerator Rnd,QWidget *parent) : QWidget(paren
     x_pos=95+dx;
     y_pos=190+dy;
     capture=false;
-    rnd=Rnd;
 }
 void PointChoicer::paintEvent(QPaintEvent *){
     QPainter painter(this);
@@ -71,6 +71,9 @@ QVector <double> PointChoicer::GetTrueData()
     return vec;
 }
 QVector <double> PointChoicer::GetRand(){
+    QRandomGenerator rnd;
+    QTime midnight(0,0,0);
+    rnd.seed(midnight.secsTo(QTime::currentTime()));
     int xR=0;
     int yR=0;
     while ((xR-R-dx)*(xR-R-dx)+(yR-R-dy)*(yR-R-dy)>=R*R){

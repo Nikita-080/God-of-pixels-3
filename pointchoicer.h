@@ -11,9 +11,8 @@ public:
     int dx,dy,R;
     int OldX,OldY;
     bool capture;
-    QRandomGenerator rnd;
 public:
-    explicit PointChoicer(QRandomGenerator,QWidget *parent = NULL);
+    explicit PointChoicer(QWidget *parent = NULL);
     QVector <int> GetData();
     void SetData(QVector <int>);
     QVector <double> GetTrueData();

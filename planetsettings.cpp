@@ -1,61 +1,115 @@
 #include "planetsettings.h"
 #include <QFile>
 #include <QTextStream>
+#include <QJsonObject>
+#include <QJsonDocument>
+#include <QJsonArray>
+#include <QDebug>
 PlanetSettings::PlanetSettings()
 {
+    QTime midnight(0,0,0);
+    rnd.seed(midnight.secsTo(QTime::currentTime()));
+}
 
-}
-PlanetSettings::PlanetSettings(QRandomGenerator gen)
-{
-    rnd=gen;
-}
 int PlanetSettings::RAND(int a, int b)
 {
     return rnd.generate()%((b+1)-a)+a;
 }
-bool PlanetSettings::Save(QString path){
+QJsonArray PlanetSettings::VecToJson(QVector<int> vector)
+{
+    QJsonArray array;
+    foreach (int i,vector) array.append(i);
+    return array;
+}
+QVector<int> PlanetSettings::JsonToVec(QJsonArray jarray)
+{
+    QVector<int> vector;
+    foreach (QJsonValue i,jarray) vector.append(i.toInt());
+    return vector;
+}
+QJsonObject PlanetSettings::JSON_serialize()
+{
+    QJsonObject jobject;
+    jobject["terramode"] = terramode;
+    jobject["randomness"] = randomness;
+    jobject["iterations"] = iterations;
+    jobject["world_size"] = world_size;
+    jobject["temperature"] = temperature;
+    jobject["structure"]=VecToJson(structure);
+    jobject["ice_color"] = ice_color.name();
+    jobject["rock_color"] = rock_color.name();
+    jobject["mountain_color"] = mountain_color.name();
+    jobject["plain_color"] = plain_color.name();
+    jobject["beach_color"] = beach_color.name();
+    jobject["shallow_color"] = shallow_color.name();
+    jobject["ocean_color"] = ocean_color.name();
+    jobject["noise"] = noise;
+    jobject["is_gradient"] = is_gradient;
+    jobject["is_plant"] = is_plant;
+    jobject["shine"] = shine;
+    jobject["point_of_shine"]=VecToJson(point_of_shine);
+    jobject["name_algorithm"] = name_algorithm;
+    jobject["is_cloud"] = is_cloud;
+    jobject["cloud_size"] = cloud_size;
+    jobject["cloud_quality"] = cloud_quality;
+    jobject["cloud_transparent"] = cloud_transparent;
+    jobject["correction"] = correction;
+    jobject["cloud_color"] = cloud_color.name();
+    jobject["is_atmo"] = is_atmo;
+    jobject["atmo_transparent"] = atmo_transparent;
+    jobject["atmo_size"] = atmo_size;
+    jobject["atmo_color"] = atmo_color.name();
+    jobject["is_ring"] = is_ring;
+    jobject["R_internal_ring"] = R_internal_ring;
+    jobject["R_external_ring"] = R_external_ring;
+    jobject["ring_color"] = ring_color.name();
+    jobject["point_of_polar"]=VecToJson(point_of_polar);
 
+    return jobject;
+}
+void PlanetSettings::JSON_deserialize(QJsonObject jobject)
+{
+    terramode = jobject["terramode"].toInt();
+    randomness = jobject["randomness"].toInt();
+    iterations = jobject["iterations"].toInt();
+    world_size = jobject["world_size"].toInt();
+    temperature = jobject["temperature"].toInt();
+    structure =JsonToVec(jobject["structure"].toArray());
+    ice_color = jobject["ice_color"].toString();
+    rock_color = jobject["rock_color"].toString();
+    mountain_color = jobject["mountain_color"].toString();
+    plain_color = jobject["plain_color"].toString();
+    beach_color = jobject["beach_color"].toString();
+    shallow_color = jobject["shallow_color"].toString();
+    ocean_color = jobject["ocean_color"].toString();
+    noise = jobject["noise"].toInt();
+    is_gradient = jobject["is_gradient"].toBool();
+    is_plant = jobject["is_plant"].toBool();
+    shine = jobject["shine"].toInt();
+    point_of_shine = JsonToVec(jobject["point_of_shine"].toArray());
+    name_algorithm = jobject["name_algorithm"].toInt();
+    is_cloud = jobject["is_cloud"].toBool();
+    cloud_size = jobject["cloud_size"].toInt();
+    cloud_quality = jobject["cloud_quality"].toInt();
+    cloud_transparent = jobject["cloud_transparent"].toInt();
+    correction = jobject["correction"].toBool();
+    cloud_color = jobject["cloud_color"].toString();
+    is_atmo = jobject["is_atmo"].toBool();
+    atmo_transparent = jobject["atmo_transparent"].toInt();
+    atmo_size= jobject["atmo_size"].toInt();
+    atmo_color = jobject["atmo_color"].toString();
+    is_ring = jobject["is_ring"].toBool();
+    R_internal_ring = jobject["R_internal_ring"].toInt();
+    R_external_ring = jobject["R_external_ring"].toInt();
+    ring_color = jobject["ring_color"].toString();
+    point_of_polar = JsonToVec(jobject["point_of_polar"].toArray());
+}
+bool PlanetSettings::Save(QString path)
+{
     QFile file(path);
     if (file.open(QFile::WriteOnly|QFile::Text)){
         QTextStream stream(&file);
-        stream<<QString::number(terramode)<<"\n";
-        stream<<QString::number(randomness)<<"\n";
-        stream<<QString::number(iterations)<<"\n";
-        stream<<QString::number(world_size)<<"\n";
-        stream<<QString::number(temperature)<<"\n";
-        for (int i=0;i<8;i++){
-            stream<<QString::number(structure[i])<<"\n";
-        }
-        stream<<ice_color.name()<<"\n";
-        stream<<rock_color.name()<<"\n";
-        stream<<mountain_color.name()<<"\n";
-        stream<<plain_color.name()<<"\n";
-        stream<<beach_color.name()<<"\n";
-        stream<<shallow_color.name()<<"\n";
-        stream<<ocean_color.name()<<"\n";
-        stream<<QString::number(noise)<<"\n";
-        stream<<QString::number(is_gradient)<<"\n";
-        stream<<QString::number(is_plant)<<"\n";
-        stream<<QString::number(shine)<<"\n";
-        stream<<QString::number(point_of_shine[0])<<"\n";
-        stream<<QString::number(point_of_shine[1])<<"\n";
-        stream<<QString::number(name_algorithm)<<"\n";
-        stream<<QString::number(is_cloud)<<"\n";
-        stream<<QString::number(cloud_size)<<"\n";
-        stream<<QString::number(cloud_quality)<<"\n";
-        stream<<QString::number(cloud_transparent)<<"\n";
-        stream<<QString::number(correction)<<"\n";
-        stream<<cloud_color.name()<<"\n";
-        stream<<QString::number(is_atmo)<<"\n";
-        stream<<QString::number(atmo_transparent)<<"\n";
-        stream<<QString::number(atmo_size)<<"\n";
-        stream<<atmo_color.name()<<"\n";
-        stream<<QString::number(is_ring)<<"\n";
-        stream<<QString::number(R_internal_ring)<<"\n";
-        stream<<QString::number(R_external_ring)<<"\n";
-        stream<<ring_color.name()<<"\n";
-        stream<<QString::number(point_of_polar[0])<<"\n";
-        stream<<QString::number(point_of_polar[1])<<"\n";
+        stream<<QJsonDocument(JSON_serialize()).toJson();
         file.close();
         return true;
     }
@@ -64,47 +118,9 @@ bool PlanetSettings::Save(QString path){
 bool PlanetSettings::Load(QString path){
     QFile file(path);
     if(file.open(QFile::ReadOnly|QFile::Text)){
-        QTextStream stream(&file);
         QString a;
-        stream>>a; terramode=a.toInt();
-        stream>>a; randomness=a.toInt();
-        stream>>a; iterations=a.toInt();
-        stream>>a; world_size=a.toInt();
-        stream>>a; temperature=a.toInt();
-        for (int i=0;i<8;i++){
-            stream>>a;
-            structure[i]=a.toInt();
-        }
-        stream>>a; ice_color.setNamedColor(a);
-        stream>>a; rock_color.setNamedColor(a);
-        stream>>a; mountain_color.setNamedColor(a);
-        stream>>a; plain_color.setNamedColor(a);
-        stream>>a; beach_color.setNamedColor(a);
-        stream>>a; shallow_color.setNamedColor(a);
-        stream>>a; ocean_color.setNamedColor(a);
-        stream>>a; noise=a.toInt();
-        stream>>a; is_gradient=a.toInt();
-        stream>>a; is_plant=a.toInt();
-        stream>>a; shine=a.toInt();
-        stream>>a; point_of_shine[0]=a.toDouble();
-        stream>>a; point_of_shine[1]=a.toDouble();
-        stream>>a; name_algorithm=a.toInt();
-        stream>>a; is_cloud=a.toInt();
-        stream>>a; cloud_size=a.toInt();
-        stream>>a; cloud_quality=a.toInt();
-        stream>>a; cloud_transparent=a.toInt();
-        stream>>a; correction=a.toInt();
-        stream>>a; cloud_color.setNamedColor(a);
-        stream>>a; is_atmo=a.toInt();
-        stream>>a; atmo_transparent=a.toInt();
-        stream>>a; atmo_size=a.toInt();
-        stream>>a; atmo_color.setNamedColor(a);
-        stream>>a; is_ring=a.toInt();
-        stream>>a; R_internal_ring=a.toInt();
-        stream>>a; R_external_ring=a.toInt();
-        stream>>a; ring_color.setNamedColor(a);
-        stream>>a; point_of_polar[0]=a.toDouble();
-        stream>>a; point_of_polar[1]=a.toDouble();
+        a=file.readAll();
+        JSON_deserialize(QJsonDocument::fromJson(a.toUtf8()).object());
         return true;
     }
     return false;
