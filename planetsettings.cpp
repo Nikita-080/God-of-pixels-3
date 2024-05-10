@@ -5,6 +5,8 @@
 #include <QJsonDocument>
 #include <QJsonArray>
 #include <QDebug>
+#include <global.h>
+#include <QMessageBox>
 PlanetSettings::PlanetSettings()
 {
     QTime midnight(0,0,0);
@@ -30,6 +32,7 @@ QVector<int> PlanetSettings::JsonToVec(QJsonArray jarray)
 QJsonObject PlanetSettings::JSON_serialize()
 {
     QJsonObject jobject;
+    jobject["version"]=VERSION;
     jobject["terramode"] = terramode;
     jobject["randomness"] = randomness;
     jobject["iterations"] = iterations;
@@ -67,42 +70,58 @@ QJsonObject PlanetSettings::JSON_serialize()
 
     return jobject;
 }
-void PlanetSettings::JSON_deserialize(QJsonObject jobject)
+bool PlanetSettings::JSON_deserialize(QJsonObject jobject)
 {
-    terramode = jobject["terramode"].toInt();
-    randomness = jobject["randomness"].toInt();
-    iterations = jobject["iterations"].toInt();
-    world_size = jobject["world_size"].toInt();
-    temperature = jobject["temperature"].toInt();
-    structure =JsonToVec(jobject["structure"].toArray());
-    ice_color = jobject["ice_color"].toString();
-    rock_color = jobject["rock_color"].toString();
-    mountain_color = jobject["mountain_color"].toString();
-    plain_color = jobject["plain_color"].toString();
-    beach_color = jobject["beach_color"].toString();
-    shallow_color = jobject["shallow_color"].toString();
-    ocean_color = jobject["ocean_color"].toString();
-    noise = jobject["noise"].toInt();
-    is_gradient = jobject["is_gradient"].toBool();
-    is_plant = jobject["is_plant"].toBool();
-    shine = jobject["shine"].toInt();
-    point_of_shine = JsonToVec(jobject["point_of_shine"].toArray());
-    name_algorithm = jobject["name_algorithm"].toInt();
-    is_cloud = jobject["is_cloud"].toBool();
-    cloud_size = jobject["cloud_size"].toInt();
-    cloud_quality = jobject["cloud_quality"].toInt();
-    cloud_transparent = jobject["cloud_transparent"].toInt();
-    correction = jobject["correction"].toBool();
-    cloud_color = jobject["cloud_color"].toString();
-    is_atmo = jobject["is_atmo"].toBool();
-    atmo_transparent = jobject["atmo_transparent"].toInt();
-    atmo_size= jobject["atmo_size"].toInt();
-    atmo_color = jobject["atmo_color"].toString();
-    is_ring = jobject["is_ring"].toBool();
-    R_internal_ring = jobject["R_internal_ring"].toInt();
-    R_external_ring = jobject["R_external_ring"].toInt();
-    ring_color = jobject["ring_color"].toString();
-    point_of_polar = JsonToVec(jobject["point_of_polar"].toArray());
+    int version;
+    try {
+         version=jobject["version"].toInt();
+    }  catch (...) {
+        QMessageBox::critical(nullptr,"Ошибка","не удалось получить версию файла");
+        return false;
+    }
+    switch (version)
+    {
+        case 1:
+            terramode = jobject["terramode"].toInt();
+            randomness = jobject["randomness"].toInt();
+            iterations = jobject["iterations"].toInt();
+            world_size = jobject["world_size"].toInt();
+            temperature = jobject["temperature"].toInt();
+            structure =JsonToVec(jobject["structure"].toArray());
+            ice_color = jobject["ice_color"].toString();
+            rock_color = jobject["rock_color"].toString();
+            mountain_color = jobject["mountain_color"].toString();
+            plain_color = jobject["plain_color"].toString();
+            beach_color = jobject["beach_color"].toString();
+            shallow_color = jobject["shallow_color"].toString();
+            ocean_color = jobject["ocean_color"].toString();
+            noise = jobject["noise"].toInt();
+            is_gradient = jobject["is_gradient"].toBool();
+            is_plant = jobject["is_plant"].toBool();
+            shine = jobject["shine"].toInt();
+            point_of_shine = JsonToVec(jobject["point_of_shine"].toArray());
+            name_algorithm = jobject["name_algorithm"].toInt();
+            is_cloud = jobject["is_cloud"].toBool();
+            cloud_size = jobject["cloud_size"].toInt();
+            cloud_quality = jobject["cloud_quality"].toInt();
+            cloud_transparent = jobject["cloud_transparent"].toInt();
+            correction = jobject["correction"].toBool();
+            cloud_color = jobject["cloud_color"].toString();
+            is_atmo = jobject["is_atmo"].toBool();
+            atmo_transparent = jobject["atmo_transparent"].toInt();
+            atmo_size= jobject["atmo_size"].toInt();
+            atmo_color = jobject["atmo_color"].toString();
+            is_ring = jobject["is_ring"].toBool();
+            R_internal_ring = jobject["R_internal_ring"].toInt();
+            R_external_ring = jobject["R_external_ring"].toInt();
+            ring_color = jobject["ring_color"].toString();
+            point_of_polar = JsonToVec(jobject["point_of_polar"].toArray());
+            break;
+        default:
+            QMessageBox::critical(nullptr,"Ошибка","неизвестная версия файла");
+            return false;
+    }
+    return true;
 }
 bool PlanetSettings::Save(QString path)
 {
@@ -120,8 +139,7 @@ bool PlanetSettings::Load(QString path){
     if(file.open(QFile::ReadOnly|QFile::Text)){
         QString a;
         a=file.readAll();
-        JSON_deserialize(QJsonDocument::fromJson(a.toUtf8()).object());
-        return true;
+        return JSON_deserialize(QJsonDocument::fromJson(a.toUtf8()).object());
     }
     return false;
 }

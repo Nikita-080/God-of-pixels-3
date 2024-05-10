@@ -1,9 +1,9 @@
-#ifndef AUTOGODSETTINGS_H
-#define AUTOGODSETTINGS_H
+#ifndef AUTOGENSETTINGS_H
+#define AUTOGENSETTINGS_H
 #include <QVector>
 #include <QString>
 
-class AutoGodSettings
+class AutoGenSettings
 {
 public:
     bool save_type;
@@ -14,7 +14,7 @@ public:
     int number;
     QVector <bool> isRndList;
 public:
-    AutoGodSettings();
+    AutoGenSettings();
 };
 
-#endif // AUTOGODSETTINGS_H
+#endif // AUTOGENSETTINGS_H

@@ -7,7 +7,7 @@
 #include <QGroupBox>
 #include <QFileDialog>
 #include <mainwindow.h>
-#include <autogodsettings.h>
+#include <autogensettings.h>
 windowsettings::windowsettings(QWidget *parent) :
     QDialog(parent),
     ui(new Ui::windowsettings)
@@ -62,7 +62,7 @@ void windowsettings::ButtonCancel()
 }
 void windowsettings::EndWindow()
 {
-    AutoGodSettings settings;
+    AutoGenSettings settings;
 
     settings.save_type=ui->radioButton->isChecked();
     settings.picturetype=ui->checkBox->isChecked();

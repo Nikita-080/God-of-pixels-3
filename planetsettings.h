@@ -53,7 +53,7 @@ public:
     bool Load(QString);
     bool Save(QString);
     QJsonObject JSON_serialize();
-    void JSON_deserialize(QJsonObject);
+    bool JSON_deserialize(QJsonObject);
     void Random(QVector<bool>,PointChoicer* pc);
 private:
     int RAND(int x, int y);

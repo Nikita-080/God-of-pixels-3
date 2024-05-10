@@ -11,7 +11,7 @@
 #include <QRandomGenerator>
 #include <planet.h>
 #include <QProgressBar>
-#include <autogodsettings.h>
+#include <autogensettings.h>
 #include <planetsettings.h>
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -34,7 +34,7 @@ public:
     PlanetSettings s;
 
     bool isdatarecieved;
-    AutoGodSettings box;
+    AutoGenSettings box;
 public:
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
@@ -54,12 +54,12 @@ public:
     void M_Save_Full_Image();
     void M_About();
     void CreatePlanet();
-    void AutoGod();
+    void AutoGen();
     void ShowPlanet();
     void ShowDescription();
     void ShowSystem();
     void ShowMap();
-    void God(bool isCreateNew,QProgressBar *pb,Planet *p,int seed=0);
+    void Gen(bool isCreateNew,QProgressBar *pb,Planet *p,int seed=0);
     void SetStyle();
     QString ReadText(QString);
     void Report(QString s); //служебная функция

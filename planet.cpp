@@ -469,7 +469,7 @@ void Planet::Calculator()
     else numstars=RAND(1,2);
     for (int i=0;i<numstars;i++) starclass.append(RAND(0,11));
 
-    R_planet=world_size/2*2*1.0/3.1415;
+    R_planet=world_size*1.0/3.1415;
     if (s.is_atmo) R_atmo=R_planet*(81+s.atmo_size)/81;
     else R_atmo=R_planet;
     if (R_atmo>R_planet) R_final=R_atmo;
@@ -555,7 +555,6 @@ QColor Planet::TransparentColor(QColor color1, QColor color2, double koef)
     int r=qRound((1-koef)*color1.red()+koef*color2.red());
     int g=qRound((1-koef)*color1.green()+koef*color2.green());
     int b=qRound((1-koef)*color1.blue()+koef*color2.blue());
-
     return QColor(r,g,b);
 }
 QColor Planet::DispersionColor(QColor color, int disp)

@@ -12,6 +12,7 @@
 #include <QMessageBox>
 #include <QJsonObject>
 #include <QJsonDocument>
+#include <global.h>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -75,7 +76,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     connect(ui->pushButton_18,&QPushButton::clicked,this,&MainWindow::CreatePlanet);
     connect(ui->pushButton_19,&QPushButton::clicked,this,&MainWindow::CreatePlanet);
-    connect(ui->pushButton_20,&QPushButton::clicked,this,&MainWindow::AutoGod);
+    connect(ui->pushButton_20,&QPushButton::clicked,this,&MainWindow::AutoGen);
     connect(ui->pushButton,&QPushButton::clicked,this,&MainWindow::ShowPlanet);
     connect(ui->pushButton_3,&QPushButton::clicked,this,&MainWindow::ShowDescription);
     connect(ui->pushButton_4,&QPushButton::clicked,this,&MainWindow::ShowSystem);
@@ -134,7 +135,14 @@ void MainWindow::AlgorithmChange()
 void MainWindow::M_About()
 {
     QMessageBox msb;
-    msb.setText("название - God of Pixels 3\nверсия - 0.0.1\nавтор - Рябов Никита\nобратная связь - riabovnick080@yandex.ru");
+    QString message;
+    message.append("название - God of Pixels 3\n");
+    message.append("версия - ");
+    message.append(QString::number(VERSION));
+    message.append("\n");
+    message.append("автор - Рябов Никита\n");
+    message.append("обратная связь - riabovnick080@yandex.ru");
+    msb.setText(message);
     msb.exec();
 }
 
@@ -184,7 +192,7 @@ void MainWindow::SetStyle()
     ui->tabWidget->setStyleSheet(tabwidgetstyle);
     ui->pushButton_8->setIcon(QIcon(":/images/res/images/logo.png"));
 }
-void MainWindow::AutoGod()
+void MainWindow::AutoGen()
 {
     windowsettings win(this);
     isdatarecieved=false;
@@ -209,7 +217,7 @@ void MainWindow::AutoGod()
                 for (int k=0;k<box.width;k++) //ширина
                 {
                     s.Random(box.isRndList,pc);
-                    God(true,ui->progressBar_3,&autoplanet);
+                    Gen(true,ui->progressBar_3,&autoplanet);
                     if (box.picturetype) p.drawImage(k*delta,i*delta,autoplanet.img_final);
                     else p.drawImage(k*delta,i*delta,autoplanet.img_nonscale);
                     count++;
@@ -225,7 +233,7 @@ void MainWindow::AutoGod()
             for (int k=0;k<box.number;k++)
             {
                 s.Random(box.isRndList,pc);
-                God(true,ui->progressBar_3,&autoplanet);
+                Gen(true,ui->progressBar_3,&autoplanet);
                 ui->progressBar_2->setValue(qRound(1.0*k/percent));
                 QImage photo;
                 if (box.picturetype) photo=autoplanet.img_final;
@@ -240,7 +248,7 @@ void MainWindow::CreatePlanet()
 {
     Settings_Get();
     bool flag=sender()->objectName()=="pushButton_18" or isEmtyPlanet;
-    God(flag,ui->progressBar,&planet);
+    Gen(flag,ui->progressBar,&planet);
     QImage img=planet.img;
     ui->pushButton_2->setIcon(QIcon(QPixmap::fromImage(img)));
     ui->label_7->setText(planet.name);
@@ -297,26 +305,29 @@ void MainWindow::M_Load_Planet()
                                                     "./",
                                 "Planet (*.planet);;All files (*.*)");
     QFile file(filename);
-    if(file.open(QFile::ReadOnly|QFile::Text)){
+    file.open(QFile::ReadOnly|QFile::Text);
+    try {
         QString a;
         a=file.readAll();
         QJsonObject jobject=QJsonDocument::fromJson(a.toUtf8()).object();
 
-        s.JSON_deserialize(jobject["settings"].toObject());
+        if (!s.JSON_deserialize(jobject["settings"].toObject()))
+        {
+            file.close();
+            QMessageBox::critical(nullptr,"Ошибка","не удалось загрузить файл");
+            return;
+        }
         Settings_Set();
 
-        God(true,ui->progressBar,&planet,jobject["seed"].toInt());
+        Gen(true,ui->progressBar,&planet,jobject["seed"].toInt());
         QImage img=planet.img;
         ui->pushButton_2->setIcon(QIcon(QPixmap::fromImage(img)));
         ui->label_7->setText(planet.name);
         isEmtyPlanet=false;
-
-        file.close();
-    }
-    else
-    {
+    }  catch (...) {
         QMessageBox::critical(nullptr,"Ошибка","не удалось загрузить файл");
     }
+    file.close();
 }
 
 void MainWindow::M_Save_Planet()
@@ -341,7 +352,7 @@ void MainWindow::M_Save_Planet()
         QMessageBox::critical(nullptr,"Ошибка","не удалось сохранить файл");
     }
 }
-void MainWindow::God(bool isCreateNew, QProgressBar *pb,Planet *p,int seed)
+void MainWindow::Gen(bool isCreateNew, QProgressBar *pb,Planet *p,int seed)
 {
     /* //systems pics generator
     for (int i=0;i<100;i++)
@@ -581,7 +592,7 @@ void MainWindow::BiomGrad() //служебная функция
     for (int i=-50;i<=50;i++)
     {
         s.temperature=i;
-        God(false,ui->progressBar,&planet);
+        Gen(false,ui->progressBar,&planet);
         QString name=QString::number(i+50)+" ("+QString::number(i)+").png";
         planet.img.save("C:/Users/Никита/Desktop/biom/"+name);
     }
