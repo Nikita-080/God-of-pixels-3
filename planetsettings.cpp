@@ -76,7 +76,7 @@ bool PlanetSettings::JSON_deserialize(QJsonObject jobject)
     try {
          version=jobject["version"].toInt();
     }  catch (...) {
-        QMessageBox::critical(nullptr,"Ошибка","не удалось получить версию файла");
+        QMessageBox::critical(nullptr,"Ошибка",VERSION_NOT_FOUND);
         return false;
     }
     switch (version)
@@ -118,7 +118,7 @@ bool PlanetSettings::JSON_deserialize(QJsonObject jobject)
             point_of_polar = JsonToVec(jobject["point_of_polar"].toArray());
             break;
         default:
-            QMessageBox::critical(nullptr,"Ошибка","неизвестная версия файла");
+            QMessageBox::critical(nullptr,"Ошибка",UNKNOW_VERSION);
             return false;
     }
     return true;

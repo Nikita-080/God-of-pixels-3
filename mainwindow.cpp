@@ -283,7 +283,7 @@ void MainWindow::M_Save_Image()
     try {
         planet.img.save(filename);
     }  catch (...) {
-        QMessageBox::critical(nullptr,"Ошибка","не удалось сохранить файл");
+        QMessageBox::critical(nullptr,"Ошибка",CANT_OPEN_FILE);
     }
 }
 void MainWindow::M_Save_Full_Image()
@@ -295,7 +295,7 @@ void MainWindow::M_Save_Full_Image()
     try {
         planet.img_final.save(filename);
     }  catch (...) {
-        QMessageBox::critical(nullptr,"Ошибка","не удалось сохранить файл");
+        QMessageBox::critical(nullptr,"Ошибка",CANT_SAVE_FILE);
     }
 }
 void MainWindow::M_Load_Planet()
@@ -314,7 +314,7 @@ void MainWindow::M_Load_Planet()
         if (!s.JSON_deserialize(jobject["settings"].toObject()))
         {
             file.close();
-            QMessageBox::critical(nullptr,"Ошибка","не удалось загрузить файл");
+            QMessageBox::critical(nullptr,"Ошибка",CANT_LOAD_FILE);
             return;
         }
         Settings_Set();
@@ -325,7 +325,7 @@ void MainWindow::M_Load_Planet()
         ui->label_7->setText(planet.name);
         isEmtyPlanet=false;
     }  catch (...) {
-        QMessageBox::critical(nullptr,"Ошибка","не удалось загрузить файл");
+        QMessageBox::critical(nullptr,"Ошибка",CANT_LOAD_FILE);
     }
     file.close();
 }
@@ -349,7 +349,7 @@ void MainWindow::M_Save_Planet()
     }
     else
     {
-        QMessageBox::critical(nullptr,"Ошибка","не удалось сохранить файл");
+        QMessageBox::critical(nullptr,"Ошибка",CANT_SAVE_FILE);
     }
 }
 void MainWindow::Gen(bool isCreateNew, QProgressBar *pb,Planet *p,int seed)
@@ -422,7 +422,7 @@ void MainWindow::M_Load_Base_Settings(){
     {
         Settings_Set();
     }
-    else QMessageBox::critical(nullptr,"Ошибка","не удалось загрузить файл");
+    else QMessageBox::critical(nullptr,"Ошибка",CANT_LOAD_DEFAULT);
 }
 void MainWindow::SliderShow(){
     QSlider* slider = qobject_cast<QSlider*>(sender());
@@ -566,7 +566,7 @@ void MainWindow::M_Save_Settings(){
                                                     "./",
                                 "Texts (*.json);;All files (*.*)");
     Settings_Get();
-    if (!s.Save(filename)) QMessageBox::critical(nullptr,"Ошибка","не удалось сохранить файл");
+    if (!s.Save(filename)) QMessageBox::critical(nullptr,"Ошибка",CANT_SAVE_FILE);
 }
 void MainWindow::M_Load_Settings(){
     QString filename = QFileDialog::getOpenFileName(this,
@@ -579,7 +579,7 @@ void MainWindow::M_Load_Settings(){
         Settings_Set();
         update();
     }
-    else QMessageBox::critical(nullptr,"Ошибка","не удалось загрузить файл");
+    else QMessageBox::critical(nullptr,"Ошибка",CANT_LOAD_FILE);
 }
 void MainWindow::Img_Report() //служебная функция
 {
