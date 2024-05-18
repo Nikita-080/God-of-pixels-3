@@ -7,7 +7,7 @@
 class TerraFactory
 {
 public:
-    TerraFactory(int Size,QRandomGenerator RND);
+    TerraFactory(int Size,int Seed);
     QVector<QVector<double>> foultformation(int iter);
     QVector<QVector<double>> diamondsquare(double randfactor);
 private:

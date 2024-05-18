@@ -9,12 +9,12 @@ double CloudFactory::lerp(double t, double a, double b)
 {
     return a + t * (b - a);
 }
-CloudFactory::CloudFactory(int Octaves, bool Unbias,QRandomGenerator Rnd)
+CloudFactory::CloudFactory(int Octaves, bool Unbias,int seed)
 {
     octaves = Octaves;
     unbias = Unbias;
     scale_factor = 1.41421;
-    rnd=Rnd;
+    rnd.seed(seed);
     gauss_next=NULL;
 }
 double CloudFactory::RandomGauss()

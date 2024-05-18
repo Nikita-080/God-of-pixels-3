@@ -16,7 +16,7 @@ public:
 public:
     double smoothstep(double t);
     double lerp(double t, double a, double b);
-    CloudFactory(int octaves, bool unbias, QRandomGenerator Rnd);
+    CloudFactory(int octaves, bool unbias, int Seed);
     QVector <double> _generate_gradient();
     double RandomGauss();
     double get_plain_noise(double x,double y);

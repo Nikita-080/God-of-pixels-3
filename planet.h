@@ -79,7 +79,8 @@ public:
     void FinalImage();
     void ImagesScale();
     void ImageReport(QString name,QVector<QVector<double>> data,QColor lowcolor,QColor highcolor); //служебная функция
-    void ResetSeed(int value=0);
+    void SetSeed(int value=0);
+    void Iteration(int iter);
 private:
     double Shadow_step(int x,int y, int R);
     QChar char2char(QChar,QVector<QVector<int>>);

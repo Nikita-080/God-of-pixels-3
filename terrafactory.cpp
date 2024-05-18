@@ -1,8 +1,8 @@
 #include "terrafactory.h"
 
-TerraFactory::TerraFactory(int Size,QRandomGenerator RND)
+TerraFactory::TerraFactory(int Size,int seed)
 {
-    rnd=RND;
+    rnd.seed(seed);
     size=Size;
     FillZero();
 }

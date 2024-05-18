@@ -283,7 +283,7 @@ void MainWindow::M_Save_Image()
     try {
         planet.img.save(filename);
     }  catch (...) {
-        QMessageBox::critical(nullptr,"Ошибка",CANT_OPEN_FILE);
+        QMessageBox::critical(nullptr,"Ошибка",CANT_SAVE_FILE);
     }
 }
 void MainWindow::M_Save_Full_Image()
@@ -366,53 +366,43 @@ void MainWindow::Gen(bool isCreateNew, QProgressBar *pb,Planet *p,int seed)
     }
     return;
     */
+    int percent[26] {20, //height map
+                      1, //main numbers
+                      3, //normalize height map
+                      2, //levels
+                      1, //image
+                      3, //UV map
+                      3, //temperature map
+                      3, //water map
+                      3, //plants
+                      3, //polar ice
+                      2, //noise
+                      25, //clouds map
+                      3, //clouds
+                      2, //UV
+                      3, //internal atmosphere
+                      3, //shadows
+                      3, //external atmosphere
+                      3, //rings
+                      1, //name
+                      1, //description (generated)
+                      1, //description (calculated)
+                      2, //description (draw)
+                      2, //system map
+                      2, //galaxy map
+                      2, //final image
+                      3};//scale
 
     pb->setValue(0);
     p->s=s;
-    p->ResetSeed(seed);
-    if (isCreateNew) p->CreateMatrixNew();
-    pb->setValue(10);
-    p->Calculator();
-    if (isCreateNew) p->FixMatrix();
-    p->LevelCreating();
-    pb->setValue(25);
-    p->ImageCreating();
-    pb->setValue(30);
-    if (isCreateNew) p->UMapCreating();
-    p->TMapCreating();
-    p->RMapCreating();
-    pb->setValue(40);
-    if (s.is_plant and p->water_level>0 and s.is_atmo) p->Plant();
-    pb->setValue(45);
-    if (p->water_level>0) p->Polar();
-    if (s.noise>0) p->Noise();
-    pb->setValue(50);
-    if (s.is_cloud)
+    if (isCreateNew) p->SetSeed(seed);
+
+    for (int i=0;i<26;i++)
     {
-        p->CloudMapCreating();
-        p->Cloud();
+        p->SetSeed(p->seed);
+        p->Iteration(i);
+        pb->setValue(pb->value()+percent[i]);
     }
-    pb->setValue(60);
-    //planet.img.save("./img.png");
-    p->UV();
-    pb->setValue(70);
-    if (s.is_atmo and s.atmo_transparent!=10) p->Atmosphere("in");
-    p->Shadow();
-    pb->setValue(75);
-    if (s.is_atmo and s.atmo_transparent!=10) p->Atmosphere("out");
-    pb->setValue(80);
-    if (s.is_ring) p->Ring();
-    pb->setValue(90);
-    if (isCreateNew) p->Name();
-    pb->setValue(95);
-    if (isCreateNew) p->GenerateDescription();
-    p->CalculateDescription();
-    p->DrawDescription();
-    p->SystemMap();
-    p->GalaxyMap();
-    p->FinalImage();
-    p->ImagesScale();
-    pb->setValue(100);
 }
 
 

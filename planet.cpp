@@ -15,7 +15,7 @@ Planet::Planet()
     color_black=QColor(0,0,0);
     facts=Facts();
 }
-void Planet::ResetSeed(int value)
+void Planet::SetSeed(int value)
 {
     if (value==0)
     {
@@ -32,11 +32,95 @@ void Planet::ResetSeed(int value)
 int Planet::RAND(int a, int b){
     return rnd.bounded(a,b+1);
 }
+void Planet::Iteration(int iter)
+{
+    switch (iter)
+    {
+    case 0:
+        CreateMatrixNew();
+        break;
+    case 1:
+        Calculator();
+        break;
+    case 2:
+        FixMatrix();
+        break;
+    case 3:
+        LevelCreating();
+        break;
+    case 4:
+        ImageCreating();
+        break;
+    case 5:
+        UMapCreating();
+        break;
+    case 6:
+        TMapCreating();
+        break;
+    case 7:
+        RMapCreating();
+        break;
+    case 8:
+        Plant();
+        break;
+    case 9:
+        Polar();
+        break;
+    case 10:
+        Noise();
+        break;
+    case 11:
+        CloudMapCreating();
+        break;
+    case 12:
+        Cloud();
+        break;
+    case 13:
+        UV();
+        break;
+    case 14:
+        Atmosphere("in");
+        break;
+    case 15:
+        Shadow();
+        break;
+    case 16:
+        Atmosphere("out");
+        break;
+    case 17:
+        Ring();
+        break;
+    case 18:
+        Name();
+        break;
+    case 19:
+        GenerateDescription();
+        break;
+    case 20:
+        CalculateDescription();
+        break;
+    case 21:
+        DrawDescription();
+        break;
+    case 22:
+        SystemMap();
+        break;
+    case 23:
+        GalaxyMap();
+        break;
+    case 24:
+        FinalImage();
+        break;
+    case 25:
+        ImagesScale();
+        break;
+    }
+}
 
 void Planet::CreateMatrixNew()
 {
     world_size=pow(2,s.world_size)+1;
-    TerraFactory factory(world_size,rnd);
+    TerraFactory factory(world_size,seed);
     if (s.terramode==0) matrix=factory.diamondsquare(s.randomness*1.0/10);
     else if (s.terramode==1) matrix=factory.foultformation(s.iterations);
 }
@@ -202,6 +286,7 @@ void Planet::RMapCreating() //rain
 }
 void Planet::Plant()
 {
+    if (!s.is_plant or !(water_level>0) or s.is_atmo) return;
     plant_pixel_count=0;
     QImage diagram;
     if (s.is_gradient) diagram=QImage(":/images/res/images/plantmatrixblur.png");
@@ -234,6 +319,7 @@ void Planet::Plant()
 }
 void Planet::Polar()
 {
+    if (water_level==0) return;
     QColor color=QColor(255,255,255);
     QColor lowcolor=QColor(150,150,150);
     QVector <QColor> polar_color;
@@ -286,9 +372,10 @@ void Planet::Polar()
 
 void Planet::CloudMapCreating()
 {
+    if (!s.is_cloud) return;
     c_map.clear();
     int res=qRound(1.0*s.cloud_size*world_size/20);
-    CloudFactory pnf(s.cloud_quality,s.correction,rnd);
+    CloudFactory pnf(s.cloud_quality,s.correction,seed);
     for (int x=0;x<world_size;x++)
     {
         QVector <double> cloud_line;
@@ -344,6 +431,7 @@ double Planet::ArcPolarDistance(int x, int y)
 }
 void Planet::Atmosphere(QString mode)
 {
+    if (!s.is_atmo or s.atmo_transparent==10) return;
     double l_min=0;//R_atmo-R_planet;
     double l_max=2*sqrt(R_planet*(R_atmo-R_planet));
     double q=0.1;//коэффициент при l_max и transparent=10
@@ -440,6 +528,7 @@ double Planet::Shadow_step(int a, int b, int R)
 }
 void Planet::Cloud()
 {
+    if (!s.is_cloud) return;
     double k1=-0.09*s.cloud_transparent+1;
     for (int i=0;i<world_size;i++)
     {
@@ -585,6 +674,7 @@ QColor Planet::LowerColor(QColor color, double koef)
 }
 void Planet::Ring()
 {
+    if (!s.is_ring) return;
     double rmin=R_final+(world_size/2-R_final)/10*s.R_internal_ring;
     double rmax=(world_size/2+R_final)/2+(world_size/2-R_final)/10*s.R_external_ring;
     int color_num=RAND(1,6);
@@ -629,6 +719,7 @@ void Planet::Ring()
 }
 void Planet::Noise()
 {
+    if (s.noise==0) return;
     for (int i=0;i<world_size;i++)
     {
         for (int j=0;j<world_size;j++)
