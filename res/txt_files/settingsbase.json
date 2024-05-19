@@ -47,6 +47,6 @@
         425
     ],
     "temperature": 15,
-    "terramode": 0,
+    "terramode": 1,
     "world_size": 8
 }

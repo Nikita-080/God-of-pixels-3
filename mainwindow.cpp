@@ -280,6 +280,7 @@ void MainWindow::M_Save_Image()
                                 QString::fromUtf8("Сохранить изображение"),
                                 planet.name,
                                 "Image (*.png);;All files (*.*)");
+    if (filename.isEmpty()) return;
     try {
         planet.img.save(filename);
     }  catch (...) {
@@ -292,6 +293,7 @@ void MainWindow::M_Save_Full_Image()
                                 QString::fromUtf8("Сохранить полное изображение"),
                                 planet.name,
                                 "Image (*.png);;All files (*.*)");
+    if (filename.isEmpty()) return;
     try {
         planet.img_final.save(filename);
     }  catch (...) {
@@ -304,6 +306,7 @@ void MainWindow::M_Load_Planet()
                                 QString::fromUtf8("Загрузить планету"),
                                                     "./",
                                 "Planet (*.planet);;All files (*.*)");
+    if (filename.isEmpty()) return;
     QFile file(filename);
     file.open(QFile::ReadOnly|QFile::Text);
     try {
@@ -336,6 +339,7 @@ void MainWindow::M_Save_Planet()
                                 QString::fromUtf8("Сохранить планету"),
                                 planet.name,
                                 "Planet (*.planet);;All files (*.*)");
+    if (filename.isEmpty()) return;
     QFile file(filename);
     if (file.open(QFile::WriteOnly|QFile::Text)){
         QTextStream stream(&file);
@@ -555,6 +559,7 @@ void MainWindow::M_Save_Settings(){
                                 QString::fromUtf8("Сохранить файл"),
                                                     "./",
                                 "Texts (*.json);;All files (*.*)");
+    if (filename.isEmpty()) return;
     Settings_Get();
     if (!s.Save(filename)) QMessageBox::critical(nullptr,"Ошибка",CANT_SAVE_FILE);
 }
@@ -563,6 +568,7 @@ void MainWindow::M_Load_Settings(){
                                 QString::fromUtf8("Открыть файл"),
                                 "./",
                                 "Texts (*.json);;All files (*.*)");
+    if (filename.isEmpty()) return;
     Settings_Get();//для начального заполнения "буфера" настроек
     if (s.Load(filename))
     {
