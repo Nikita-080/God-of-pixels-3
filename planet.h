@@ -78,7 +78,7 @@ public:
     void GalaxyMap();
     void FinalImage();
     void ImagesScale();
-    void ImageReport(QString name,QVector<QVector<double>> data,QColor lowcolor,QColor highcolor); //служебная функция
+    QImage ImageReport(QVector<QVector<double>> data,QColor lowcolor,QColor highcolor); //служебная функция
     void SetSeed(int value=0);
     void Iteration(int iter);
 private:

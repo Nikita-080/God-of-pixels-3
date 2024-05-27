@@ -20,7 +20,7 @@ void Planet::SetSeed(int value)
     if (value==0)
     {
     QTime midnight(0,0,0);
-    seed=midnight.secsTo(QTime::currentTime());
+    seed=midnight.msecsTo(QTime::currentTime());
     rnd.seed(seed);
     }
     else
@@ -286,7 +286,7 @@ void Planet::RMapCreating() //rain
 }
 void Planet::Plant()
 {
-    if (!s.is_plant or !(water_level>0) or s.is_atmo) return;
+    if (!s.is_plant or !(water_level>0) or !s.is_atmo) return;
     plant_pixel_count=0;
     QImage diagram;
     if (s.is_gradient) diagram=QImage(":/images/res/images/plantmatrixblur.png");
@@ -1042,10 +1042,9 @@ void Planet::ImagesScale()
     img_gal=img_gal.scaled(658,658);
     img_sys=img_sys.scaled(658,658);
 }
-void Planet::ImageReport(QString name, QVector<QVector<double>> data,QColor lowcolor,QColor highcolor)
+QImage Planet::ImageReport(QVector<QVector<double>> data,QColor lowcolor,QColor highcolor)
 {
     //служебная функция
-    QString path="C:/Users/Никита/Desktop/report/"+name+".png";
     QImage r_img=QImage(world_size,world_size,QImage::Format_RGB32);
     double minv=1000000;
     double maxv=-1000000;
@@ -1062,5 +1061,5 @@ void Planet::ImageReport(QString name, QVector<QVector<double>> data,QColor lowc
             r_img.setPixelColor(i,k,TransparentColor(lowcolor,highcolor,koef));
         }
     }
-    r_img.save(path);
+    return r_img;
 }

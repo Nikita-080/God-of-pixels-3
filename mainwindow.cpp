@@ -401,12 +401,40 @@ void MainWindow::Gen(bool isCreateNew, QProgressBar *pb,Planet *p,int seed)
     p->s=s;
     if (isCreateNew) p->SetSeed(seed);
 
+    /*
+    for (int i=0;i<26;i++)
+    {
+        p->SetSeed(p->seed);
+        p->Iteration(i);
+        pb->setValue(pb->value()+percent[i]);
+        if (i==12) p->img=p->ImageReport(p->matrix,QColor(200,200,200),QColor(50,50,50));
+    }
+    p->img.save("C:/Users/Никита/Desktop/imgs/land.png");
+    for (int i=0;i<26;i++)
+    {
+        p->SetSeed(p->seed);
+        p->Iteration(i);
+        pb->setValue(pb->value()+percent[i]);
+        if (i==12) p->img=p->ImageReport(p->t_map,QColor(0,0,255),QColor(255,0,0));
+    }
+    p->img.save("C:/Users/Никита/Desktop/imgs/temperature.png");
+    for (int i=0;i<26;i++)
+    {
+        p->SetSeed(p->seed);
+        p->Iteration(i);
+        pb->setValue(pb->value()+percent[i]);
+        if (i==12) p->img=p->ImageReport(p->r_map,QColor(252,221,118),QColor(0,255,255));
+    }
+    p->img.save("C:/Users/Никита/Desktop/imgs/water.png");
+    */
     for (int i=0;i<26;i++)
     {
         p->SetSeed(p->seed);
         p->Iteration(i);
         pb->setValue(pb->value()+percent[i]);
     }
+    //p->img.save("C:/Users/Никита/Desktop/imgs/biom.png");
+
 }
 
 
@@ -579,9 +607,10 @@ void MainWindow::M_Load_Settings(){
 }
 void MainWindow::Img_Report() //служебная функция
 {
-    planet.ImageReport("t",planet.t_map,QColor(0,0,255),QColor(255,0,0));
-    planet.ImageReport("m",planet.matrix,QColor(0,0,0),QColor(255,255,255));
-    planet.ImageReport("r",planet.r_map,QColor(252,221,118),QColor(0,0,255));
+    QString path="C:/Users/Никита/Desktop/";
+    planet.ImageReport(planet.t_map,QColor(0,0,255),QColor(255,0,0)).save(path+"t.png");
+    planet.ImageReport(planet.matrix,QColor(0,0,0),QColor(255,255,255)).save(path+"m.png");
+    planet.ImageReport(planet.r_map,QColor(252,221,118),QColor(0,0,255)).save(path+"r.png");
 }
 void MainWindow::BiomGrad() //служебная функция
 {
