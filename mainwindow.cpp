@@ -27,7 +27,8 @@ MainWindow::MainWindow(QWidget *parent)
     // настройки
     ui->tabWidget->setIconSize(QSize(60,60));
     for (int i=0;i<10;i++){
-        ui->tabWidget->setTabIcon(i,QIcon(":/images/res/images/TabIcon"+QString::number(i+1)+".png"));
+        ui->tabWidget->setTabIcon(i,QIcon(":/images/res/images/TabIcon"+
+                                          QString::number(i+1)+".png"));
     }
 
     //виджеты
@@ -41,10 +42,12 @@ MainWindow::MainWindow(QWidget *parent)
     pc2->setParent(ui->tab_10);
     pc2->setGeometry(0,101,400,500);
     //алгоритм генерации
-    ui->comboBox->addItem("diamond square");
-    ui->comboBox->addItem("fault formation");
+    ui->comboBox->addItem(tr("diamond square"));
+    ui->comboBox->addItem(tr("fault formation"));
     ui->horizontalSlider_4->setEnabled(false);
-    connect(ui->comboBox,QOverload<int>::of(&QComboBox::currentIndexChanged),this,&MainWindow::AlgorithmChange);
+    connect(ui->comboBox,QOverload<int>::of(&QComboBox::currentIndexChanged),
+            this,
+            &MainWindow::AlgorithmChange);
     //массивы
     sliders[0]= ui->horizontalSlider;    labels[0]= ui->label_2;
     sliders[1]= ui->horizontalSlider_2;  labels[1]= ui->label_4;
@@ -107,6 +110,7 @@ MainWindow::MainWindow(QWidget *parent)
     //кнопки, вызывающие служебные функции
     ui->pushButton_6->hide();
     ui->pushButton_7->hide();
+    setWindowTitle("God of Pixels 3");
 }
 QString MainWindow::ReadText(QString path)
 {
@@ -136,12 +140,12 @@ void MainWindow::M_About()
 {
     QMessageBox msb;
     QString message;
-    message.append("название - God of Pixels 3\n");
-    message.append("версия - ");
+    message.append(tr("name - God of Pixels 3\n"));
+    message.append(tr("version - "));
     message.append(QString::number(VERSION));
     message.append("\n");
-    message.append("автор - Рябов Никита\n");
-    message.append("обратная связь - riabovnick080@yandex.ru");
+    message.append(tr("author - Riabov Nikita\n"));
+    message.append(tr("feedback - riabovnick080@yandex.ru"));
     msb.setText(message);
     msb.exec();
 }
@@ -277,35 +281,35 @@ void MainWindow::ShowMap()
 void MainWindow::M_Save_Image()
 {
     QString filename = QFileDialog::getSaveFileName(this,
-                                QString::fromUtf8("Сохранить изображение"),
+                                tr("Save image"),
                                 planet.name,
-                                "Image (*.png);;All files (*.*)");
+                                tr("Image (*.png);;All files (*.*)"));
     if (filename.isEmpty()) return;
     try {
         planet.img.save(filename);
     }  catch (...) {
-        QMessageBox::critical(nullptr,"Ошибка",CANT_SAVE_FILE);
+        QMessageBox::critical(nullptr,tr("Error"),CANT_SAVE_FILE);
     }
 }
 void MainWindow::M_Save_Full_Image()
 {
     QString filename = QFileDialog::getSaveFileName(this,
-                                QString::fromUtf8("Сохранить полное изображение"),
+                                tr("Save full image"),
                                 planet.name,
-                                "Image (*.png);;All files (*.*)");
+                                tr("Image (*.png);;All files (*.*)"));
     if (filename.isEmpty()) return;
     try {
         planet.img_final.save(filename);
     }  catch (...) {
-        QMessageBox::critical(nullptr,"Ошибка",CANT_SAVE_FILE);
+        QMessageBox::critical(nullptr,tr("Error"),CANT_SAVE_FILE);
     }
 }
 void MainWindow::M_Load_Planet()
 {
     QString filename = QFileDialog::getOpenFileName(this,
-                                QString::fromUtf8("Загрузить планету"),
+                                tr("Load planet"),
                                                     "./",
-                                "Planet (*.planet);;All files (*.*)");
+                                tr("Planet (*.planet);;All files (*.*)"));
     if (filename.isEmpty()) return;
     QFile file(filename);
     file.open(QFile::ReadOnly|QFile::Text);
@@ -317,7 +321,7 @@ void MainWindow::M_Load_Planet()
         if (!s.JSON_deserialize(jobject["settings"].toObject()))
         {
             file.close();
-            QMessageBox::critical(nullptr,"Ошибка",CANT_LOAD_FILE);
+            QMessageBox::critical(nullptr,tr("Error"),CANT_LOAD_FILE);
             return;
         }
         Settings_Set();
@@ -328,7 +332,7 @@ void MainWindow::M_Load_Planet()
         ui->label_7->setText(planet.name);
         isEmtyPlanet=false;
     }  catch (...) {
-        QMessageBox::critical(nullptr,"Ошибка",CANT_LOAD_FILE);
+        QMessageBox::critical(nullptr,tr("Error"),CANT_LOAD_FILE);
     }
     file.close();
 }
@@ -336,9 +340,9 @@ void MainWindow::M_Load_Planet()
 void MainWindow::M_Save_Planet()
 {
     QString filename = QFileDialog::getSaveFileName(this,
-                                QString::fromUtf8("Сохранить планету"),
+                                tr("Save planet"),
                                 planet.name,
-                                "Planet (*.planet);;All files (*.*)");
+                                tr("Planet (*.planet);;All files (*.*)"));
     if (filename.isEmpty()) return;
     QFile file(filename);
     if (file.open(QFile::WriteOnly|QFile::Text)){
@@ -353,7 +357,7 @@ void MainWindow::M_Save_Planet()
     }
     else
     {
-        QMessageBox::critical(nullptr,"Ошибка",CANT_SAVE_FILE);
+        QMessageBox::critical(nullptr,tr("Error"),CANT_SAVE_FILE);
     }
 }
 void MainWindow::Gen(bool isCreateNew, QProgressBar *pb,Planet *p,int seed)
@@ -584,18 +588,18 @@ void MainWindow::Settings_Set(){
 
 void MainWindow::M_Save_Settings(){
     QString filename = QFileDialog::getSaveFileName(this,
-                                QString::fromUtf8("Сохранить файл"),
+                                tr("Save file"),
                                                     "./",
-                                "Texts (*.json);;All files (*.*)");
+                                tr("Texts (*.json);;All files (*.*)"));
     if (filename.isEmpty()) return;
     Settings_Get();
-    if (!s.Save(filename)) QMessageBox::critical(nullptr,"Ошибка",CANT_SAVE_FILE);
+    if (!s.Save(filename)) QMessageBox::critical(nullptr,tr("Error"),CANT_SAVE_FILE);
 }
 void MainWindow::M_Load_Settings(){
     QString filename = QFileDialog::getOpenFileName(this,
-                                QString::fromUtf8("Открыть файл"),
+                                tr("Open file"),
                                 "./",
-                                "Texts (*.json);;All files (*.*)");
+                                tr("Texts (*.json);;All files (*.*)"));
     if (filename.isEmpty()) return;
     Settings_Get();//для начального заполнения "буфера" настроек
     if (s.Load(filename))
@@ -603,7 +607,7 @@ void MainWindow::M_Load_Settings(){
         Settings_Set();
         update();
     }
-    else QMessageBox::critical(nullptr,"Ошибка",CANT_LOAD_FILE);
+    else QMessageBox::critical(nullptr,tr("Error"),CANT_LOAD_FILE);
 }
 void MainWindow::Img_Report() //служебная функция
 {

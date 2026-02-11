@@ -8077,6 +8077,7 @@ color: rgb(255, 255, 255);</string>
     <addaction name="action_3"/>
     <addaction name="action_4"/>
     <addaction name="action_5"/>
+    <addaction name="action_10"/>
    </widget>
    <widget class="QMenu" name="menu_3">
     <property name="title">
@@ -8132,6 +8133,11 @@ color: rgb(255, 255, 255);</string>
   <action name="action_9">
    <property name="text">
     <string>Загрузить планету</string>
+   </property>
+  </action>
+  <action name="action_10">
+   <property name="text">
+    <string>Переключить язык</string>
    </property>
   </action>
  </widget>

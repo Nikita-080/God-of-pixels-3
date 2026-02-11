@@ -6,13 +6,13 @@ MultiSlider::MultiSlider(QWidget *parent) : QWidget(parent)
 {
     for (int i=0;i<8;i++){data.append(40+55*i);}
     for (int i=0;i<6;i++){capture[i]=false;}
-    names[0]="скалы";
-    names[1]="горы";
-    names[2]="равнины";
-    names[3]="низменности";
-    names[4]="пляжи";
-    names[5]="шельф";
-    names[6]="океан";
+    names[0]=tr("rocks");
+    names[1]=tr("mountains");
+    names[2]=tr("plains");
+    names[3]=tr("lowlands");
+    names[4]=tr("beaches");
+    names[5]=tr("shelf");
+    names[6]=tr("ocean");
 }
 void MultiSlider::paintEvent(QPaintEvent *) {
   QPainter painter(this);

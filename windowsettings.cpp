@@ -80,15 +80,15 @@ void windowsettings::EndWindow()
 void windowsettings::AskFile()
 {
     filepath = QFileDialog::getSaveFileName(this,
-               QString::fromUtf8("Сохранить коллаж"),
+               tr("Save collage"),
                "image.png",
-               "Image (*.png);;All files (*.*)");
+               tr("Image (*.png);;All files (*.*)"));
     ui->lineEdit->setText(filepath);
 }
 void windowsettings::AskDir()
 {
     dirpath = QFileDialog::getExistingDirectory(this,
-              QString::fromUtf8("Сохранить изображения"));
+              tr("Save images"));
     ui->lineEdit_4->setText(dirpath);
 }
 void windowsettings::TakeAll()

@@ -34,6 +34,8 @@ HEADERS += \
     terrafactory.h \
     windowsettings.h
 
+TRANSLATIONS += QtLanguage_ru.ts
+
 FORMS += \
     mainwindow.ui \
     windowsettings.ui

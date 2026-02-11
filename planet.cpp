@@ -792,20 +792,20 @@ void Planet::DrawDescription()
     p.setPen(QPen(QColor(110,170,200)));
     p.setFont(QFont("Consolas",8));
 
-    s+="имя        - "+name+"\n";
+    s+=QT_TR_NOOP("name       - ")+name+"\n";
 
-    if (starclass.isEmpty()) s+="день       - [не найдено]\n";
-    else s+="день       - "+facts.day+"ч\n";
+    if (starclass.isEmpty()) s+=QT_TR_NOOP("day        - [not found]\n");
+    else s+=QT_TR_NOOP("day        - ")+facts.day+QT_TR_NOOP("h\n");
 
-    if (starclass.isEmpty()) s+="год        - [не найдено]\n";
-    else s+="год        - "+facts.year+"г\n";
+    if (starclass.isEmpty()) s+=QT_TR_NOOP("year       - [not found]\n");
+    else s+=QT_TR_NOOP("year       - ")+facts.year+QT_TR_NOOP("y\n");
 
-    s+="гравитация - "+facts.gravitation+"g\n";
+    s+=QT_TR_NOOP("gravity    - ")+facts.gravitation+"g\n";
 
-    if (starclass.isEmpty()) s+="звезда     - [не найдено]\n";
+    if (starclass.isEmpty()) s+=QT_TR_NOOP("star       - [not found]\n");
     else
     {
-        s+="звезда     - ";
+        s+=QT_TR_NOOP("star       - ");
         for (int i=0;i<starclass.length();i++)
         {
             s+=classes[starclass[i]];
@@ -814,14 +814,14 @@ void Planet::DrawDescription()
         s+='\n';
     }
 
-    s+="ресурсы    - "+facts.resources;
+    s+=QT_TR_NOOP("resources  - ")+facts.resources;
     p.drawText(QRect(40,27,400,400), s);
-    Level("жизнь        ",8,facts.life,"good",p);
-    Level("вода         ",9,facts.water,"neutral",p);
-    Level("лед          ",10,facts.ice,"bad",p);
-    Level("радиация     ",11,facts.radiation,"bad",p);
-    Level("температура  ",12,facts.temperature,"neutral",p);
-    Level("сейсмичность ",13,facts.seismicity,"bad",p);
+    Level(QT_TR_NOOP("life         "),8,facts.life,"good",p);
+    Level(QT_TR_NOOP("water        "),9,facts.water,"neutral",p);
+    Level(QT_TR_NOOP("ice          "),10,facts.ice,"bad",p);
+    Level(QT_TR_NOOP("radiation    "),11,facts.radiation,"bad",p);
+    Level(QT_TR_NOOP("temperature  "),12,facts.temperature,"neutral",p);
+    Level(QT_TR_NOOP("seismicity   "),13,facts.seismicity,"bad",p);
     p.end();
 }
 QString Planet::Resources()
@@ -833,7 +833,7 @@ QString Planet::Resources()
     QString res="";
     QVector <int> indexes={-1};
     int x=RAND(0,5);
-    if (x==0) return "отсутствуют\n";
+    if (x==0) return QT_TR_NOOP("[not found]\n");
     for (int i=0;i<x;i++)
     {
         int index=RAND(0,14);
