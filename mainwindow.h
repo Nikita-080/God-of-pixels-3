@@ -13,6 +13,7 @@
 #include <QProgressBar>
 #include <autogensettings.h>
 #include <planetsettings.h>
+#include <QTranslator>
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
 QT_END_NAMESPACE
@@ -35,6 +36,8 @@ public:
 
     bool isdatarecieved;
     AutoGenSettings box;
+
+    QString language;
 public:
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
@@ -53,6 +56,7 @@ public:
     void M_Load_Planet();
     void M_Save_Full_Image();
     void M_About();
+    void M_Switch_Language();
     void CreatePlanet();
     void AutoGen();
     void ShowPlanet();
@@ -67,5 +71,9 @@ public:
     void BiomGrad(); //служебная функция
 public:
     Ui::MainWindow *ui;
+private:
+    QTranslator qtLanguageTranslator;
+protected:
+    void changeEvent(QEvent * event) override;
 };
 #endif // MAINWINDOW_H

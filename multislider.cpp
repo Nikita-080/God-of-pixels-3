@@ -2,18 +2,25 @@
 #include <QPainter>
 #include <QMouseEvent>
 #include <QVector>
+#include <QCoreApplication>
 MultiSlider::MultiSlider(QWidget *parent) : QWidget(parent)
 {
     for (int i=0;i<8;i++){data.append(40+55*i);}
     for (int i=0;i<6;i++){capture[i]=false;}
-    names[0]=tr("rocks");
-    names[1]=tr("mountains");
-    names[2]=tr("plains");
-    names[3]=tr("lowlands");
-    names[4]=tr("beaches");
-    names[5]=tr("shelf");
-    names[6]=tr("ocean");
+    ReloadText();
 }
+
+void MultiSlider::ReloadText()
+{
+    names[0]=QCoreApplication::translate("MultiSlider", "rocks");
+    names[1]=QCoreApplication::translate("MultiSlider", "mountains");
+    names[2]=QCoreApplication::translate("MultiSlider", "plains");
+    names[3]=QCoreApplication::translate("MultiSlider", "lowlands");
+    names[4]=QCoreApplication::translate("MultiSlider", "beaches");
+    names[5]=QCoreApplication::translate("MultiSlider", "shelf");
+    names[6]=QCoreApplication::translate("MultiSlider", "ocean");
+}
+
 void MultiSlider::paintEvent(QPaintEvent *) {
   QPainter painter(this);
   painter.setPen(QPen(QColor(110,170,200),4));

@@ -7,6 +7,7 @@
 #include <QDebug>
 #include <global.h>
 #include <QMessageBox>
+#include <QCoreApplication>
 PlanetSettings::PlanetSettings()
 {
     QTime midnight(0,0,0);
@@ -76,7 +77,7 @@ bool PlanetSettings::JSON_deserialize(QJsonObject jobject)
     try {
          version=jobject["version"].toInt();
     }  catch (...) {
-        QMessageBox::critical(nullptr,QT_TR_NOOP("Error"),VERSION_NOT_FOUND);
+        QMessageBox::critical(nullptr,QCoreApplication::translate("PlanetSettings", "Error"),QCoreApplication::translate("PlanetSettings", "0004 unable to get version from file"));
         return false;
     }
     switch (version)
@@ -118,7 +119,7 @@ bool PlanetSettings::JSON_deserialize(QJsonObject jobject)
             point_of_polar = JsonToVec(jobject["point_of_polar"].toArray());
             break;
         default:
-            QMessageBox::critical(nullptr,QT_TR_NOOP("Error"),UNKNOW_VERSION);
+            QMessageBox::critical(nullptr,QCoreApplication::translate("PlanetSettings", "Error"),QCoreApplication::translate("PlanetSettings", "0005 unknown file version"));
             return false;
     }
     return true;

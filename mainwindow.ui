@@ -10,6 +10,11 @@
     <height>635</height>
    </rect>
   </property>
+  <property name="font">
+   <font>
+    <pointsize>27</pointsize>
+   </font>
+  </property>
   <property name="windowTitle">
    <string>God of pixels 3</string>
   </property>
@@ -147,11 +152,11 @@
     <property name="font">
      <font>
       <family>Consolas</family>
-      <pointsize>18</pointsize>
+      <pointsize>24</pointsize>
      </font>
     </property>
     <property name="text">
-     <string>Planet</string>
+     <string notr="true">...</string>
     </property>
     <property name="alignment">
      <set>Qt::AlignCenter</set>
@@ -286,7 +291,7 @@
     </property>
     <property name="font">
      <font>
-      <pointsize>34</pointsize>
+      <pointsize>24</pointsize>
      </font>
     </property>
     <property name="styleSheet">
@@ -429,7 +434,7 @@ border-color: rgb(110, 170, 200);
     <property name="font">
      <font>
       <family>Consolas</family>
-      <pointsize>34</pointsize>
+      <pointsize>24</pointsize>
      </font>
     </property>
     <property name="styleSheet">
@@ -785,7 +790,7 @@ color: rgb(255, 255, 255);</string>
      <enum>QTabWidget::West</enum>
     </property>
     <property name="currentIndex">
-     <number>3</number>
+     <number>0</number>
     </property>
     <property name="iconSize">
      <size>
@@ -1810,7 +1815,7 @@ margin: 5px;}</string>
        </font>
       </property>
       <property name="text">
-       <string>0</string>
+       <string notr="true">0</string>
       </property>
       <property name="alignment">
        <set>Qt::AlignCenter</set>
@@ -1922,7 +1927,7 @@ margin: 5px;}</string>
        </font>
       </property>
       <property name="text">
-       <string>0</string>
+       <string notr="true">0</string>
       </property>
       <property name="alignment">
        <set>Qt::AlignCenter</set>
@@ -2034,7 +2039,7 @@ margin: 5px;}</string>
        </font>
       </property>
       <property name="text">
-       <string>0</string>
+       <string notr="true">0</string>
       </property>
       <property name="alignment">
        <set>Qt::AlignCenter</set>
@@ -2064,7 +2069,7 @@ margin: 5px;}</string>
        <rect>
         <x>20</x>
         <y>80</y>
-        <width>221</width>
+        <width>291</width>
         <height>31</height>
        </rect>
       </property>
@@ -2077,6 +2082,16 @@ margin: 5px;}</string>
       <property name="styleSheet">
        <string notr="true"/>
       </property>
+      <item>
+       <property name="text">
+        <string>diamond square</string>
+       </property>
+      </item>
+      <item>
+       <property name="text">
+        <string>fault formation</string>
+       </property>
+      </item>
      </widget>
      <widget class="QLabel" name="label_44">
       <property name="enabled">
@@ -2610,7 +2625,7 @@ margin: 5px;}</string>
        </font>
       </property>
       <property name="text">
-       <string>0</string>
+       <string notr="true">0</string>
       </property>
       <property name="alignment">
        <set>Qt::AlignCenter</set>
@@ -4156,7 +4171,7 @@ margin: 5px;}</string>
        </font>
       </property>
       <property name="text">
-       <string>0</string>
+       <string notr="true">0</string>
       </property>
       <property name="alignment">
        <set>Qt::AlignCenter</set>
@@ -4564,7 +4579,7 @@ margin: 5px;}</string>
        </font>
       </property>
       <property name="text">
-       <string>0</string>
+       <string notr="true">0</string>
       </property>
       <property name="alignment">
        <set>Qt::AlignCenter</set>
@@ -5817,7 +5832,7 @@ margin: 5px;}</string>
        </font>
       </property>
       <property name="text">
-       <string>0</string>
+       <string notr="true">0</string>
       </property>
       <property name="alignment">
        <set>Qt::AlignCenter</set>
@@ -5930,7 +5945,7 @@ margin: 5px;}</string>
        </font>
       </property>
       <property name="text">
-       <string>0</string>
+       <string notr="true">0</string>
       </property>
       <property name="alignment">
        <set>Qt::AlignCenter</set>
@@ -6043,7 +6058,7 @@ margin: 5px;}</string>
        </font>
       </property>
       <property name="text">
-       <string>0</string>
+       <string notr="true">0</string>
       </property>
       <property name="alignment">
        <set>Qt::AlignCenter</set>
@@ -6583,7 +6598,7 @@ margin: 5px;}</string>
        </font>
       </property>
       <property name="text">
-       <string>0</string>
+       <string notr="true">0</string>
       </property>
       <property name="alignment">
        <set>Qt::AlignCenter</set>
@@ -6696,7 +6711,7 @@ margin: 5px;}</string>
        </font>
       </property>
       <property name="text">
-       <string>0</string>
+       <string notr="true">0</string>
       </property>
       <property name="alignment">
        <set>Qt::AlignCenter</set>
@@ -7236,7 +7251,7 @@ margin: 5px;}</string>
        </font>
       </property>
       <property name="text">
-       <string>0</string>
+       <string notr="true">0</string>
       </property>
       <property name="alignment">
        <set>Qt::AlignCenter</set>
@@ -7349,7 +7364,7 @@ margin: 5px;}</string>
        </font>
       </property>
       <property name="text">
-       <string>0</string>
+       <string notr="true">0</string>
       </property>
       <property name="alignment">
        <set>Qt::AlignCenter</set>

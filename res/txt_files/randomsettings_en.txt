@@ -1,0 +1,34 @@
+algorithm
+randomness
+detalization
+quality
+temperature
+structure
+ice color
+rock color
+mountain color
+plain color
+sand color
+shelf color
+ocean color
+noise
+gradient
+is plant
+lighting
+light point
+name algorithm
+is clouds
+cloud size
+cloud detalization
+cloud transparent
+cloud corection
+cloud color
+is atmosphere
+atmosphere transparent
+atmosphere size
+atposphere color
+is ring
+ring internal R
+ring external R
+ring color
+north

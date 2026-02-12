@@ -16,6 +16,7 @@ public:
     QVector <int> GetData();
     QVector <double> GetTrueData();
     void SetData(QVector<int>);
+    void ReloadText();
     void paintEvent(QPaintEvent *) override;
     void mousePressEvent(QMouseEvent *event);
     void mouseReleaseEvent(QMouseEvent *event);

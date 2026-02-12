@@ -19,9 +19,13 @@ windowsettings::windowsettings(QWidget *parent) :
     QFormLayout *formLayout = new QFormLayout();
     QGroupBox *groupBox = new QGroupBox();
 
-    QFile file(":/txt_files/res/txt_files/randomsettings.txt");
-    file.open(QIODevice::ReadOnly);
-    QTextStream dat(&file);
+    QFile* file;
+    if (myparent->language == "ru")
+        file = new QFile(":/txt_files/res/txt_files/randomsettings_ru.txt");
+    else
+        file = new QFile(":/txt_files/res/txt_files/randomsettings_en.txt");
+    file->open(QIODevice::ReadOnly);
+    QTextStream dat(file);
     int count=0;
     QPalette palette;
     palette.setColor(QPalette::WindowText,QColor(110,170,200));
@@ -39,7 +43,7 @@ windowsettings::windowsettings(QWidget *parent) :
         count++;
         rndarr.append(box);
     }
-    file.close();
+    file->close();
 
     groupBox->setLayout(formLayout);
     ui->scrollArea->setWidget(groupBox);

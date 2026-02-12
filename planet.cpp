@@ -10,6 +10,7 @@
 #include <QDebug>
 #include "QTime"
 #include <QFontDatabase>
+#include <QCoreApplication>
 Planet::Planet()
 {
     color_black=QColor(0,0,0);
@@ -792,20 +793,20 @@ void Planet::DrawDescription()
     p.setPen(QPen(QColor(110,170,200)));
     p.setFont(QFont("Consolas",8));
 
-    s+=QT_TR_NOOP("name       - ")+name+"\n";
+    s+=QCoreApplication::translate("Planet", "name       - ")+name+"\n";
 
-    if (starclass.isEmpty()) s+=QT_TR_NOOP("day        - [not found]\n");
-    else s+=QT_TR_NOOP("day        - ")+facts.day+QT_TR_NOOP("h\n");
+    if (starclass.isEmpty()) s+=QCoreApplication::translate("Planet", "day        - [not found]")+"\n";
+    else s+=QCoreApplication::translate("Planet", "day        - ")+facts.day+QCoreApplication::translate("Planet", "h")+"\n";
 
-    if (starclass.isEmpty()) s+=QT_TR_NOOP("year       - [not found]\n");
-    else s+=QT_TR_NOOP("year       - ")+facts.year+QT_TR_NOOP("y\n");
+    if (starclass.isEmpty()) s+=QCoreApplication::translate("Planet", "year       - [not found]")+"\n";
+    else s+=QCoreApplication::translate("Planet", "year       - ")+facts.year+QCoreApplication::translate("Planet", "y")+"\n";
 
-    s+=QT_TR_NOOP("gravity    - ")+facts.gravitation+"g\n";
+    s+=QCoreApplication::translate("Planet", "gravity    - ")+facts.gravitation+"g\n";
 
-    if (starclass.isEmpty()) s+=QT_TR_NOOP("star       - [not found]\n");
+    if (starclass.isEmpty()) s+=QCoreApplication::translate("Planet", "star       - [not found]")+"\n";
     else
     {
-        s+=QT_TR_NOOP("star       - ");
+        s+=QCoreApplication::translate("Planet", "star       - ");
         for (int i=0;i<starclass.length();i++)
         {
             s+=classes[starclass[i]];
@@ -814,14 +815,14 @@ void Planet::DrawDescription()
         s+='\n';
     }
 
-    s+=QT_TR_NOOP("resources  - ")+facts.resources;
+    s+=QCoreApplication::translate("Planet", "resources  - ")+facts.resources;
     p.drawText(QRect(40,27,400,400), s);
-    Level(QT_TR_NOOP("life         "),8,facts.life,"good",p);
-    Level(QT_TR_NOOP("water        "),9,facts.water,"neutral",p);
-    Level(QT_TR_NOOP("ice          "),10,facts.ice,"bad",p);
-    Level(QT_TR_NOOP("radiation    "),11,facts.radiation,"bad",p);
-    Level(QT_TR_NOOP("temperature  "),12,facts.temperature,"neutral",p);
-    Level(QT_TR_NOOP("seismicity   "),13,facts.seismicity,"bad",p);
+    Level(QCoreApplication::translate("Planet", "life         "),8,facts.life,"good",p);
+    Level(QCoreApplication::translate("Planet", "water        ", nullptr),9,facts.water,"neutral",p);
+    Level(QCoreApplication::translate("Planet", "ice          "),10,facts.ice,"bad",p);
+    Level(QCoreApplication::translate("Planet", "radiation    "),11,facts.radiation,"bad",p);
+    Level(QCoreApplication::translate("Planet", "temperature  "),12,facts.temperature,"neutral",p);
+    Level(QCoreApplication::translate("Planet", "seismicity   "),13,facts.seismicity,"bad",p);
     p.end();
 }
 QString Planet::Resources()
@@ -833,7 +834,7 @@ QString Planet::Resources()
     QString res="";
     QVector <int> indexes={-1};
     int x=RAND(0,5);
-    if (x==0) return QT_TR_NOOP("[not found]\n");
+    if (x==0) return QCoreApplication::translate("Planet", "[not found]\n");
     for (int i=0;i<x;i++)
     {
         int index=RAND(0,14);

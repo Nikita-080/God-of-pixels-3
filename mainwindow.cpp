@@ -42,8 +42,6 @@ MainWindow::MainWindow(QWidget *parent)
     pc2->setParent(ui->tab_10);
     pc2->setGeometry(0,101,400,500);
     //алгоритм генерации
-    ui->comboBox->addItem(tr("diamond square"));
-    ui->comboBox->addItem(tr("fault formation"));
     ui->horizontalSlider_4->setEnabled(false);
     connect(ui->comboBox,QOverload<int>::of(&QComboBox::currentIndexChanged),
             this,
@@ -111,6 +109,10 @@ MainWindow::MainWindow(QWidget *parent)
     ui->pushButton_6->hide();
     ui->pushButton_7->hide();
     setWindowTitle("God of Pixels 3");
+
+    connect(ui->action_10, &QAction::triggered,this,&MainWindow::M_Switch_Language);
+
+    language = "en";
 }
 QString MainWindow::ReadText(QString path)
 {
@@ -136,15 +138,41 @@ void MainWindow::AlgorithmChange()
         ui->horizontalSlider_4->setEnabled(true);
     }
 }
+
+void MainWindow::M_Switch_Language()
+{
+    if (language == "ru")
+    {
+        qtLanguageTranslator.load(":/translations/QtLanguage_en");
+        language = "en";
+    }
+    else
+    {
+        qtLanguageTranslator.load(":/translations/QtLanguage_ru");
+        language = "ru";
+    }
+    qApp->installTranslator(&qtLanguageTranslator);
+
+    ms->ReloadText();
+}
+
+void MainWindow::changeEvent(QEvent *event)
+{
+    // В случае получения события изменения языка приложения
+    if (event->type() == QEvent::LanguageChange) {
+        ui->retranslateUi(this);    // переведём окно заново
+    }
+}
+
 void MainWindow::M_About()
 {
     QMessageBox msb;
     QString message;
-    message.append(tr("name - God of Pixels 3\n"));
+    message.append(tr("name - God of Pixels 3")+"\n");
     message.append(tr("version - "));
     message.append(QString::number(VERSION));
     message.append("\n");
-    message.append(tr("author - Riabov Nikita\n"));
+    message.append(tr("author - Riabov Nikita")+"\n");
     message.append(tr("feedback - riabovnick080@yandex.ru"));
     msb.setText(message);
     msb.exec();
@@ -288,7 +316,7 @@ void MainWindow::M_Save_Image()
     try {
         planet.img.save(filename);
     }  catch (...) {
-        QMessageBox::critical(nullptr,tr("Error"),CANT_SAVE_FILE);
+        QMessageBox::critical(nullptr,tr("Error"),tr("0001 unable to save file"));
     }
 }
 void MainWindow::M_Save_Full_Image()
@@ -301,7 +329,7 @@ void MainWindow::M_Save_Full_Image()
     try {
         planet.img_final.save(filename);
     }  catch (...) {
-        QMessageBox::critical(nullptr,tr("Error"),CANT_SAVE_FILE);
+        QMessageBox::critical(nullptr,tr("Error"),tr("0001 unable to save file"));
     }
 }
 void MainWindow::M_Load_Planet()
@@ -321,7 +349,7 @@ void MainWindow::M_Load_Planet()
         if (!s.JSON_deserialize(jobject["settings"].toObject()))
         {
             file.close();
-            QMessageBox::critical(nullptr,tr("Error"),CANT_LOAD_FILE);
+            QMessageBox::critical(nullptr,tr("Error"),tr("0002 unable to load file"));
             return;
         }
         Settings_Set();
@@ -332,7 +360,7 @@ void MainWindow::M_Load_Planet()
         ui->label_7->setText(planet.name);
         isEmtyPlanet=false;
     }  catch (...) {
-        QMessageBox::critical(nullptr,tr("Error"),CANT_LOAD_FILE);
+        QMessageBox::critical(nullptr,tr("Error"),tr("0002 unable to load file"));
     }
     file.close();
 }
@@ -357,7 +385,7 @@ void MainWindow::M_Save_Planet()
     }
     else
     {
-        QMessageBox::critical(nullptr,tr("Error"),CANT_SAVE_FILE);
+        QMessageBox::critical(nullptr,tr("Error"),tr("0001 unable to save file"));
     }
 }
 void MainWindow::Gen(bool isCreateNew, QProgressBar *pb,Planet *p,int seed)
@@ -448,7 +476,7 @@ void MainWindow::M_Load_Base_Settings(){
     {
         Settings_Set();
     }
-    else QMessageBox::critical(nullptr,"Ошибка",CANT_LOAD_DEFAULT);
+    else QMessageBox::critical(nullptr,tr("Error"),tr("0003 unable to load default settings"));
 }
 void MainWindow::SliderShow(){
     QSlider* slider = qobject_cast<QSlider*>(sender());
@@ -593,7 +621,7 @@ void MainWindow::M_Save_Settings(){
                                 tr("Texts (*.json);;All files (*.*)"));
     if (filename.isEmpty()) return;
     Settings_Get();
-    if (!s.Save(filename)) QMessageBox::critical(nullptr,tr("Error"),CANT_SAVE_FILE);
+    if (!s.Save(filename)) QMessageBox::critical(nullptr,tr("Error"),tr("0001 unable to save file"));
 }
 void MainWindow::M_Load_Settings(){
     QString filename = QFileDialog::getOpenFileName(this,
@@ -607,7 +635,7 @@ void MainWindow::M_Load_Settings(){
         Settings_Set();
         update();
     }
-    else QMessageBox::critical(nullptr,tr("Error"),CANT_LOAD_FILE);
+    else QMessageBox::critical(nullptr,tr("Error"),tr("0002 unable to load file"));
 }
 void MainWindow::Img_Report() //служебная функция
 {

@@ -48,7 +48,11 @@
     </qresource>
     <qresource prefix="/txt_files">
         <file>res/txt_files/NameMatrix.txt</file>
-        <file>res/txt_files/randomsettings.txt</file>
         <file>res/txt_files/settingsbase.json</file>
+        <file>res/txt_files/randomsettings_en.txt</file>
+        <file>res/txt_files/randomsettings_ru.txt</file>
+    </qresource>
+    <qresource prefix="/translations">
+        <file>QtLanguage_ru.qm</file>
     </qresource>
 </RCC>
