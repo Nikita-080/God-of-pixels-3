@@ -151,7 +151,7 @@
      </font>
     </property>
     <property name="text">
-     <string>Планета</string>
+     <string>Planet</string>
     </property>
     <property name="alignment">
      <set>Qt::AlignCenter</set>
@@ -286,7 +286,7 @@
     </property>
     <property name="font">
      <font>
-      <pointsize>18</pointsize>
+      <pointsize>34</pointsize>
      </font>
     </property>
     <property name="styleSheet">
@@ -296,7 +296,7 @@ border-color: rgb(110, 170, 200);
 </string>
     </property>
     <property name="text">
-     <string/>
+     <string>Create</string>
     </property>
    </widget>
    <widget class="QPushButton" name="pushButton_19">
@@ -429,7 +429,7 @@ border-color: rgb(110, 170, 200);
     <property name="font">
      <font>
       <family>Consolas</family>
-      <pointsize>18</pointsize>
+      <pointsize>34</pointsize>
      </font>
     </property>
     <property name="styleSheet">
@@ -438,7 +438,7 @@ border-style: solid;
 border-color: rgb(110, 170, 200);</string>
     </property>
     <property name="text">
-     <string/>
+     <string>Change</string>
     </property>
    </widget>
    <widget class="QProgressBar" name="progressBar">
@@ -785,7 +785,7 @@ color: rgb(255, 255, 255);</string>
      <enum>QTabWidget::West</enum>
     </property>
     <property name="currentIndex">
-     <number>0</number>
+     <number>3</number>
     </property>
     <property name="iconSize">
      <size>
@@ -943,7 +943,7 @@ color: rgb(255, 255, 255);</string>
        </font>
       </property>
       <property name="text">
-       <string>Качество</string>
+       <string>Quality</string>
       </property>
      </widget>
      <widget class="QSlider" name="horizontalSlider">
@@ -1238,7 +1238,7 @@ QSlider::handle:horizontal {selection-background-color: rgb(0, 255, 0);}</string
        </font>
       </property>
       <property name="text">
-       <string>Случайность</string>
+       <string>Randomness</string>
       </property>
      </widget>
      <widget class="QSlider" name="horizontalSlider_2">
@@ -1518,7 +1518,7 @@ QSlider::handle:horizontal {selection-background-color: rgb(0, 255, 0);}</string
        </font>
       </property>
       <property name="text">
-       <string>Температура</string>
+       <string>Temperature</string>
       </property>
      </widget>
      <widget class="QSlider" name="horizontalSlider_3">
@@ -2056,7 +2056,7 @@ margin: 5px;}</string>
        </font>
       </property>
       <property name="text">
-       <string>Общие</string>
+       <string>Main</string>
       </property>
      </widget>
      <widget class="QComboBox" name="comboBox">
@@ -2215,7 +2215,7 @@ margin: 5px;}</string>
        </font>
       </property>
       <property name="text">
-       <string>Алгоритм</string>
+       <string>Algorithm</string>
       </property>
      </widget>
      <widget class="QLabel" name="label_45">
@@ -2355,7 +2355,7 @@ margin: 5px;}</string>
        </font>
       </property>
       <property name="text">
-       <string>Детализация</string>
+       <string>Detalisation</string>
       </property>
      </widget>
      <widget class="QSlider" name="horizontalSlider_4">
@@ -2638,7 +2638,7 @@ margin: 5px;}</string>
        </font>
       </property>
       <property name="text">
-       <string>Структура</string>
+       <string>Structure</string>
       </property>
      </widget>
     </widget>
@@ -2752,7 +2752,7 @@ margin: 5px;}</string>
        </font>
       </property>
       <property name="text">
-       <string>Биом</string>
+       <string>Biom</string>
       </property>
       <property name="alignment">
        <set>Qt::AlignCenter</set>
@@ -2865,7 +2865,7 @@ margin: 5px;}</string>
        </font>
       </property>
       <property name="text">
-       <string>скалы</string>
+       <string>rocks</string>
       </property>
       <property name="alignment">
        <set>Qt::AlignCenter</set>
@@ -2978,7 +2978,7 @@ margin: 5px;}</string>
        </font>
       </property>
       <property name="text">
-       <string>горы</string>
+       <string>mountains</string>
       </property>
       <property name="alignment">
        <set>Qt::AlignCenter</set>
@@ -3091,7 +3091,7 @@ margin: 5px;}</string>
        </font>
       </property>
       <property name="text">
-       <string>равнины</string>
+       <string>plains</string>
       </property>
       <property name="alignment">
        <set>Qt::AlignCenter</set>
@@ -3204,7 +3204,7 @@ margin: 5px;}</string>
        </font>
       </property>
       <property name="text">
-       <string>низменности</string>
+       <string>lowlands</string>
       </property>
       <property name="alignment">
        <set>Qt::AlignCenter</set>
@@ -3317,7 +3317,7 @@ margin: 5px;}</string>
        </font>
       </property>
       <property name="text">
-       <string>пляжи</string>
+       <string>beaches</string>
       </property>
       <property name="alignment">
        <set>Qt::AlignCenter</set>
@@ -3430,7 +3430,7 @@ margin: 5px;}</string>
        </font>
       </property>
       <property name="text">
-       <string>шельф</string>
+       <string>shelf</string>
       </property>
       <property name="alignment">
        <set>Qt::AlignCenter</set>
@@ -3543,7 +3543,7 @@ margin: 5px;}</string>
        </font>
       </property>
       <property name="text">
-       <string>океан</string>
+       <string>ocean</string>
       </property>
       <property name="alignment">
        <set>Qt::AlignCenter</set>
@@ -3655,7 +3655,7 @@ margin: 5px;}</string>
        </font>
       </property>
       <property name="text">
-       <string>Цвет</string>
+       <string>Color</string>
       </property>
       <property name="alignment">
        <set>Qt::AlignCenter</set>
@@ -3790,7 +3790,7 @@ margin: 5px;}</string>
        </font>
       </property>
       <property name="text">
-       <string>Цвета</string>
+       <string>Colors</string>
       </property>
      </widget>
      <widget class="QSlider" name="horizontalSlider_5">
@@ -4046,7 +4046,7 @@ margin: 5px;}</string>
        </font>
       </property>
       <property name="text">
-       <string>Шум</string>
+       <string>Noise</string>
       </property>
      </widget>
      <widget class="QLabel" name="label_48">
@@ -4269,7 +4269,7 @@ margin: 5px;}</string>
        </font>
       </property>
       <property name="text">
-       <string>Градиент</string>
+       <string>Gradient</string>
       </property>
      </widget>
     </widget>
@@ -4294,7 +4294,7 @@ margin: 5px;}</string>
        </font>
       </property>
       <property name="text">
-       <string>Растения</string>
+       <string>Plants</string>
       </property>
      </widget>
      <widget class="QLabel" name="label_32">
@@ -4314,7 +4314,7 @@ margin: 5px;}</string>
        </font>
       </property>
       <property name="text">
-       <string>Жизнь</string>
+       <string>Life</string>
       </property>
      </widget>
     </widget>
@@ -4429,7 +4429,7 @@ margin: 5px;}</string>
        </font>
       </property>
       <property name="text">
-       <string>Освещение</string>
+       <string>Lighting</string>
       </property>
      </widget>
      <widget class="QSlider" name="horizontalSlider_6">
@@ -4587,7 +4587,7 @@ margin: 5px;}</string>
        </font>
       </property>
       <property name="text">
-       <string>Свет</string>
+       <string>Light</string>
       </property>
      </widget>
     </widget>
@@ -4702,7 +4702,7 @@ margin: 5px;}</string>
        </font>
       </property>
       <property name="text">
-       <string>Имя планеты</string>
+       <string>Planet's name</string>
       </property>
      </widget>
      <widget class="QRadioButton" name="radioButton">
@@ -4812,7 +4812,7 @@ margin: 5px;}</string>
        </font>
       </property>
       <property name="text">
-       <string>стандарт GoP2</string>
+       <string>GoP2 standart</string>
       </property>
      </widget>
      <widget class="QRadioButton" name="radioButton_2">
@@ -4922,7 +4922,7 @@ margin: 5px;}</string>
        </font>
       </property>
       <property name="text">
-       <string>человекочитаемое</string>
+       <string>human-friendly</string>
       </property>
      </widget>
      <widget class="QRadioButton" name="radioButton_3">
@@ -5052,7 +5052,7 @@ margin: 5px;}</string>
        </font>
       </property>
       <property name="text">
-       <string>Имя</string>
+       <string>Name</string>
       </property>
      </widget>
     </widget>
@@ -5167,7 +5167,7 @@ margin: 5px;}</string>
        </font>
       </property>
       <property name="text">
-       <string>Облака</string>
+       <string>Clouds</string>
       </property>
      </widget>
      <widget class="QLabel" name="label_24">
@@ -5277,7 +5277,7 @@ margin: 5px;}</string>
        </font>
       </property>
       <property name="text">
-       <string>Размер </string>
+       <string>Size</string>
       </property>
      </widget>
      <widget class="QSlider" name="horizontalSlider_8">
@@ -5412,7 +5412,7 @@ margin: 5px;}</string>
        </font>
       </property>
       <property name="text">
-       <string>Детализация</string>
+       <string>Detalization</string>
       </property>
      </widget>
      <widget class="QSlider" name="horizontalSlider_9">
@@ -5547,7 +5547,7 @@ margin: 5px;}</string>
        </font>
       </property>
       <property name="text">
-       <string>Прозрачность</string>
+       <string>Transparent</string>
       </property>
      </widget>
      <widget class="QSlider" name="horizontalSlider_10">
@@ -5685,7 +5685,7 @@ margin: 5px;}</string>
        </font>
       </property>
       <property name="text">
-       <string>Коррекция</string>
+       <string>Correction</string>
       </property>
      </widget>
      <widget class="QPushButton" name="pushButton_33">
@@ -5707,7 +5707,7 @@ margin: 5px;}</string>
        <string notr="true">QPushButton{background-color: rgb(66,66,66);}</string>
       </property>
       <property name="text">
-       <string>Цвет</string>
+       <string>Color</string>
       </property>
      </widget>
      <widget class="QLabel" name="label_30">
@@ -6066,7 +6066,7 @@ margin: 5px;}</string>
        </font>
       </property>
       <property name="text">
-       <string>Облака</string>
+       <string>Clouds</string>
       </property>
      </widget>
     </widget>
@@ -6181,7 +6181,7 @@ margin: 5px;}</string>
        </font>
       </property>
       <property name="text">
-       <string>Атмосфера</string>
+       <string>Atmosphere</string>
       </property>
      </widget>
      <widget class="QLabel" name="label_25">
@@ -6291,7 +6291,7 @@ margin: 5px;}</string>
        </font>
       </property>
       <property name="text">
-       <string>Прозрачность</string>
+       <string>Transparent</string>
       </property>
      </widget>
      <widget class="QSlider" name="horizontalSlider_11">
@@ -6426,7 +6426,7 @@ margin: 5px;}</string>
        </font>
       </property>
       <property name="text">
-       <string>Размер</string>
+       <string>Size</string>
       </property>
      </widget>
      <widget class="QSlider" name="horizontalSlider_13">
@@ -6473,7 +6473,7 @@ margin: 5px;}</string>
        <string notr="true">QPushButton{background-color: rgb(66,66,66);}</string>
       </property>
       <property name="text">
-       <string>Цвет</string>
+       <string>Color</string>
       </property>
      </widget>
      <widget class="QLabel" name="label_35">
@@ -6719,7 +6719,7 @@ margin: 5px;}</string>
        </font>
       </property>
       <property name="text">
-       <string>Атмосфера</string>
+       <string>Atmosphere</string>
       </property>
      </widget>
     </widget>
@@ -6834,7 +6834,7 @@ margin: 5px;}</string>
        </font>
       </property>
       <property name="text">
-       <string>Кольца</string>
+       <string>Rings</string>
       </property>
      </widget>
      <widget class="QLabel" name="label_31">
@@ -6944,7 +6944,7 @@ margin: 5px;}</string>
        </font>
       </property>
       <property name="text">
-       <string>R внутренний</string>
+       <string>R internal</string>
       </property>
      </widget>
      <widget class="QSlider" name="horizontalSlider_12">
@@ -7079,7 +7079,7 @@ margin: 5px;}</string>
        </font>
       </property>
       <property name="text">
-       <string>R внешний</string>
+       <string>R external</string>
       </property>
      </widget>
      <widget class="QSlider" name="horizontalSlider_14">
@@ -7126,7 +7126,7 @@ margin: 5px;}</string>
        <string notr="true">QPushButton{background-color: rgb(66,66,66);}</string>
       </property>
       <property name="text">
-       <string>Цвет</string>
+       <string>Color</string>
       </property>
      </widget>
      <widget class="QLabel" name="label_38">
@@ -7372,7 +7372,7 @@ margin: 5px;}</string>
        </font>
       </property>
       <property name="text">
-       <string>Кольца</string>
+       <string>Rings</string>
       </property>
      </widget>
     </widget>
@@ -7396,7 +7396,7 @@ margin: 5px;}</string>
        </font>
       </property>
       <property name="text">
-       <string>Северный полюс</string>
+       <string>North</string>
       </property>
      </widget>
     </widget>
@@ -8063,7 +8063,7 @@ color: rgb(255, 255, 255);</string>
      <string notr="true"/>
     </property>
     <property name="title">
-     <string>Файл</string>
+     <string>File</string>
     </property>
     <addaction name="action"/>
     <addaction name="action_8"/>
@@ -8072,7 +8072,7 @@ color: rgb(255, 255, 255);</string>
    </widget>
    <widget class="QMenu" name="menu_2">
     <property name="title">
-     <string>Настройки</string>
+     <string>Settings</string>
     </property>
     <addaction name="action_3"/>
     <addaction name="action_4"/>
@@ -8081,7 +8081,7 @@ color: rgb(255, 255, 255);</string>
    </widget>
    <widget class="QMenu" name="menu_3">
     <property name="title">
-     <string>Справка</string>
+     <string>Help</string>
     </property>
     <addaction name="action_6"/>
    </widget>
@@ -8092,32 +8092,32 @@ color: rgb(255, 255, 255);</string>
   <widget class="QStatusBar" name="statusbar"/>
   <action name="action">
    <property name="text">
-    <string>Сохранить изображение</string>
+    <string>Save image</string>
    </property>
   </action>
   <action name="action_2">
    <property name="text">
-    <string>Сохранить планету</string>
+    <string>Save planet</string>
    </property>
   </action>
   <action name="action_3">
    <property name="text">
-    <string>Сохранить</string>
+    <string>Save</string>
    </property>
   </action>
   <action name="action_4">
    <property name="text">
-    <string>Загрузить</string>
+    <string>Load</string>
    </property>
   </action>
   <action name="action_5">
    <property name="text">
-    <string>Восстановить умолчания</string>
+    <string>Load defaults</string>
    </property>
   </action>
   <action name="action_6">
    <property name="text">
-    <string>О программе</string>
+    <string>About program</string>
    </property>
   </action>
   <action name="action_7">
@@ -8127,17 +8127,17 @@ color: rgb(255, 255, 255);</string>
   </action>
   <action name="action_8">
    <property name="text">
-    <string>Сохранить полное изображение</string>
+    <string>Save full image</string>
    </property>
   </action>
   <action name="action_9">
    <property name="text">
-    <string>Загрузить планету</string>
+    <string>Load planet</string>
    </property>
   </action>
   <action name="action_10">
    <property name="text">
-    <string>Переключить язык</string>
+    <string>Switch language</string>
    </property>
   </action>
  </widget>
