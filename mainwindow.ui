@@ -291,6 +291,7 @@
     </property>
     <property name="font">
      <font>
+      <family>Consolas</family>
       <pointsize>24</pointsize>
      </font>
     </property>

@@ -14,7 +14,9 @@ There is render example, Pluto and Mars from God of Pixels 3 and from Hubble:
 
  - my page on [itch.io]()
 
- - video example on [youtube.com]()
+ - "gameplay" trailer on [youtube.com]()
+
+ - "cinematic" trailer on [youtube.com]()
 
  - more about climate simulation on [elibrary.ru](https://elibrary.ru/item.asp?id=80284921)
 

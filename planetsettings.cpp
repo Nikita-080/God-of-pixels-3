@@ -33,7 +33,7 @@ QVector<int> PlanetSettings::JsonToVec(QJsonArray jarray)
 QJsonObject PlanetSettings::JSON_serialize()
 {
     QJsonObject jobject;
-    jobject["version"]=VERSION;
+    jobject["version"]=PARSER_VERSION;
     jobject["terramode"] = terramode;
     jobject["randomness"] = randomness;
     jobject["iterations"] = iterations;

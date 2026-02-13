@@ -86,7 +86,7 @@ MainWindow::MainWindow(QWidget *parent)
     //служебные функции
     connect(ui->pushButton_6,&QPushButton::clicked,this,&MainWindow::BiomGrad);
     connect(ui->pushButton_7,&QPushButton::clicked,this,&MainWindow::Img_Report);
-
+count=0;
     connect(ui->action_3,&QAction::triggered,this,&MainWindow::M_Save_Settings);
     connect(ui->action_4,&QAction::triggered,this,&MainWindow::M_Load_Settings);
     connect(ui->action_5,&QAction::triggered,this,&MainWindow::M_Load_Base_Settings);
@@ -170,7 +170,7 @@ void MainWindow::M_About()
     QString message;
     message.append(tr("name - God of Pixels 3")+"\n");
     message.append(tr("version - "));
-    message.append(QString::number(VERSION));
+    message.append(PROGRAM_VERSION);
     message.append("\n");
     message.append(tr("author - Riabov Nikita")+"\n");
     message.append(tr("feedback - riabovnick080@yandex.ru"));
@@ -285,6 +285,13 @@ void MainWindow::CreatePlanet()
     ui->pushButton_2->setIcon(QIcon(QPixmap::fromImage(img)));
     ui->label_7->setText(planet.name);
     isEmtyPlanet=false;
+
+    //code for promo materials
+    /*
+    count++;
+    QString filename = "C:\\Users\\Никита\\Desktop\\planets\\"+QString::number(count)+".png";
+    planet.img.save(filename);
+    */
 }
 void MainWindow::ShowPlanet()
 {

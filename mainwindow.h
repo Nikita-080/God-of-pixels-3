@@ -38,6 +38,8 @@ public:
     AutoGenSettings box;
 
     QString language;
+
+    int count; //not for release
 public:
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
