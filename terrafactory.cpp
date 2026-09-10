@@ -1,80 +1,60 @@
 #include "terrafactory.h"
+#include "noise3d.h"
+#include "spheremath.h"
+#include <QtMath>
 
-TerraFactory::TerraFactory(int Size,int seed)
+TerraFactory::TerraFactory(int width, int height, int seed)
+    : w(width)
+    , h(height)
+    , seed(seed)
 {
-    rnd.seed(seed);
-    size=Size;
-    FillZero();
+    rnd.seed(static_cast<quint32>(seed));
 }
-void TerraFactory::FillZero()
+
+QVector<QVector<double>> TerraFactory::makeZero() const
 {
-    matrix.fill(QVector<double>().fill(0,size),size);
+    QVector<QVector<double>> m;
+    m.resize(w);
+    for (int x = 0; x < w; ++x)
+        m[x].fill(0.0, h);
+    return m;
 }
-QVector<QVector<double>> TerraFactory::diamondsquare(double randfactor)
+
+QVector<QVector<double>> TerraFactory::sphericalNoise(double amplitude)
 {
-    FillZero();
-    int step=size-1;
-    int halfstep=step/2;
-    double noise=randfactor*size;
-    double height;
-    while (step!=1)
+    QVector<QVector<double>> m = makeZero();
+    Noise3D n(seed);
+    const double freq = 1.5 + amplitude * 0.35;
+    const int octaves = 4 + qBound(0, qRound(amplitude / 3.0), 3);
+    for (int x = 0; x < w; ++x)
     {
-        //square
-        for (int i=halfstep;i<size;i+=step)
+        for (int y = 0; y < h; ++y)
         {
-            for (int j=halfstep;j<size;j+=step)
-            {
-                height=(matrix[i-halfstep][j-halfstep]+
-                        matrix[i-halfstep][j+halfstep]+
-                        matrix[i+halfstep][j-halfstep]+
-                        matrix[i+halfstep][j+halfstep])/4;
-                height+=rnd.generateDouble()*noise*2-noise;
-                matrix[i][j]=height;
-            }
+            const SphereVec3 p = equirectToSphere(x, y, w, h);
+            m[x][y] = n.fbm(p.x * freq, p.y * freq, p.z * freq, octaves);
         }
-        //diamond
-        for (int i=0;i<size;i+=halfstep)
-        {
-            for (int j=(i+halfstep)%step;j<size;j+=step)
-            {
-                height=0;
-                if (i>0) height+=matrix[i-halfstep][j];
-                if (i<size-1) height+=matrix[i+halfstep][j];
-                if (j>0) height+=matrix[i][j-halfstep];
-                if (j<size-1) height+=matrix[i][j+halfstep];
-                height/=4;
-                height+=rnd.generateDouble()*noise*2-noise;
-                matrix[i][j]=height;
-            }
-        }
-        step/=2;
-        halfstep=step/2;
-        noise/=2;
     }
-    return matrix;
+    return m;
 }
-QVector<QVector<double>> TerraFactory::foultformation(int iter)
+
+QVector<QVector<double>> TerraFactory::sphericalFault(int iterations)
 {
-    FillZero();
-    int x1,x2,y1,y2,a,b,c;
-    for (int i=iter;i>0;i--)
+    QVector<QVector<double>> m = makeZero();
+    const int iter = qMax(1, iterations);
+    for (int i = 0; i < iter; ++i)
     {
-        x1=rnd.bounded(0,size);
-        x2=rnd.bounded(0,size);
-        y1=rnd.bounded(0,size);
-        y2=rnd.bounded(0,size);
-        a=y1-y2;
-        b=x2-x1;
-        c=-x2*y1+x1*y2;
-        for (int j=0;j<size;j++)
+        const double ax = rnd.generateDouble() * 2.0 - 1.0;
+        const double ay = rnd.generateDouble() * 2.0 - 1.0;
+        const double az = rnd.generateDouble() * 2.0 - 1.0;
+        SphereVec3 n = sphereNorm({ax, ay, az});
+        for (int x = 0; x < w; ++x)
         {
-            for (int k=0;k<size;k++)
+            for (int y = 0; y < h; ++y)
             {
-                // -+ iter maybe
-                if (a*j+b*k+c>0) matrix[k][j]+=1;
-                else matrix[k][j]-=1;
+                const SphereVec3 p = equirectToSphere(x, y, w, h);
+                m[x][y] += (sphereDot(n, p) > 0.0) ? 1.0 : -1.0;
             }
         }
     }
-    return matrix;
+    return m;
 }

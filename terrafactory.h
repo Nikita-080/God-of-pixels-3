@@ -7,15 +7,16 @@
 class TerraFactory
 {
 public:
-    TerraFactory(int Size,int Seed);
-    QVector<QVector<double>> foultformation(int iter);
-    QVector<QVector<double>> diamondsquare(double randfactor);
+    TerraFactory(int width, int height, int seed);
+    QVector<QVector<double>> sphericalNoise(double amplitude);
+    QVector<QVector<double>> sphericalFault(int iterations);
+
 private:
-    void FillZero();
-private:
-    int size;
+    int w;
+    int h;
+    int seed;
     QRandomGenerator rnd;
-    QVector<QVector<double>> matrix;
+    QVector<QVector<double>> makeZero() const;
 };
 
-#endif // TERRAFACTORY_H
+#endif

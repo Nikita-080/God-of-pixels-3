@@ -1,26 +1,19 @@
 #ifndef CLOUDFACTORY_H
 #define CLOUDFACTORY_H
-#include <QVector>
-#include <QRandomGenerator>
-#include <QMap>
+
+#include "noise3d.h"
+
 class CloudFactory
 {
 public:
-    int dimension;
+    CloudFactory(int octaves, bool unbias, int seed);
+    double GetNum(double x, double y, double z);
+
+private:
     int octaves;
     bool unbias;
-    double scale_factor;
-    QMap <QVector<double>,QVector<double>> gradient;
-    QRandomGenerator rnd;
-    double gauss_next;
-public:
-    double smoothstep(double t);
-    double lerp(double t, double a, double b);
-    CloudFactory(int octaves, bool unbias, int Seed);
-    QVector <double> _generate_gradient();
-    double RandomGauss();
-    double get_plain_noise(double x,double y);
-    double GetNum(double x,double y);
+    Noise3D noise;
+    static double smoothstep(double t);
 };
 
-#endif // CLOUDFACTORY_H
+#endif
