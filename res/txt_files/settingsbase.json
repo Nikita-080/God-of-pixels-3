@@ -1,5 +1,5 @@
 {
-    "version": 1,
+    "version": 2,
     "R_external_ring": 3,
     "R_internal_ring": 3,
     "atmo_color": "#b7edfd",
@@ -23,19 +23,15 @@
     "noise": 0,
     "ocean_color": "#000080",
     "plain_color": "#b4b480",
-    "point_of_polar": [
-        195,
-        35
-    ],
-    "point_of_shine": [
-        120,
-        205
-    ],
+    "polar_lat": 90,
+    "polar_lon": 0,
     "randomness": 2,
     "ring_color": "#e6b060",
     "rock_color": "#808080",
     "shallow_color": "#2828ff",
     "shine": 5,
+    "shine_lat": 25,
+    "shine_lon": 90,
     "structure": [
         40,
         95,
@@ -48,5 +44,5 @@
     ],
     "temperature": 15,
     "terramode": 1,
-    "world_size": 8
+    "world_size": 10
 }

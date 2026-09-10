@@ -3,8 +3,8 @@
 #include <QColor>
 #include <QVector>
 #include <QRandomGenerator>
-#include <pointchoicer.h>
 #include <QJsonArray>
+#include <QJsonObject>
 
 class PlanetSettings
 {
@@ -28,8 +28,8 @@ public:
     bool is_gradient;
     bool is_plant;
     int shine;
-    QVector<int> point_of_shine;
-    QVector<double> point_of_shine_true;
+    int shine_lat;
+    int shine_lon;
     int name_algorithm;
     bool is_cloud;
     int cloud_size;
@@ -45,8 +45,8 @@ public:
     int R_internal_ring;
     int R_external_ring;
     QColor ring_color;
-    QVector<int> point_of_polar;
-    QVector<double> point_of_polar_true;
+    int polar_lat;
+    int polar_lon;
     QVector <double> true_structure;
 public:
     PlanetSettings();
@@ -54,7 +54,8 @@ public:
     bool Save(QString);
     QJsonObject JSON_serialize();
     bool JSON_deserialize(QJsonObject);
-    void Random(QVector<bool>,PointChoicer* pc);
+    void rebuildDerived();
+    void Random(QVector<bool>);
 private:
     int RAND(int x, int y);
     QJsonArray VecToJson(QVector<int>);

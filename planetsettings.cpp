@@ -5,13 +5,18 @@
 #include <QJsonDocument>
 #include <QJsonArray>
 #include <QDebug>
-#include <global.h>
+#include <QTime>
 #include <QMessageBox>
 #include <QCoreApplication>
+#include <global.h>
 PlanetSettings::PlanetSettings()
 {
     QTime midnight(0,0,0);
     rnd.seed(midnight.secsTo(QTime::currentTime()));
+    shine_lat = 25;
+    shine_lon = 90;
+    polar_lat = 90;
+    polar_lon = 0;
 }
 
 int PlanetSettings::RAND(int a, int b)
@@ -51,7 +56,8 @@ QJsonObject PlanetSettings::JSON_serialize()
     jobject["is_gradient"] = is_gradient;
     jobject["is_plant"] = is_plant;
     jobject["shine"] = shine;
-    jobject["point_of_shine"]=VecToJson(point_of_shine);
+    jobject["shine_lat"] = shine_lat;
+    jobject["shine_lon"] = shine_lon;
     jobject["name_algorithm"] = name_algorithm;
     jobject["is_cloud"] = is_cloud;
     jobject["cloud_size"] = cloud_size;
@@ -67,7 +73,8 @@ QJsonObject PlanetSettings::JSON_serialize()
     jobject["R_internal_ring"] = R_internal_ring;
     jobject["R_external_ring"] = R_external_ring;
     jobject["ring_color"] = ring_color.name();
-    jobject["point_of_polar"]=VecToJson(point_of_polar);
+    jobject["polar_lat"] = polar_lat;
+    jobject["polar_lon"] = polar_lon;
 
     return jobject;
 }
@@ -83,6 +90,12 @@ bool PlanetSettings::JSON_deserialize(QJsonObject jobject)
     switch (version)
     {
         case 1:
+            QMessageBox::critical(nullptr,
+                QCoreApplication::translate("PlanetSettings", "Error"),
+                QCoreApplication::translate("PlanetSettings",
+                    "0006 this file was created by an older version and cannot be loaded"));
+            return false;
+        case 2:
             terramode = jobject["terramode"].toInt();
             randomness = jobject["randomness"].toInt();
             iterations = jobject["iterations"].toInt();
@@ -100,7 +113,8 @@ bool PlanetSettings::JSON_deserialize(QJsonObject jobject)
             is_gradient = jobject["is_gradient"].toBool();
             is_plant = jobject["is_plant"].toBool();
             shine = jobject["shine"].toInt();
-            point_of_shine = JsonToVec(jobject["point_of_shine"].toArray());
+            shine_lat = jobject["shine_lat"].toInt();
+            shine_lon = jobject["shine_lon"].toInt();
             name_algorithm = jobject["name_algorithm"].toInt();
             is_cloud = jobject["is_cloud"].toBool();
             cloud_size = jobject["cloud_size"].toInt();
@@ -116,7 +130,9 @@ bool PlanetSettings::JSON_deserialize(QJsonObject jobject)
             R_internal_ring = jobject["R_internal_ring"].toInt();
             R_external_ring = jobject["R_external_ring"].toInt();
             ring_color = jobject["ring_color"].toString();
-            point_of_polar = JsonToVec(jobject["point_of_polar"].toArray());
+            polar_lat = jobject["polar_lat"].toInt();
+            polar_lon = jobject["polar_lon"].toInt();
+            rebuildDerived();
             break;
         default:
             QMessageBox::critical(nullptr,QCoreApplication::translate("PlanetSettings", "Error"),QCoreApplication::translate("PlanetSettings", "0005 unknown file version"));
@@ -135,6 +151,12 @@ bool PlanetSettings::Save(QString path)
     }
     return false;
 }
+void PlanetSettings::rebuildDerived()
+{
+    true_structure.clear();
+    for (int i = 0; i < structure.size(); ++i)
+        true_structure.append(280.0 - ((structure[i] - 40) * 280.0 / 385.0));
+}
 bool PlanetSettings::Load(QString path){
     QFile file(path);
     if(file.open(QFile::ReadOnly|QFile::Text)){
@@ -144,11 +166,11 @@ bool PlanetSettings::Load(QString path){
     }
     return false;
 }
-void PlanetSettings::Random(QVector<bool> isRnd,PointChoicer* pc){
+void PlanetSettings::Random(QVector<bool> isRnd){
     if (isRnd[0]) terramode=RAND(0,1);
     if (isRnd[1]) randomness=RAND(1,10);
     if (isRnd[2]) iterations=RAND(50,1000);
-    if (isRnd[3]) world_size=RAND(4,8);
+    if (isRnd[3]) world_size=RAND(1,20);
     if (isRnd[4]) temperature=RAND(-90,140);
     if (isRnd[5])
     {
@@ -172,7 +194,7 @@ void PlanetSettings::Random(QVector<bool> isRnd,PointChoicer* pc){
     if (isRnd[14]) is_gradient=RAND(0,1);
     if (isRnd[15]) is_plant=RAND(0,1);
     if (isRnd[16]) shine=RAND(0,5);
-    if (isRnd[17]) point_of_shine_true=pc->GetRand();
+    if (isRnd[17]) { shine_lat=RAND(-90,90); shine_lon=RAND(-180,180); }
     if (isRnd[18]) name_algorithm=RAND(1,3);
     if (isRnd[19]) is_cloud=RAND(0,1);
     if (isRnd[20]) cloud_size=RAND(1,20);
@@ -188,5 +210,5 @@ void PlanetSettings::Random(QVector<bool> isRnd,PointChoicer* pc){
     if (isRnd[30]) R_internal_ring=RAND(1,5);
     if (isRnd[31]) R_external_ring=RAND(1,5);
     if (isRnd[32]) ring_color=QColor(RAND(0,255),RAND(0,255),RAND(0,255));
-    if (isRnd[33]) point_of_polar_true=pc->GetRand();
+    if (isRnd[33]) { polar_lat=RAND(-90,90); polar_lon=RAND(-180,180); }
 }

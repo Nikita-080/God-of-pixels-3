@@ -11,10 +11,16 @@
 #include "QTime"
 #include <QFontDatabase>
 #include <QCoreApplication>
+#include <algorithm>
+#include <QColor>
 Planet::Planet()
 {
     color_black=QColor(0,0,0);
     facts=Facts();
+    map_w=0;
+    map_h=0;
+    world_size=0;
+    seed=0;
 }
 void Planet::SetSeed(int value)
 {
@@ -33,97 +39,57 @@ void Planet::SetSeed(int value)
 int Planet::RAND(int a, int b){
     return rnd.bounded(a,b+1);
 }
-void Planet::Iteration(int iter)
+void Planet::Generate()
 {
-    switch (iter)
-    {
-    case 0:
-        CreateMatrixNew();
-        break;
-    case 1:
-        Calculator();
-        break;
-    case 2:
-        FixMatrix();
-        break;
-    case 3:
-        LevelCreating();
-        break;
-    case 4:
-        ImageCreating();
-        break;
-    case 5:
-        UMapCreating();
-        break;
-    case 6:
-        TMapCreating();
-        break;
-    case 7:
-        RMapCreating();
-        break;
-    case 8:
-        Plant();
-        break;
-    case 9:
-        Polar();
-        break;
-    case 10:
-        Noise();
-        break;
-    case 11:
-        CloudMapCreating();
-        break;
-    case 12:
-        Cloud();
-        break;
-    case 13:
-        UV();
-        break;
-    case 14:
-        Atmosphere("in");
-        break;
-    case 15:
-        Shadow();
-        break;
-    case 16:
-        Atmosphere("out");
-        break;
-    case 17:
-        Ring();
-        break;
-    case 18:
-        Name();
-        break;
-    case 19:
-        GenerateDescription();
-        break;
-    case 20:
-        CalculateDescription();
-        break;
-    case 21:
-        DrawDescription();
-        break;
-    case 22:
-        SystemMap();
-        break;
-    case 23:
-        GalaxyMap();
-        break;
-    case 24:
-        FinalImage();
-        break;
-    case 25:
-        ImagesScale();
-        break;
-    }
+    CreateMatrixNew();
+    Calculator();
+    FixMatrix();
+    LevelCreating();
+    ImageCreating();
+    TMapCreating();
+    RMapCreating();
+    Plant();
+    Polar();
+    Noise();
+    CloudMapCreating();
+    CloudImageCreating();
+    PrepareRings();
+    rnd.seed(static_cast<quint32>(seed));
+    Name();
+    rnd.seed(static_cast<quint32>(seed));
+    GenerateDescription();
+    CalculateDescription();
+    DrawDescription();
+    rnd.seed(static_cast<quint32>(seed));
+    SystemMap();
+    rnd.seed(static_cast<quint32>(seed));
+    GalaxyMap();
+    ImagesScale();
+    FinalImage();
+}
+
+SphereVec3 Planet::TexelXYZ(int x, int y) const
+{
+    return equirectToSphere(x, y, map_w, map_h);
+}
+
+int Planet::viewResolution() const
+{
+    const int q = qBound(1, s.world_size, 20);
+    return 16 + 24 * (q - 1);
 }
 
 void Planet::CreateMatrixNew()
 {
-    world_size=pow(2,s.world_size)+1;
-    TerraFactory factory(world_size,seed);
-    if (s.terramode==0) matrix=factory.diamondsquare(s.randomness*1.0/10);
-    else if (s.terramode==1) matrix=factory.foultformation(s.iterations);
+    const int view = viewResolution();
+    map_h = qMax(32, view);
+    map_w = 2 * map_h;
+    world_size = view;
+    TerraFactory factory(map_w, map_h, seed);
+    if (s.terramode == 0)
+        matrix = factory.sphericalNoise(s.randomness);
+    else
+        matrix = factory.sphericalFault(s.iterations);
 }
 void Planet::Name()
 {
@@ -218,9 +184,9 @@ QChar Planet::char2char(QChar a, QVector<QVector<int>> word_table)
 }
 void Planet::FixMatrix()
 {
-    for (int i=0; i<world_size;i++)
+    for (int i=0; i<map_w;i++)
     {
-        for (int k=0;k<world_size;k++)
+        for (int k=0;k<map_h;k++)
         {
             matrix[i][k]=(matrix[i][k]-world_deep)*280/(world_heighth-world_deep);
         }
@@ -245,44 +211,37 @@ void Planet::LevelCreating()
 void Planet::TMapCreating() //temperature
 {
     t_map.clear();
-    for (int i=0;i<world_size;i++)
+    t_map.resize(map_w);
+    for (int i=0;i<map_w;i++)
     {
-        QVector <double> dataline;
-        for (int k=0;k<world_size;k++)
+        t_map[i].resize(map_h);
+        for (int k=0;k<map_h;k++)
         {
-            if (!isBlack(img.pixelColor(i,k)))
-            {
-                double angle_cos=ArcPolarDistance(i,k); //угловое расстояние до полюса
-                double angle_sin=sqrt(1-angle_cos*angle_cos);
-                double r_w=matrix[i][k]-water_level; //относительная высота
-                r_w*=31.6; //преобразование в метры 70.86
-                double T=56*angle_sin-28; //среднегодовая температура у поверхности
-                T-=0.6*(r_w)/100; //падение температуры с высотой
-                T+=s.temperature-15; //настройки пользователя преобразованная из средней в корректирующую
-                dataline.append(T);
-            }
-            else dataline.append(0);
+            double angle_cos=ArcPolarDistance(i,k);
+            angle_cos=qBound(-1.0, angle_cos, 1.0);
+            double angle_sin=sqrt(1-angle_cos*angle_cos);
+            double r_w=matrix[i][k]-water_level;
+            r_w*=31.6;
+            double T=56*angle_sin-28;
+            T-=0.6*(r_w)/100;
+            T+=s.temperature-15;
+            t_map[i][k]=T;
         }
-        t_map.append(dataline);
     }
 }
 void Planet::RMapCreating() //rain
 {
     r_map.clear();
-    for (int i=0;i<world_size;i++)
+    r_map.resize(map_w);
+    for (int i=0;i<map_w;i++)
     {
-        QVector <double> dataline;
-        for (int k=0;k<world_size;k++)
+        r_map[i].resize(map_h);
+        for (int k=0;k<map_h;k++)
         {
-            if (!isBlack(img.pixelColor(i,k)))
-            {
-                double r_w=matrix[i][k]-water_level; //относительная высота
-                double W=1.37*r_w+0.32*(t_map[i][k])+51.53; //влажность
-                dataline.append(W);
-            }
-            else dataline.append(0);
+            double r_w=matrix[i][k]-water_level;
+            double W=1.37*r_w+0.32*(t_map[i][k])+51.53;
+            r_map[i][k]=W;
         }
-        r_map.append(dataline);
     }
 }
 void Planet::Plant()
@@ -292,11 +251,11 @@ void Planet::Plant()
     QImage diagram;
     if (s.is_gradient) diagram=QImage(":/images/res/images/plantmatrixblur.png");
     else diagram=QImage(":/images/res/images/plantmatrix.png");
-    for (int i=0;i<world_size;i++)
+    for (int i=0;i<map_w;i++)
     {
-        for (int k=0;k<world_size;k++)
+        for (int k=0;k<map_h;k++)
         {
-            if (!isBlack(img.pixelColor(i,k)) && matrix[i][k]>water_level)
+            if (matrix[i][k]>water_level)
             {
                 double T=t_map[i][k];
                 double W=r_map[i][k];
@@ -304,11 +263,12 @@ void Planet::Plant()
                 {
                     int x=qRound(-1.18*T+41.3);
                     int y=qRound(-0.13*W+59);
+                    x=qBound(0,x,diagram.width()-1);
+                    y=qBound(0,y,diagram.height()-1);
                     QColor color=diagram.pixelColor(x,y);
                     if (s.is_gradient)
                     {
                         double min=1.0*qMin(qMin(x,y),qMin(59-x,59-y));
-                        //не <10 для удобства вычислений
                         if (min<11) color=TransparentColor(img.pixelColor(i,k),color,min/10);
                     }
                     img.setPixelColor(i,k,color);
@@ -336,33 +296,30 @@ void Planet::Polar()
             }
         }
     }
-    for (int i=0;i<world_size;i++)
+    for (int i=0;i<map_w;i++)
     {
-        for (int j=0;j<world_size;j++)
+        for (int j=0;j<map_h;j++)
         {
-            if (!isBlack(img.pixelColor(i,j)))
+            double T=t_map[i][j];
+            if (T<-15)
             {
-                double T=t_map[i][j];
-                if (T<-15)
+                ice_pixel_count++;
+                if (s.is_gradient)
                 {
-                    ice_pixel_count++;
-                    if (s.is_gradient)
+                    double koef=(matrix[i][j]-water_level)/(280-water_level);
+                    QColor cur_color=TransparentColor(lowcolor,color,koef);
+                    koef=(-T-15)/(1+abs(-T-15));
+                    cur_color=TransparentColor(img.pixelColor(i,j),cur_color,koef);
+                    img.setPixelColor(i,j,cur_color);
+                }
+                else
+                {
+                    for (int q=0;q<level_color.length();q++)
                     {
-                        double koef=(matrix[i][j]-water_level)/(280-water_level);
-                        QColor cur_color=TransparentColor(lowcolor,color,koef);
-                        koef=(-T-15)/(1+abs(-T-15)); //softsign function
-                        cur_color=TransparentColor(img.pixelColor(i,j),cur_color,koef);
-                        img.setPixelColor(i,j,cur_color);
-                    }
-                    else
-                    {
-                        for (int q=0;q<level_color.length();q++)
+                        if (level_up[q]>=matrix[i][j] and matrix[i][j]>=level_down[q])
                         {
-                            if (level_up[q]>=matrix[i][j] and matrix[i][j]>=level_down[q])
-                            {
-                                img.setPixelColor(i,j,polar_color[q]);
-                                break;
-                            }
+                            img.setPixelColor(i,j,polar_color[q]);
+                            break;
                         }
                     }
                 }
@@ -373,220 +330,114 @@ void Planet::Polar()
 
 void Planet::CloudMapCreating()
 {
-    if (!s.is_cloud) return;
     c_map.clear();
-    int res=qRound(1.0*s.cloud_size*world_size/20);
+    c_map.resize(map_w);
+    if (!s.is_cloud)
+    {
+        for (int x=0;x<map_w;x++)
+            c_map[x].fill(0.0, map_h);
+        return;
+    }
+    const double freq=0.8 + 1.0*s.cloud_size/10.0;
     CloudFactory pnf(s.cloud_quality,s.correction,seed);
-    for (int x=0;x<world_size;x++)
+    for (int x=0;x<map_w;x++)
     {
-        QVector <double> cloud_line;
-        for (int y=0;y<world_size;y++)
+        c_map[x].resize(map_h);
+        for (int y=0;y<map_h;y++)
         {
-            double n = pnf.GetNum(1.0*x/res, 1.0*y/res);
-            cloud_line.append(n*0.5+0.5);//qFloor((n + 1) / 2 * 255 + 0.5));
-        }
-        c_map.append(cloud_line);
-    }
-
-}
-void Planet::UMapCreating()
-{
-    u_map.clear();
-    for (int i=0;i<world_size;i++)
-    {
-        QVector<QVector<double>> data_line;
-        for (int k=0;k<world_size;k++)
-        {
-            double xn;
-            double yn;
-            if (i==k and k==world_size/2) //?
-            {
-                xn=i;
-                yn=k;
-            }
-            else
-            {
-                xn=i-world_size/2;
-                yn=world_size/2-k;
-                double r=sqrt(xn*xn+yn*yn);
-                double l=sin(r/R_planet)*R_planet;
-                xn=xn*l/r;
-                yn=yn*l/r;
-                xn=xn+world_size/2;
-                yn=world_size/2-yn;
-            }
-            QVector <double> result={xn,yn};
-            data_line.append(result);
-        }
-        u_map.append(data_line);
-    }
-}
-double Planet::ArcPolarDistance(int x, int y)
-{
-    double xn=u_map[x][y][0];
-    double yn=u_map[x][y][1];
-    xn-=world_size/2;
-    yn=world_size/2-yn;
-    double zn=sqrt(R_planet*R_planet-xn*xn-yn*yn);
-    return (xn*x_polar+yn*y_polar+zn*z_polar)/sqrt(xn*xn+yn*yn+zn*zn)/sqrt(x_polar*x_polar+y_polar*y_polar+z_polar*z_polar);
-}
-void Planet::Atmosphere(QString mode)
-{
-    if (!s.is_atmo or s.atmo_transparent==10) return;
-    double l_min=0;//R_atmo-R_planet;
-    double l_max=2*sqrt(R_planet*(R_atmo-R_planet));
-    double q=0.1;//коэффициент при l_max и transparent=10
-    double kmin=-0.1*s.atmo_transparent+1; //k при l_min
-    double kmax=(q-1)/10*s.atmo_transparent+1; //k при l_max
-    double a=(kmax-kmin)/(l_max-l_min); //k=a*l+b
-    double b=kmin-(l_min*a);
-    for (int i=0;i<world_size;i++)
-    {
-        for (int j=0;j<world_size;j++)
-        {
-            bool isCell;
-            if (mode=="in")
-            {
-                isCell=!isBlack(img.pixelColor(i,j));
-            }
-            else
-            {
-                isCell=isBlack(img.pixelColor(i,j)) && (i-world_size/2)*(i-world_size/2)+(j-world_size/2)*(j-world_size/2)<=R_atmo*R_atmo;
-            }
-            if (isCell)
-            {
-                int x=i-world_size/2; //координаты относительно центра картинки
-                int y=world_size/2-j;
-                double r=sqrt(x*x+y*y);
-                double l;//приведенная толщина атмосферы
-                if (R_planet<=r and R_atmo>=r) l=2*sqrt(R_atmo*r-r*r);
-                else l=sqrt(r*R_atmo-r*r)-sqrt(r*R_planet-r*r);
-                double k=a*l+b;
-                if (mode=="out")
-                {
-                    double shadowK=Shadow_step(i,j,R_atmo);
-                    if (shadowK<0) shadowK=0;
-                    QColor setcolor;
-                    setcolor=TransparentColor(img.pixelColor(i,j),s.atmo_color,k);
-                    setcolor=LowerColor(setcolor,shadowK);
-                    img.setPixelColor(i,j,setcolor);
-                }
-                else
-                {
-                    QColor setcolor;
-                    setcolor=TransparentColor(img.pixelColor(i,j),s.atmo_color,k);
-                    img.setPixelColor(i,j,setcolor);
-                }
-            }
+            const SphereVec3 p=TexelXYZ(x,y);
+            double n = pnf.GetNum(p.x*freq, p.y*freq, p.z*freq);
+            c_map[x][y]=n*0.5+0.5;
         }
     }
 }
-void Planet::UV()
+void Planet::CloudImageCreating()
 {
-    QImage img2=img;
-    img.fill(color_black);
-    for (int i=0;i<world_size;i++)
-    {
-        for (int k=0;k<world_size;k++)
-        {
-            if (!isBlack(img2.pixelColor(i,k)))
-            {
-                int v1=qRound(u_map[i][k][0]);
-                int v2=qRound(u_map[i][k][1]);
-                img.setPixelColor(v1,v2,img2.pixelColor(i,k));
-            }
-        }
-    }
-}
-void Planet::Shadow()
-{
-    for (int i=0;i<world_size;i++)
-    {
-        for (int j=0;j<world_size;j++)
-        {
-            if (!isBlack(img.pixelColor(i,j)))
-            {
-                double k=Shadow_step(i,j,R_planet);
-                if (k<0) img.setPixelColor(i,j,color_black);
-                else
-                {
-                    k*=s.shine*0.1+0.5;
-                    //k=pow(k,-0.2*s.shine+2);
-                    img.setPixelColor(i,j,LowerColor(img.pixelColor(i,j),k));
-                }
-            }
-        }
-    }
-}
-double Planet::Shadow_step(int a, int b, int R)
-{
-    int x=a-world_size/2;
-    int y=world_size/2-b;
-    if (R*R-x*x-y*y<0) return 0;
-    double z=sqrt(R*R-x*x-y*y);
-    double angle_cos=(x*x_shine+y*y_shine+z*z_shine)/sqrt(x*x+y*y+z*z)/sqrt(x_shine*x_shine+y_shine*y_shine+z_shine*z_shine);
-    return angle_cos;
-}
-void Planet::Cloud()
-{
+    img_clouds=QImage(map_w,map_h,QImage::Format_ARGB32);
+    img_clouds.fill(Qt::transparent);
     if (!s.is_cloud) return;
-    double k1=-0.09*s.cloud_transparent+1;
-    for (int i=0;i<world_size;i++)
+    for (int x=0;x<map_w;x++)
     {
-        for (int j=0;j<world_size;j++)
+        for (int y=0;y<map_h;y++)
         {
-            if (!isBlack(img.pixelColor(i,j)))
-            {
-                double koef=c_map[i][j]*k1;
-                img.setPixelColor(i,j,TransparentColor(img.pixelColor(i,j),s.cloud_color,koef));
-            }
+            int a=qBound(0, qRound(c_map[x][y]*255.0), 255);
+            QColor c=s.cloud_color;
+            c.setAlpha(a);
+            img_clouds.setPixelColor(x,y,c);
         }
     }
 }
-bool Planet::isBlack(QColor color)
+double Planet::ArcPolarDistance(int x, int y) const
 {
-    return color.red()==0 and color.blue()==0 and color.green()==0;
+    SphereVec3 p=TexelXYZ(x,y);
+    SphereVec3 pole={x_polar,y_polar,z_polar};
+    pole=sphereNorm(pole);
+    const double den=sphereLen(p)*sphereLen(pole);
+    if (den<=1e-12) return 0.0;
+    return sphereDot(p,pole)/den;
 }
+void Planet::PrepareRings()
+{
+    rnd.seed(static_cast<quint32>(seed));
+    ring_inner=1.18+0.08*s.R_internal_ring;
+    ring_outer=1.55+0.12*s.R_external_ring;
+    if (ring_outer<=ring_inner+0.05) ring_outer=ring_inner+0.25;
+    ring_colors.clear();
+    ring_colors_dark.clear();
+    if (!s.is_ring) return;
+    int color_num=RAND(1,6);
+    for (int i=0;i<color_num;i++)
+    {
+        QColor c=DispersionColor(s.ring_color,20);
+        ring_colors.append(c);
+        ring_colors_dark.append(LowerColor(c,0.5));
+    }
+}
+
 void Planet::Calculator()
 {
     plant_pixel_count=0;
     ice_pixel_count=0;
     water_pixel_count=0;
 
+    rnd.seed(static_cast<quint32>(seed));
     starclass.clear();
     int numstars;
     if (s.temperature==-90) numstars=RAND(0,2);
     else numstars=RAND(1,2);
     for (int i=0;i<numstars;i++) starclass.append(RAND(0,11));
 
-    R_planet=world_size*1.0/3.1415;
-    if (s.is_atmo) R_atmo=R_planet*(81+s.atmo_size)/81;
+    R_planet=1.0;
+    if (s.is_atmo) R_atmo=R_planet*(81+s.atmo_size)/81.0;
     else R_atmo=R_planet;
-    if (R_atmo>R_planet) R_final=R_atmo;
-    else R_final=R_planet;
-    x_shine=s.point_of_shine_true[0]*R_planet;
-    y_shine=s.point_of_shine_true[1]*R_planet;
-    z_shine=sqrt(R_planet*R_planet-x_shine*x_shine-y_shine*y_shine);
-    x_polar=s.point_of_polar_true[0]*R_planet;
-    y_polar=s.point_of_polar_true[1]*R_planet;
-    z_polar=sqrt(R_planet*R_planet-x_polar*x_polar-y_polar*y_polar);
-    A=x_polar; //плоскость колец
-    B=y_polar;
-    C=z_polar;
-    water_level=s.true_structure[5];
+    R_final=qMax(R_atmo, R_planet);
+    const SphereVec3 shine = latLonDegToSphere(s.shine_lat, s.shine_lon);
+    x_shine = shine.x;
+    y_shine = shine.y;
+    z_shine = shine.z;
+    const SphereVec3 polar = latLonDegToSphere(s.polar_lat, s.polar_lon);
+    x_polar = polar.x;
+    y_polar = polar.y;
+    z_polar = polar.z;
+    if (s.true_structure.size() > 5)
+        water_level=s.true_structure[5];
+    else
+        water_level=140;
 
     world_deep=matrix[0][0];
     world_heighth=matrix[0][0];
-    for (int i=0;i<world_size;i++) for (int k=0;k<world_size;k++)
+    for (int i=0;i<map_w;i++) for (int k=0;k<map_h;k++)
     {
         world_deep=fmin(world_deep,matrix[i][k]);
         world_heighth=fmax(world_heighth,matrix[i][k]);
     }
+    if (qFuzzyCompare(world_heighth, world_deep))
+        world_heighth=world_deep+1.0;
 }
 
 void Planet::ImageCreating()
 {
-    img=QImage(world_size,world_size,QImage::Format_RGB32);
+    img=QImage(map_w,map_h,QImage::Format_RGB32);
     img.fill(color_black);
     QVector<double> level_aver;
     if (s.is_gradient)
@@ -597,43 +448,31 @@ void Planet::ImageCreating()
         }
         level_aver.append(0);
     }
-    for (int i=0;i<world_size;i++)
+    for (int i=0;i<map_w;i++)
     {
-        for (int k=0;k<world_size;k++)
+        for (int k=0;k<map_h;k++)
         {
-            double Rad1=(i-world_size/2-1)*(i-world_size/2-1)+(k-world_size/2-1)*(k-world_size/2-1);
-            double Rad2=(world_size/2)*(world_size/2);
-            if (Rad1<=Rad2)
+            if (matrix[i][k]<water_level) water_pixel_count++;
+            if (s.is_gradient)
             {
-                if (matrix[i][k]<water_level) water_pixel_count++;
-                if (s.is_gradient)
-                {
-                    int index=0;
-                    while (matrix[i][k]<level_aver[index]) index++;
-                    if (index==0) img.setPixelColor(i,k,level_color[0]);
-                    else if (index==level_aver.length()-1) img.setPixelColor(i,k,level_color.last());
-                    /*
-                    else if (level_aver[index]<water_level && level_aver[index-1]>water_level)
-                    {
-                        if (matrix[i][k]>=water_level) img.setPixelColor(i,k,level_color[index-1]);
-                        else img.setPixelColor(i,k,level_color[index]);
-                    }
-                    */
-                    else
-                    {
-                        double koef=(matrix[i][k]-level_aver[index])/(level_aver[index-1]-level_aver[index]);
-                        img.setPixelColor(i,k,TransparentColor(level_color[index],level_color[index-1],koef));
-                    }
-                }
+                int index=0;
+                while (index<level_aver.length() && matrix[i][k]<level_aver[index]) index++;
+                if (index==0) img.setPixelColor(i,k,level_color[0]);
+                else if (index==level_aver.length()-1) img.setPixelColor(i,k,level_color.last());
                 else
                 {
-                    for (int j=0;j<level_up.length();j++)
+                    double koef=(matrix[i][k]-level_aver[index])/(level_aver[index-1]-level_aver[index]);
+                    img.setPixelColor(i,k,TransparentColor(level_color[index],level_color[index-1],koef));
+                }
+            }
+            else
+            {
+                for (int j=0;j<level_up.length();j++)
+                {
+                    if (matrix[i][k]<=level_up[j] and matrix[i][k]>=level_down[j])
                     {
-                        if (matrix[i][k]<=level_up[j] and matrix[i][k]>=level_down[j])
-                        {
-                            img.setPixelColor(i,k,level_color[j]);
-                            break;
-                        }
+                        img.setPixelColor(i,k,level_color[j]);
+                        break;
                     }
                 }
             }
@@ -673,60 +512,16 @@ QColor Planet::LowerColor(QColor color, double koef)
     QColor result=QColor(a,b,c);
     return result;
 }
-void Planet::Ring()
-{
-    if (!s.is_ring) return;
-    double rmin=R_final+(world_size/2-R_final)/10*s.R_internal_ring;
-    double rmax=(world_size/2+R_final)/2+(world_size/2-R_final)/10*s.R_external_ring;
-    int color_num=RAND(1,6);
-    QVector <QColor> color_mas;
-    for (int i=0;i<color_num;i++) color_mas.append(DispersionColor(s.ring_color,20));
-    QVector <QColor> color_mas_dark;
-    for (int i=0;i<color_num;i++) color_mas_dark.append(LowerColor(color_mas[i],0.5));
-    for (int i=0;i<world_size;i++)
-    {
-        for (int j=0;j<world_size;j++)
-        {
-            double a=i-world_size/2; //координаты относительно центра картинки
-            double b=world_size/2-j;
-            double c=(-A*a-B*b)/C; //точка на плоскости кольца
-            double r=sqrt(a*a+b*b+c*c); //расстояние до центра
-            QColor final_color;
-            if (rmin<=r and r<=rmax and ((c<0 and a*a+b*b>R_planet*R_planet) or c>=0))
-            {//если принадлежит кольцу и не за планетой
-                if (sqrt((a*y_shine-b*x_shine)*(a*y_shine-b*x_shine)+(b*z_shine-c*y_shine)*(b*z_shine-c*y_shine)+(a*z_shine-c*x_shine)*(a*z_shine-c*x_shine))/R_planet<=R_planet and (a*x_shine+b*y_shine+c*z_shine)/r/R_planet<=0)
-                {
-                    //если в тени планеты
-                    int index=qFloor((r-rmin)/((rmax-rmin)/color_num));
-                    if (index>=color_num) index=color_num-1;
-                    final_color=color_mas_dark[index];
-                }
-                else
-                {
-                    //иначе
-                    int index=qFloor((r-rmin)/((rmax-rmin)/color_num));
-                    if (index>=color_num) index=color_num-1;
-                    final_color=color_mas[index];
-                }
-                if (R_planet!=R_final and R_planet*R_planet<a*a+b*b and a*a+b*b<R_final*R_final and c<0)
-                {
-                    double koef=1.0*img.pixelColor(i,j).red()/s.atmo_color.red();
-                    final_color=TransparentColor(final_color,s.atmo_color,koef);
-                }
-                img.setPixelColor(i,j,final_color);
-            }
-        }
-    }
-}
 void Planet::Noise()
 {
     if (s.noise==0) return;
-    for (int i=0;i<world_size;i++)
+    rnd.seed(static_cast<quint32>(seed));
+    for (int i=0;i<map_w;i++)
     {
-        for (int j=0;j<world_size;j++)
+        for (int j=0;j<map_h;j++)
         {
             QColor color=img.pixelColor(i,j);
-            if (!isBlack(color)) img.setPixelColor(i,j,DispersionColor(color,s.noise));
+            img.setPixelColor(i,j,DispersionColor(color,s.noise));
         }
     }
 }
@@ -741,8 +536,9 @@ void Planet::GenerateDescription()
 }
 void Planet::CalculateDescription()
 {
-    int pixel_count=3.1415*(world_size*1.0/2)*(world_size*1.0/2);
-    facts.life=qRound(plant_pixel_count*12.0/(pixel_count-water_pixel_count));
+    int pixel_count=map_w*map_h;
+    if (pixel_count<=0) pixel_count=1;
+    facts.life=qRound(plant_pixel_count*12.0/qMax(1, pixel_count-water_pixel_count));
     facts.ice=qRound(ice_pixel_count*12.0/pixel_count);
     facts.water=qRound(water_pixel_count*12.0/pixel_count);
     facts.temperature=qRound((s.temperature+90)*12.0/230);
@@ -1003,6 +799,7 @@ void Planet::GalaxyMap()
     QImage img_ptr=QImage(":/images/res/images/icon ptr.png");
     QImage img_map=QImage(":/images/res/images/GalaxyMap.png");
     img_gal=QImage(":/images/res/images/window.png");
+    rnd.seed(static_cast<quint32>(seed));
     int x=RAND(0,218);
     int y=RAND(0,218);
 
@@ -1013,9 +810,10 @@ void Planet::GalaxyMap()
     {
         for (int k=0;k<38;k++)
         {
-            if (!isBlack(img_ptr.pixelColor(i,k)))
+            QColor pc=img_ptr.pixelColor(i,k);
+            if (!(pc.red()==0 && pc.green()==0 && pc.blue()==0))
             {
-                img_map.setPixelColor(x+i,y+k,img_ptr.pixelColor(i,k));
+                img_map.setPixelColor(x+i,y+k,pc);
             }
         }
     }
@@ -1029,7 +827,8 @@ void Planet::FinalImage()
     QPainter p;
     p.begin(&img_final);
     p.drawImage(QRect(0,0,329,329),img_window);
-    p.drawImage(QRect(36,36,257,257),img.scaled(257,257));
+    QImage globe=img_view.isNull() ? img : img_view;
+    p.drawImage(QRect(36,36,257,257),globe.scaled(257,257,Qt::IgnoreAspectRatio,Qt::FastTransformation));
     p.drawImage(QRect(329,0,329,329),img_dsc);
     p.drawImage(QRect(0,329,329,329),img_sys);
     p.drawImage(QRect(329,329,329,329),img_gal);
@@ -1037,16 +836,15 @@ void Planet::FinalImage()
 }
 void Planet::ImagesScale()
 {
-    img_nonscale=img.scaled(257,257);
-    img=img.scaled(514,514);
+    const int side = viewResolution();
+    img_nonscale=img.scaled(side,side,Qt::IgnoreAspectRatio,Qt::FastTransformation);
     img_dsc=img_dsc.scaled(658,658);
     img_gal=img_gal.scaled(658,658);
     img_sys=img_sys.scaled(658,658);
 }
 QImage Planet::ImageReport(QVector<QVector<double>> data,QColor lowcolor,QColor highcolor)
 {
-    //служебная функция
-    QImage r_img=QImage(world_size,world_size,QImage::Format_RGB32);
+    QImage r_img=QImage(map_w,map_h,QImage::Format_RGB32);
     double minv=1000000;
     double maxv=-1000000;
     foreach(QVector<double> i,data)
@@ -1054,9 +852,9 @@ QImage Planet::ImageReport(QVector<QVector<double>> data,QColor lowcolor,QColor 
         minv=qMin(minv,*std::min_element(i.begin(),i.end()));
         maxv=qMax(maxv,*std::max_element(i.begin(),i.end()));
     }
-    for (int i=0;i<world_size;i++)
+    for (int i=0;i<map_w;i++)
     {
-        for (int k=0;k<world_size;k++)
+        for (int k=0;k<map_h;k++)
         {
             double koef=(data[i][k]-minv)/(maxv-minv);
             r_img.setPixelColor(i,k,TransparentColor(lowcolor,highcolor,koef));
