@@ -21,6 +21,7 @@ SOURCES += \
     windowsettings.cpp
 
 HEADERS += \
+    appsettings.h \
     autogensettings.h \
     cloudfactory.h \
     colorswatch.h \

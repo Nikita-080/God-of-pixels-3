@@ -6,6 +6,7 @@
 #include <QFormLayout>
 #include <QGroupBox>
 #include <QFileDialog>
+#include "appsettings.h"
 
 windowsettings::windowsettings(const QString &language, QWidget *parent)
     : QDialog(parent)
@@ -77,14 +78,18 @@ void windowsettings::EndWindow()
 
 void windowsettings::AskFile()
 {
-    filepath = QFileDialog::getSaveFileName(this, tr("Save collage"), "image.png",
+    filepath = QFileDialog::getSaveFileName(this, tr("Save collage"),
+                                            startPath(AppKeys::dirAutogen, QStringLiteral("image.png")),
                                             tr("Image (*.png);;All files (*.*)"));
+    rememberPath(AppKeys::dirAutogen, filepath);
     ui->lineEdit->setText(filepath);
 }
 
 void windowsettings::AskDir()
 {
-    dirpath = QFileDialog::getExistingDirectory(this, tr("Save images"));
+    dirpath = QFileDialog::getExistingDirectory(this, tr("Save images"),
+                                                startPath(AppKeys::dirAutogen, QString()));
+    rememberPath(AppKeys::dirAutogen, dirpath);
     ui->lineEdit_4->setText(dirpath);
 }
 

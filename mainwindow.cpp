@@ -12,7 +12,9 @@
 #include <QJsonObject>
 #include <QJsonDocument>
 #include <global.h>
+#include <appsettings.h>
 #include <QApplication>
+#include <QSettings>
 #include "colorswatch.h"
 #include "planetglwidget.h"
 #include <QStackedWidget>
@@ -38,7 +40,18 @@ MainWindow::MainWindow(QWidget *parent)
     btnResetCamera=nullptr;
     liveTimer=nullptr;
 
+    QSettings st;
+    language = st.value(AppKeys::language, QStringLiteral("en")).toString();
+    if (language != QStringLiteral("ru"))
+        language = QStringLiteral("en");
+    if (language == QStringLiteral("ru"))
+    {
+        qtLanguageTranslator.load(":/translations/QtLanguage_ru");
+        qApp->installTranslator(&qtLanguageTranslator);
+    }
+
     ui->setupUi(this);
+    ui->action_live->setChecked(st.value(AppKeys::livePreview, false).toBool());
     ui->progressBar->hide();
     // настройки
     ui->tabWidget->setIconSize(QSize(60,60));
@@ -142,8 +155,10 @@ count=0;
     setWindowTitle("God of Pixels 3");
 
     connect(ui->action_10, &QAction::triggered,this,&MainWindow::M_Switch_Language);
+    connect(ui->action_live, &QAction::toggled, this, [](bool on) {
+        QSettings().setValue(AppKeys::livePreview, on);
+    });
 
-    language = "en";
     auto requestLive = [this]() { appearanceOnlyLive=false; scheduleLivePreview(); };
     auto requestAppearance = [this]() { appearanceOnlyLive=true; scheduleLivePreview(); };
     for (int i=0;i<13;i++)
@@ -204,6 +219,7 @@ void MainWindow::M_Switch_Language()
         language = "ru";
         qApp->installTranslator(&qtLanguageTranslator);
     }
+    QSettings().setValue(AppKeys::language, language);
 
     ms->ReloadText();
 }
@@ -345,9 +361,10 @@ void MainWindow::M_Save_Image()
 {
     QString filename = QFileDialog::getSaveFileName(this,
                                 tr("Save image"),
-                                planet.name,
+                                startPath(AppKeys::dirImage, planet.name),
                                 tr("Image (*.png);;All files (*.*)"));
     if (filename.isEmpty()) return;
+    rememberPath(AppKeys::dirImage, filename);
     try {
         QImage out = planet.img_view.isNull() ? planet.img : planet.img_view;
         out.save(filename);
@@ -359,9 +376,10 @@ void MainWindow::M_Save_Full_Image()
 {
     QString filename = QFileDialog::getSaveFileName(this,
                                 tr("Save full image"),
-                                planet.name,
+                                startPath(AppKeys::dirImage, planet.name),
                                 tr("Image (*.png);;All files (*.*)"));
     if (filename.isEmpty()) return;
+    rememberPath(AppKeys::dirImage, filename);
     try {
         planet.img_final.save(filename);
     }  catch (...) {
@@ -372,9 +390,10 @@ void MainWindow::M_Load_Planet()
 {
     QString filename = QFileDialog::getOpenFileName(this,
                                 tr("Load planet"),
-                                                    "./",
+                                startPath(AppKeys::dirPlanet),
                                 tr("Planet (*.planet);;All files (*.*)"));
     if (filename.isEmpty()) return;
+    rememberPath(AppKeys::dirPlanet, filename);
     QFile file(filename);
     file.open(QFile::ReadOnly|QFile::Text);
     try {
@@ -402,9 +421,10 @@ void MainWindow::M_Save_Planet()
 {
     QString filename = QFileDialog::getSaveFileName(this,
                                 tr("Save planet"),
-                                planet.name,
+                                startPath(AppKeys::dirPlanet, planet.name),
                                 tr("Planet (*.planet);;All files (*.*)"));
     if (filename.isEmpty()) return;
+    rememberPath(AppKeys::dirPlanet, filename);
     QFile file(filename);
     if (file.open(QFile::WriteOnly|QFile::Text)){
         QTextStream stream(&file);
@@ -550,18 +570,20 @@ void MainWindow::Settings_Set(){
 void MainWindow::M_Save_Settings(){
     QString filename = QFileDialog::getSaveFileName(this,
                                 tr("Save file"),
-                                                    "./",
+                                startPath(AppKeys::dirSettings),
                                 tr("Texts (*.json);;All files (*.*)"));
     if (filename.isEmpty()) return;
+    rememberPath(AppKeys::dirSettings, filename);
     Settings_Get();
     if (!s.Save(filename)) QMessageBox::critical(nullptr,tr("Error"),tr("0001 unable to save file"));
 }
 void MainWindow::M_Load_Settings(){
     QString filename = QFileDialog::getOpenFileName(this,
                                 tr("Open file"),
-                                "./",
+                                startPath(AppKeys::dirSettings),
                                 tr("Texts (*.json);;All files (*.*)"));
     if (filename.isEmpty()) return;
+    rememberPath(AppKeys::dirSettings, filename);
     QFile file(filename);
     if (!file.open(QFile::ReadOnly|QFile::Text))
     {

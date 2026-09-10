@@ -8,6 +8,8 @@ int main(int argc, char *argv[]){
     fmt.setDepthBufferSize(24);
     QSurfaceFormat::setDefaultFormat(fmt);
     QApplication a(argc, argv);
+    a.setOrganizationName(QStringLiteral("NikitaRiabovSoft"));
+    a.setApplicationName(QStringLiteral("GodOfPixels3"));
     MainWindow w;
     w.show();
     return a.exec();
@@ -16,7 +18,7 @@ int main(int argc, char *argv[]){
  * [ok] [bug] нулевая прозрачность атмосферы - пропадает атмосфера
  * [ok] максимальная прозрачность атмосферы - пропадает атмосфера
  * [ok] [bug] максимальное освещение - теневой круг вокруг ТМО
- * запоминать путь сохранения
+ * [ok] запоминать путь сохранения
  * [ok] цвет из кнопки в колор-диалог
  * [del] [wrong] панель кнопок обвести серой рамкой
  * [ok] неоновые цвета интерфейса
