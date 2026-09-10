@@ -22,6 +22,7 @@ public:
     void mouseReleaseEvent(QMouseEvent *event);
     void mouseMoveEvent(QMouseEvent *event);
 signals:
+    void valueChanged();
 
 };
 

@@ -4,7 +4,8 @@
 #include <QDialog>
 #include <QCheckBox>
 #include <QVector>
-#include <mainwindow.h>
+#include <autogensettings.h>
+
 namespace Ui {
 class windowsettings;
 }
@@ -13,16 +14,10 @@ class windowsettings : public QDialog
 {
     Q_OBJECT
 public:
-    QVector <QCheckBox*> rndarr;
-    QString filepath;
-    QString dirpath;
-    QString currentpath;
-    MainWindow* myparent;
-private:
-    int numsettings;
-public:
-    explicit windowsettings(QWidget *parent = nullptr);
+    explicit windowsettings(const QString &language, QWidget *parent = nullptr);
     ~windowsettings();
+    AutoGenSettings settings() const;
+
     void ChangeType();
     void TakeAll();
     void TakeNothing();
@@ -30,8 +25,13 @@ public:
     void AskDir();
     void EndWindow();
     void ButtonCancel();
+
 private:
     Ui::windowsettings *ui;
+    QVector<QCheckBox *> rndarr;
+    QString filepath;
+    QString dirpath;
+    AutoGenSettings resultSettings;
 };
 
-#endif // WINDOWSETTINGS_H
+#endif

@@ -150,6 +150,18 @@
         <translation>Освещение</translation>
     </message>
     <message>
+        <source>Latitude</source>
+        <translation>Широта</translation>
+    </message>
+    <message>
+        <source>Longitude</source>
+        <translation>Долгота</translation>
+    </message>
+    <message>
+        <source>Reset camera</source>
+        <translation>Сбросить камеру</translation>
+    </message>
+    <message>
         <location filename="mainwindow.ui" line="4605"/>
         <source>Light</source>
         <translation>Свет</translation>
@@ -265,6 +277,14 @@
         <translation>Переключить язык</translation>
     </message>
     <message>
+        <source>Live preview</source>
+        <translation>Обновлять сразу</translation>
+    </message>
+    <message>
+        <source>Amplitude</source>
+        <translation>Амплитуда</translation>
+    </message>
+    <message>
         <location filename="mainwindow.ui" line="4830"/>
         <source>GoP2 standart</source>
         <oldsource>стандарт GoP2</oldsource>
@@ -282,8 +302,8 @@
     </message>
     <message>
         <location filename="mainwindow.ui" line="2087"/>
-        <source>diamond square</source>
-        <translation>бриллиантовый квадрат</translation>
+        <source>noise</source>
+        <translation>шум</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="2092"/>
@@ -579,6 +599,10 @@
         <location filename="planetsettings.cpp" line="122"/>
         <source>0005 unknown file version</source>
         <translation type="unfinished">0005 неизвестная версия</translation>
+    </message>
+    <message>
+        <source>0006 this file was created by an older version and cannot be loaded</source>
+        <translation>0006 этот файл создан более старой версией и не может быть загружен</translation>
     </message>
 </context>
 <context>

@@ -42,8 +42,13 @@ void MultiSlider::mousePressEvent(QMouseEvent *event){
     }
     OldY=event->y();
 }
-void MultiSlider::mouseReleaseEvent(QMouseEvent *event){
-    for (int i=0;i<6;i++){capture[i]=false;}
+void MultiSlider::mouseReleaseEvent(QMouseEvent *){
+    bool any=false;
+    for (int i=0;i<6;i++){
+        if (capture[i]) any=true;
+        capture[i]=false;
+    }
+    if (any) emit valueChanged();
 }
 void MultiSlider::mouseMoveEvent(QMouseEvent *event){
     for (int i=0;i<6;i++){

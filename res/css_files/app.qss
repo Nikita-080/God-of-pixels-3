@@ -1,0 +1,130 @@
+QWidget {
+    background-color: rgb(0, 0, 0);
+}
+QLabel, QGroupBox, QRadioButton, QCheckBox {
+    color: rgb(110, 170, 200);
+}
+QSlider::handle {
+    background-color: rgb(0, 255, 0);
+    border-radius: 7px;
+    border-color: rgb(0, 255, 127);
+}
+QSlider::add-page {
+    background: rgb(200, 200, 200);
+    margin: 5px;
+    margin-right: 0px;
+}
+QSlider::sub-page {
+    background: rgb(0, 255, 0);
+    margin: 5px;
+    margin-left: 0px;
+}
+QSlider::handle:disabled {
+    background-color: rgb(0, 170, 0);
+    border-radius: 7px;
+    border-color: rgb(0, 170, 85);
+}
+QSlider::add-page:disabled {
+    background: rgb(133, 133, 133);
+    margin: 5px;
+    margin-right: 0px;
+}
+QSlider::sub-page:disabled {
+    background: rgb(0, 170, 0);
+    margin: 5px;
+    margin-left: 0px;
+}
+QMenuBar::item:selected {
+    background-color: rgb(50, 50, 50);
+    color: rgb(255, 0, 0);
+}
+QMenuBar {
+    background-color: rgb(0, 0, 0);
+    color: rgb(255, 0, 0);
+}
+QMenu::item:selected {
+    background-color: rgb(50, 50, 50);
+    color: rgb(255, 0, 0);
+}
+QMenu {
+    background-color: rgb(0, 0, 0);
+    color: rgb(255, 0, 0);
+}
+QTabWidget::pane {
+    border: 3px solid rgb(128, 128, 128);
+}
+QTabBar::tab {
+    background-color: black;
+    margin: 0px;
+    padding: 1px;
+}
+QTabBar::tab:hover {
+    background-color: black;
+    border: 1px solid rgb(0, 255, 0);
+    margin: 0px;
+    padding: 1px;
+}
+QTabBar::tab:selected {
+    background-color: black;
+    border: 1px solid rgb(255, 0, 0);
+    margin: 0px;
+    padding: 1px;
+}
+QToolButton {
+    border: 2px solid rgb(110, 170, 200);
+    color: rgb(110, 170, 200);
+}
+QComboBox {
+    background-color: black;
+    color: rgb(0, 255, 127);
+    border: 2px solid rgb(110, 170, 200);
+}
+QComboBox QAbstractItemView {
+    color: rgb(110, 170, 200);
+    selection-background-color: rgb(50, 50, 50);
+    selection-color: rgb(110, 170, 200);
+}
+QPushButton#pushButton,
+QPushButton#pushButton_18,
+QPushButton#pushButton_19,
+QPushButton#pushButton_20,
+QPushButton#pushButton_3,
+QPushButton#pushButton_4,
+QPushButton#pushButton_5 {
+    background-repeat: no-repeat;
+    border: none;
+}
+QPushButton#pushButton { background-image: url(":/images/res/images/pushButton_m.png"); }
+QPushButton#pushButton:hover { background-image: url(":/images/res/images/pushButton_t.png"); }
+QPushButton#pushButton:pressed { background-image: url(":/images/res/images/pushButton_b.png"); }
+QPushButton#pushButton_18 { background-image: url(":/images/res/images/pushButton_18_m.png"); }
+QPushButton#pushButton_18:hover { background-image: url(":/images/res/images/pushButton_18_t.png"); }
+QPushButton#pushButton_18:pressed { background-image: url(":/images/res/images/pushButton_18_b.png"); }
+QPushButton#pushButton_19 { background-image: url(":/images/res/images/pushButton_19_m.png"); }
+QPushButton#pushButton_19:hover { background-image: url(":/images/res/images/pushButton_19_t.png"); }
+QPushButton#pushButton_19:pressed { background-image: url(":/images/res/images/pushButton_19_b.png"); }
+QPushButton#pushButton_20 { background-image: url(":/images/res/images/pushButton_20_m.png"); }
+QPushButton#pushButton_20:hover { background-image: url(":/images/res/images/pushButton_20_t.png"); }
+QPushButton#pushButton_20:pressed { background-image: url(":/images/res/images/pushButton_20_b.png"); }
+QPushButton#pushButton_3 { background-image: url(":/images/res/images/pushButton_3_m.png"); }
+QPushButton#pushButton_3:hover { background-image: url(":/images/res/images/pushButton_3_t.png"); }
+QPushButton#pushButton_3:pressed { background-image: url(":/images/res/images/pushButton_3_b.png"); }
+QPushButton#pushButton_4 { background-image: url(":/images/res/images/pushButton_4_m.png"); }
+QPushButton#pushButton_4:hover { background-image: url(":/images/res/images/pushButton_4_t.png"); }
+QPushButton#pushButton_4:pressed { background-image: url(":/images/res/images/pushButton_4_b.png"); }
+QPushButton#pushButton_5 { background-image: url(":/images/res/images/pushButton_5_m.png"); }
+QPushButton#pushButton_5:hover { background-image: url(":/images/res/images/pushButton_5_t.png"); }
+QPushButton#pushButton_5:pressed { background-image: url(":/images/res/images/pushButton_5_b.png"); }
+QPushButton#btnResetCamera {
+    border: none;
+    color: rgb(110, 170, 200);
+    font-family: Consolas;
+    font-size: 11pt;
+}
+    border-width: 3px;
+    border-style: solid;
+    border-color: rgb(0, 255, 127);
+    color: rgb(255, 255, 255);
+    background: rgb(0, 0, 0);
+    text-align: center;
+}

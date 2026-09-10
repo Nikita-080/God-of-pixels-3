@@ -2,7 +2,6 @@
 #define MAINWINDOW_H
 #include <QMainWindow>
 #include <multislider.h>
-#include <pointchoicer.h>
 #include <QLabel>
 #include <QSlider>
 #include <QPushButton>
@@ -10,10 +9,12 @@
 #include <QVector>
 #include <QRandomGenerator>
 #include <planet.h>
-#include <QProgressBar>
 #include <autogensettings.h>
 #include <planetsettings.h>
 #include <QTranslator>
+class PlanetGLWidget;
+class QStackedWidget;
+class QTimer;
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
 QT_END_NAMESPACE
@@ -27,19 +28,28 @@ public:
     bool isEmtyPlanet;
     QVector <bool> isRandom;
     MultiSlider* ms;
-    PointChoicer* pc;
-    PointChoicer* pc2;
     QSlider* sliders[13];
     QLabel* labels[13];
+    QSlider* sliderShineLat;
+    QSlider* sliderShineLon;
+    QSlider* sliderPolarLat;
+    QSlider* sliderPolarLon;
+    QLabel* labelShineLatValue;
+    QLabel* labelShineLonValue;
+    QLabel* labelPolarLatValue;
+    QLabel* labelPolarLonValue;
+    QLabel* labelShineLatTitle;
+    QLabel* labelShineLonTitle;
+    QLabel* labelPolarLatTitle;
+    QLabel* labelPolarLonTitle;
 
     PlanetSettings s;
 
-    bool isdatarecieved;
     AutoGenSettings box;
 
     QString language;
 
-    int count; //not for release
+    int count;
 public:
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
@@ -59,23 +69,39 @@ public:
     void M_Save_Full_Image();
     void M_About();
     void M_Switch_Language();
-    void CreatePlanet();
+    void CreateNewPlanet();
+    void RecreatePlanet();
     void AutoGen();
     void ShowPlanet();
     void ShowDescription();
     void ShowSystem();
     void ShowMap();
-    void Gen(bool isCreateNew,QProgressBar *pb,Planet *p,int seed=0);
+    void Gen(bool isCreateNew,Planet *p,int seed=0);
     void SetStyle();
     QString ReadText(QString);
-    void Report(QString s); //служебная функция
-    void Img_Report(); //служебная функция
-    void BiomGrad(); //служебная функция
+    void Report(QString s);
+    void Img_Report();
+    void BiomGrad();
+    void scheduleLivePreview();
+    void runLivePreview();
+    void applyPlanetToView();
+    void addLatLonControls(QWidget *parent,
+                           QSlider *&latSlider, QSlider *&lonSlider,
+                           QLabel *&latTitle, QLabel *&lonTitle,
+                           QLabel *&latValue, QLabel *&lonValue);
+    void retranslateCoordLabels();
 public:
     Ui::MainWindow *ui;
 private:
     QTranslator qtLanguageTranslator;
+    PlanetGLWidget *glWidget;
+    QStackedWidget *previewStack;
+    QLabel *cardView;
+    QPushButton *btnResetCamera;
+    QTimer *liveTimer;
+    bool liveSuspended;
+    bool appearanceOnlyLive;
 protected:
     void changeEvent(QEvent * event) override;
 };
-#endif // MAINWINDOW_H
+#endif

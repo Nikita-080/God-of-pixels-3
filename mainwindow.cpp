@@ -1,7 +1,6 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 #include "multislider.h"
-#include "pointchoicer.h"
 #include <QColorDialog>
 #include "QTime"
 #include <QFile>
@@ -13,6 +12,16 @@
 #include <QJsonObject>
 #include <QJsonDocument>
 #include <global.h>
+#include <QApplication>
+#include "colorswatch.h"
+#include "planetglwidget.h"
+#include <QStackedWidget>
+#include <QTimer>
+#include <QDir>
+#include <QtMath>
+#include <QFont>
+#include <QCheckBox>
+#include <QRadioButton>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -22,8 +31,15 @@ MainWindow::MainWindow(QWidget *parent)
     planet=Planet();
     autoplanet=Planet();
     s=PlanetSettings();
+    liveSuspended=false;
+    appearanceOnlyLive=false;
+    glWidget=nullptr;
+    previewStack=nullptr;
+    btnResetCamera=nullptr;
+    liveTimer=nullptr;
 
     ui->setupUi(this);
+    ui->progressBar->hide();
     // настройки
     ui->tabWidget->setIconSize(QSize(60,60));
     for (int i=0;i<10;i++){
@@ -31,17 +47,37 @@ MainWindow::MainWindow(QWidget *parent)
                                           QString::number(i+1)+".png"));
     }
 
+    previewStack=new QStackedWidget(ui->centralwidget);
+    glWidget=new PlanetGLWidget(previewStack);
+    cardView=new QLabel(previewStack);
+    cardView->setAlignment(Qt::AlignCenter);
+    cardView->setScaledContents(true);
+    cardView->setMinimumSize(257,257);
+    previewStack->addWidget(glWidget);
+    previewStack->addWidget(cardView);
+    previewStack->setGeometry(ui->pushButton_2->geometry());
+    ui->pushButton_2->hide();
+    btnResetCamera=new QPushButton(ui->centralwidget);
+    btnResetCamera->setObjectName(QStringLiteral("btnResetCamera"));
+    const QRect previewRect=ui->pushButton_2->geometry();
+    btnResetCamera->setGeometry(previewRect.x(), previewRect.bottom()+8, previewRect.width(), 28);
+    connect(btnResetCamera,&QPushButton::clicked,glWidget,&PlanetGLWidget::resetCamera);
+
+    liveTimer=new QTimer(this);
+    liveTimer->setSingleShot(true);
+    liveTimer->setInterval(200);
+    connect(liveTimer,&QTimer::timeout,this,&MainWindow::runLivePreview);
+
     //виджеты
     ms=new MultiSlider();
-    pc=new PointChoicer();
-    pc2=new PointChoicer();
-
     ms->setParent(ui->tab_2);
-    pc->setParent(ui->tab_5);
-    pc->setGeometry(0,101,400,500);
-    pc2->setParent(ui->tab_10);
-    pc2->setGeometry(0,101,400,500);
-    //алгоритм генерации
+    addLatLonControls(ui->tab_5, sliderShineLat, sliderShineLon,
+                      labelShineLatTitle, labelShineLonTitle,
+                      labelShineLatValue, labelShineLonValue);
+    addLatLonControls(ui->tab_10, sliderPolarLat, sliderPolarLon,
+                      labelPolarLatTitle, labelPolarLonTitle,
+                      labelPolarLatValue, labelPolarLonValue);
+    retranslateCoordLabels();
     ui->horizontalSlider_4->setEnabled(false);
     connect(ui->comboBox,QOverload<int>::of(&QComboBox::currentIndexChanged),
             this,
@@ -64,26 +100,21 @@ MainWindow::MainWindow(QWidget *parent)
     for (int i=0;i<13;i++){
         connect(sliders[i],&QSlider::valueChanged,this,&MainWindow::SliderShow);
     }
-    connect(ui->pushButton_26,&QPushButton::clicked,this,&MainWindow::ColorChoicer);
-    connect(ui->pushButton_27,&QPushButton::clicked,this,&MainWindow::ColorChoicer);
-    connect(ui->pushButton_28,&QPushButton::clicked,this,&MainWindow::ColorChoicer);
-    connect(ui->pushButton_29,&QPushButton::clicked,this,&MainWindow::ColorChoicer);
-    connect(ui->pushButton_30,&QPushButton::clicked,this,&MainWindow::ColorChoicer);
-    connect(ui->pushButton_31,&QPushButton::clicked,this,&MainWindow::ColorChoicer);
-    connect(ui->pushButton_32,&QPushButton::clicked,this,&MainWindow::ColorChoicer);
-    connect(ui->pushButton_33,&QPushButton::clicked,this,&MainWindow::ColorChoicer);
-    connect(ui->pushButton_34,&QPushButton::clicked,this,&MainWindow::ColorChoicer);
-    connect(ui->pushButton_35,&QPushButton::clicked,this,&MainWindow::ColorChoicer);
+    QList<QPushButton*> colorButtons={
+        ui->pushButton_26,ui->pushButton_27,ui->pushButton_28,ui->pushButton_29,ui->pushButton_30,
+        ui->pushButton_31,ui->pushButton_32,ui->pushButton_33,ui->pushButton_34,ui->pushButton_35
+    };
+    for (QPushButton* b : colorButtons)
+        connect(b,&QPushButton::clicked,this,&MainWindow::ColorChoicer);
 
-    connect(ui->pushButton_18,&QPushButton::clicked,this,&MainWindow::CreatePlanet);
-    connect(ui->pushButton_19,&QPushButton::clicked,this,&MainWindow::CreatePlanet);
+    connect(ui->pushButton_18,&QPushButton::clicked,this,&MainWindow::CreateNewPlanet);
+    connect(ui->pushButton_19,&QPushButton::clicked,this,&MainWindow::RecreatePlanet);
     connect(ui->pushButton_20,&QPushButton::clicked,this,&MainWindow::AutoGen);
     connect(ui->pushButton,&QPushButton::clicked,this,&MainWindow::ShowPlanet);
     connect(ui->pushButton_3,&QPushButton::clicked,this,&MainWindow::ShowDescription);
     connect(ui->pushButton_4,&QPushButton::clicked,this,&MainWindow::ShowSystem);
     connect(ui->pushButton_5,&QPushButton::clicked,this,&MainWindow::ShowMap);
 
-    //служебные функции
     connect(ui->pushButton_6,&QPushButton::clicked,this,&MainWindow::BiomGrad);
     connect(ui->pushButton_7,&QPushButton::clicked,this,&MainWindow::Img_Report);
 count=0;
@@ -113,6 +144,27 @@ count=0;
     connect(ui->action_10, &QAction::triggered,this,&MainWindow::M_Switch_Language);
 
     language = "en";
+    auto requestLive = [this]() { appearanceOnlyLive=false; scheduleLivePreview(); };
+    auto requestAppearance = [this]() { appearanceOnlyLive=true; scheduleLivePreview(); };
+    for (int i=0;i<13;i++)
+        connect(sliders[i],&QSlider::valueChanged,this,[this]() { appearanceOnlyLive=false; scheduleLivePreview(); });
+    connect(ui->comboBox,QOverload<int>::of(&QComboBox::currentIndexChanged),this,[this](int){ appearanceOnlyLive=false; scheduleLivePreview(); });
+    const QList<QCheckBox*> boxes={ui->checkBox,ui->checkBox_2,ui->checkBox_3,ui->checkBox_4,ui->checkBox_5,ui->checkBox_6};
+    for (QCheckBox* b : boxes)
+        connect(b,&QCheckBox::toggled,this,[this](bool){ appearanceOnlyLive=false; scheduleLivePreview(); });
+    connect(ui->radioButton,&QRadioButton::toggled,this,[this](bool){ appearanceOnlyLive=false; scheduleLivePreview(); });
+    connect(ui->radioButton_2,&QRadioButton::toggled,this,[this](bool){ appearanceOnlyLive=false; scheduleLivePreview(); });
+    connect(ui->radioButton_3,&QRadioButton::toggled,this,[this](bool){ appearanceOnlyLive=false; scheduleLivePreview(); });
+    connect(ms,&MultiSlider::valueChanged,this,requestLive);
+    connect(sliderShineLat,&QSlider::valueChanged,this,requestAppearance);
+    connect(sliderShineLon,&QSlider::valueChanged,this,requestAppearance);
+    connect(sliderPolarLat,&QSlider::valueChanged,this,requestLive);
+    connect(sliderPolarLon,&QSlider::valueChanged,this,requestLive);
+    connect(ui->horizontalSlider_6,&QSlider::valueChanged,this,[this](){ appearanceOnlyLive=true; scheduleLivePreview(); });
+    connect(ui->horizontalSlider_11,&QSlider::valueChanged,this,[this](){ appearanceOnlyLive=true; scheduleLivePreview(); });
+    connect(ui->horizontalSlider_12,&QSlider::valueChanged,this,[this](){ appearanceOnlyLive=true; scheduleLivePreview(); });
+    connect(ui->horizontalSlider_13,&QSlider::valueChanged,this,[this](){ appearanceOnlyLive=true; scheduleLivePreview(); });
+    connect(ui->horizontalSlider_14,&QSlider::valueChanged,this,[this](){ appearanceOnlyLive=true; scheduleLivePreview(); });
 }
 QString MainWindow::ReadText(QString path)
 {
@@ -143,15 +195,15 @@ void MainWindow::M_Switch_Language()
 {
     if (language == "ru")
     {
-        qtLanguageTranslator.load(":/translations/QtLanguage_en");
+        qApp->removeTranslator(&qtLanguageTranslator);
         language = "en";
     }
     else
     {
         qtLanguageTranslator.load(":/translations/QtLanguage_ru");
         language = "ru";
+        qApp->installTranslator(&qtLanguageTranslator);
     }
-    qApp->installTranslator(&qtLanguageTranslator);
 
     ms->ReloadText();
 }
@@ -160,7 +212,8 @@ void MainWindow::changeEvent(QEvent *event)
 {
     // В случае получения события изменения языка приложения
     if (event->type() == QEvent::LanguageChange) {
-        ui->retranslateUi(this);    // переведём окно заново
+        ui->retranslateUi(this);
+        retranslateCoordLabels();
     }
 }
 
@@ -180,56 +233,17 @@ void MainWindow::M_About()
 
 void MainWindow::SetStyle()
 {
-    QPushButton* a[]{ui->pushButton,ui->pushButton_18,
-    ui->pushButton_19,ui->pushButton_20,
-    ui->pushButton_3,ui->pushButton_4,
-    ui->pushButton_5};
-
-    QString sliderstyle=ReadText(":/css_files/res/css_files/slider.css");
-    QString menubarstyle=ReadText(":/css_files/res/css_files/menubar.css");
-    QString tabwidgetstyle=ReadText(":/css_files/res/css_files/tabwidget.css");
-    QString buttonstyle=ReadText(":/css_files/res/css_files/button.css");
-    QString comboboxstyle=ReadText(":/css_files/res/css_files/combobox.css");
-
-    for (int i=0;i<7;i++)
-    {
-        QString name=a[i]->objectName();
-        QString style=buttonstyle;
-        style.replace("[name]",name);
-        a[i]->setStyleSheet(style);
-    }
-
-    foreach(QObject* i, this->findChildren<QObject*>())
-    {
-        if (i->inherits("QWidget"))
-        {
-            if (i->inherits("QLabel") || i->inherits("QGroupBox") ||
-                i->inherits("QRadioButton") || i->inherits("QCheckBox"))
-            {
-                QWidget* k=static_cast<QWidget *>(i);
-                QPalette palette;
-                palette.setColor(QPalette::WindowText,QColor(110,170,200));
-                k->setPalette(palette);
-            }
-            else if (i->inherits("QSlider"))
-            {
-                QSlider* k=static_cast<QSlider *>(i);
-                k->setStyleSheet(sliderstyle);
-            }
-        }
-    }
-
-    ui->comboBox->setStyleSheet(comboboxstyle);
-    ui->menubar->setStyleSheet(menubarstyle);
-    ui->tabWidget->setStyleSheet(tabwidgetstyle);
+    QFile f(":/css_files/res/css_files/app.qss");
+    if (f.open(QIODevice::ReadOnly))
+        qApp->setStyleSheet(QString::fromUtf8(f.readAll()));
     ui->pushButton_8->setIcon(QIcon(":/images/res/images/logo.png"));
 }
 void MainWindow::AutoGen()
 {
-    windowsettings win(this);
-    isdatarecieved=false;
-    win.exec();
-    if (isdatarecieved)
+    windowsettings win(language, this);
+    if (win.exec() != QDialog::Accepted)
+        return;
+    box = win.settings();
     {
         ui->progressBar_2->setValue(0);
         Settings_Get();
@@ -244,12 +258,12 @@ void MainWindow::AutoGen()
             QImage image=QImage(box.width*delta,box.height*delta,QImage::Format_RGB32);
             QPainter p;
             p.begin(&image);
-            for (int i=0;i<box.height;i++) //высота
+            for (int i=0;i<box.height;i++)
             {
-                for (int k=0;k<box.width;k++) //ширина
+                for (int k=0;k<box.width;k++)
                 {
-                    s.Random(box.isRndList,pc);
-                    Gen(true,ui->progressBar_3,&autoplanet);
+                    s.Random(box.isRndList);
+                    Gen(true,&autoplanet);
                     if (box.picturetype) p.drawImage(k*delta,i*delta,autoplanet.img_final);
                     else p.drawImage(k*delta,i*delta,autoplanet.img_nonscale);
                     count++;
@@ -264,54 +278,68 @@ void MainWindow::AutoGen()
             double percent=1.0*box.number/100;
             for (int k=0;k<box.number;k++)
             {
-                s.Random(box.isRndList,pc);
-                Gen(true,ui->progressBar_3,&autoplanet);
+                s.Random(box.isRndList);
+                Gen(true,&autoplanet);
                 ui->progressBar_2->setValue(qRound(1.0*k/percent));
                 QImage photo;
                 if (box.picturetype) photo=autoplanet.img_final;
                 else photo=autoplanet.img_nonscale;
-                photo.save(box.path+"\\"+autoplanet.name+".png");
+                photo.save(QDir(box.path).filePath(autoplanet.name+".png"));
             }
             ui->progressBar_2->setValue(100);
         }
     }
 }
-void MainWindow::CreatePlanet()
+void MainWindow::CreateNewPlanet()
 {
     Settings_Get();
-    bool flag=sender()->objectName()=="pushButton_18" or isEmtyPlanet;
-    Gen(flag,ui->progressBar,&planet);
-    QImage img=planet.img;
-    ui->pushButton_2->setIcon(QIcon(QPixmap::fromImage(img)));
-    ui->label_7->setText(planet.name);
+    Gen(true,&planet);
+    applyPlanetToView();
     isEmtyPlanet=false;
-
-    //code for promo materials
-    /*
-    count++;
-    QString filename = "C:\\Users\\Никита\\Desktop\\planets\\"+QString::number(count)+".png";
-    planet.img.save(filename);
-    */
+}
+void MainWindow::RecreatePlanet()
+{
+    Settings_Get();
+    Gen(isEmtyPlanet,&planet);
+    applyPlanetToView();
+    isEmtyPlanet=false;
+}
+void MainWindow::applyPlanetToView()
+{
+    if (!glWidget)
+        return;
+    glWidget->setPlanet(&planet);
+    glWidget->refreshTextures();
+    glWidget->repaint();
+    QImage shot=glWidget->captureView();
+    if (!shot.isNull())
+        planet.img_view=shot;
+    planet.FinalImage();
+    ShowPlanet();
+    ui->label_7->setText(planet.name);
 }
 void MainWindow::ShowPlanet()
 {
-    QImage img=planet.img;
-    ui->pushButton_2->setIcon(QIcon(QPixmap::fromImage(img)));
+    if (previewStack)
+        previewStack->setCurrentIndex(0);
 }
 void MainWindow::ShowDescription()
 {
-    QImage img=planet.img_dsc;
-    ui->pushButton_2->setIcon(QIcon(QPixmap::fromImage(img)));
+    if (!cardView || !previewStack) return;
+    cardView->setPixmap(QPixmap::fromImage(planet.img_dsc));
+    previewStack->setCurrentIndex(1);
 }
 void MainWindow::ShowSystem()
 {
-    QImage img=planet.img_sys;
-    ui->pushButton_2->setIcon(QIcon(QPixmap::fromImage(img)));
+    if (!cardView || !previewStack) return;
+    cardView->setPixmap(QPixmap::fromImage(planet.img_sys));
+    previewStack->setCurrentIndex(1);
 }
 void MainWindow::ShowMap()
 {
-    QImage img=planet.img_gal;
-    ui->pushButton_2->setIcon(QIcon(QPixmap::fromImage(img)));
+    if (!cardView || !previewStack) return;
+    cardView->setPixmap(QPixmap::fromImage(planet.img_gal));
+    previewStack->setCurrentIndex(1);
 }
 void MainWindow::M_Save_Image()
 {
@@ -321,7 +349,8 @@ void MainWindow::M_Save_Image()
                                 tr("Image (*.png);;All files (*.*)"));
     if (filename.isEmpty()) return;
     try {
-        planet.img.save(filename);
+        QImage out = planet.img_view.isNull() ? planet.img : planet.img_view;
+        out.save(filename);
     }  catch (...) {
         QMessageBox::critical(nullptr,tr("Error"),tr("0001 unable to save file"));
     }
@@ -356,15 +385,12 @@ void MainWindow::M_Load_Planet()
         if (!s.JSON_deserialize(jobject["settings"].toObject()))
         {
             file.close();
-            QMessageBox::critical(nullptr,tr("Error"),tr("0002 unable to load file"));
             return;
         }
         Settings_Set();
 
-        Gen(true,ui->progressBar,&planet,jobject["seed"].toInt());
-        QImage img=planet.img;
-        ui->pushButton_2->setIcon(QIcon(QPixmap::fromImage(img)));
-        ui->label_7->setText(planet.name);
+        Gen(true,&planet,jobject["seed"].toInt());
+        applyPlanetToView();
         isEmtyPlanet=false;
     }  catch (...) {
         QMessageBox::critical(nullptr,tr("Error"),tr("0002 unable to load file"));
@@ -395,85 +421,11 @@ void MainWindow::M_Save_Planet()
         QMessageBox::critical(nullptr,tr("Error"),tr("0001 unable to save file"));
     }
 }
-void MainWindow::Gen(bool isCreateNew, QProgressBar *pb,Planet *p,int seed)
+void MainWindow::Gen(bool isCreateNew, Planet *p,int seed)
 {
-    /* //systems pics generator
-    for (int i=0;i<100;i++)
-    {
-        s.temperature=rnd.bounded(-9,15)*10;
-        p->s=s;
-        p->CreateMatrixNew();
-        p->Calculator();
-        p->SystemMap();
-        p->img_sys.save("C:/Users/Никита/Desktop/systems/"+QString::number(i)+".png");
-    }
-    return;
-    */
-    int percent[26] {20, //height map
-                      1, //main numbers
-                      3, //normalize height map
-                      2, //levels
-                      1, //image
-                      3, //UV map
-                      3, //temperature map
-                      3, //water map
-                      3, //plants
-                      3, //polar ice
-                      2, //noise
-                      25, //clouds map
-                      3, //clouds
-                      2, //UV
-                      3, //internal atmosphere
-                      3, //shadows
-                      3, //external atmosphere
-                      3, //rings
-                      1, //name
-                      1, //description (generated)
-                      1, //description (calculated)
-                      2, //description (draw)
-                      2, //system map
-                      2, //galaxy map
-                      2, //final image
-                      3};//scale
-
-    pb->setValue(0);
     p->s=s;
     if (isCreateNew) p->SetSeed(seed);
-
-    /*
-    for (int i=0;i<26;i++)
-    {
-        p->SetSeed(p->seed);
-        p->Iteration(i);
-        pb->setValue(pb->value()+percent[i]);
-        if (i==12) p->img=p->ImageReport(p->matrix,QColor(200,200,200),QColor(50,50,50));
-    }
-    p->img.save("C:/Users/Никита/Desktop/imgs/land.png");
-    for (int i=0;i<26;i++)
-    {
-        p->SetSeed(p->seed);
-        p->Iteration(i);
-        pb->setValue(pb->value()+percent[i]);
-        if (i==12) p->img=p->ImageReport(p->t_map,QColor(0,0,255),QColor(255,0,0));
-    }
-    p->img.save("C:/Users/Никита/Desktop/imgs/temperature.png");
-    for (int i=0;i<26;i++)
-    {
-        p->SetSeed(p->seed);
-        p->Iteration(i);
-        pb->setValue(pb->value()+percent[i]);
-        if (i==12) p->img=p->ImageReport(p->r_map,QColor(252,221,118),QColor(0,255,255));
-    }
-    p->img.save("C:/Users/Никита/Desktop/imgs/water.png");
-    */
-    for (int i=0;i<26;i++)
-    {
-        p->SetSeed(p->seed);
-        p->Iteration(i);
-        pb->setValue(pb->value()+percent[i]);
-    }
-    //p->img.save("C:/Users/Никита/Desktop/imgs/biom.png");
-
+    p->Generate();
 }
 
 
@@ -495,50 +447,20 @@ void MainWindow::SliderShow(){
     }
 }
 void MainWindow::ColorToButton(QPushButton* button,QColor color){
-    button->clearMask();
-    QString s="QPushButton{background-color: rgb("+
-            QString::number(color.red())+","+
-            QString::number(color.green())+","+
-            QString::number(color.blue())+");}";
-    button->setStyleSheet(s);
-    QPalette palette;
-    QColor invert_color; //new color system
-    if (((color.red()*299)+(color.green()*587)+(color.blue()*114))/1000>=128)
-    {
-        invert_color=QColor(0,0,0);
-    }
-    else invert_color=QColor(255,255,255);
-    palette.setColor(QPalette::ButtonText,invert_color);
-    button->setPalette(palette);
+    ColorSwatch::setColor(button,color);
 }
 QColor MainWindow::ColorFromButton(QPushButton * button){
-    QString s=button->styleSheet();
-    QString r=""; QString g=""; QString b="";
-    int ptr=0;
-    while (s[ptr]!='('){ptr++;}
-    ptr++;
-    while (s[ptr]!=','){
-        r+=s[ptr];
-        ptr++;
-    }
-    ptr++;
-    while (s[ptr]!=','){
-        g+=s[ptr];
-        ptr++;
-    }
-    ptr++;
-    while (s[ptr]!=')'){
-        b+=s[ptr];
-        ptr++;
-    }
-    QColor color=QColor(r.toInt(),g.toInt(),b.toInt());
-    return color;
+    return ColorSwatch::color(button);
 }
 void MainWindow::ColorChoicer(){
     QPushButton* button = qobject_cast<QPushButton*>(sender());
     QColor current=ColorFromButton(button);
     QColor color = QColorDialog::getColor(current);
-    if (color.isValid()) ColorToButton(button,color);
+    if (color.isValid()) {
+        ColorToButton(button,color);
+        appearanceOnlyLive=false;
+        scheduleLivePreview();
+    }
 }
 
 void MainWindow::Settings_Get(){
@@ -560,8 +482,8 @@ void MainWindow::Settings_Get(){
     s.is_gradient=ui->checkBox_6->isChecked();
     s.is_plant=ui->checkBox_5->isChecked();
     s.shine=ui->horizontalSlider_6->value();
-    s.point_of_shine=pc->GetData();
-    s.point_of_shine_true=pc->GetTrueData();
+    s.shine_lat=sliderShineLat->value();
+    s.shine_lon=sliderShineLon->value();
     if      (ui->radioButton->isChecked())  {s.name_algorithm=1;}
     else if (ui->radioButton_2->isChecked()){s.name_algorithm=2;}
     else if (ui->radioButton_3->isChecked()){s.name_algorithm=3;}
@@ -579,10 +501,11 @@ void MainWindow::Settings_Get(){
     s.R_internal_ring=ui->horizontalSlider_12->value();
     s.R_external_ring=ui->horizontalSlider_14->value();
     s.ring_color=ColorFromButton(ui->pushButton_35);
-    s.point_of_polar=pc2->GetData();
-    s.point_of_polar_true=pc2->GetTrueData();
+    s.polar_lat=sliderPolarLat->value();
+    s.polar_lon=sliderPolarLon->value();
 }
 void MainWindow::Settings_Set(){
+    liveSuspended=true;
     ui->comboBox->setCurrentIndex(s.terramode);
     ui->horizontalSlider_2->setValue(s.randomness);
     ui->horizontalSlider_4->setValue(s.iterations);
@@ -600,7 +523,8 @@ void MainWindow::Settings_Set(){
     ui->checkBox_6->setChecked(s.is_gradient);
     ui->checkBox_5->setChecked(s.is_plant);
     ui->horizontalSlider_6->setValue(s.shine);
-    pc->SetData(s.point_of_shine);
+    sliderShineLat->setValue(s.shine_lat);
+    sliderShineLon->setValue(s.shine_lon);
     if      (s.name_algorithm==1) {ui->radioButton->setChecked(true);}
     else if (s.name_algorithm==2) {ui->radioButton_2->setChecked(true);}
     else if (s.name_algorithm==3) {ui->radioButton_3->setChecked(true);}
@@ -618,7 +542,9 @@ void MainWindow::Settings_Set(){
     ui->horizontalSlider_12->setValue(s.R_internal_ring);
     ui->horizontalSlider_14->setValue(s.R_external_ring);
     ColorToButton(ui->pushButton_35,s.ring_color);
-    pc2->SetData(s.point_of_polar);
+    sliderPolarLat->setValue(s.polar_lat);
+    sliderPolarLon->setValue(s.polar_lon);
+    liveSuspended=false;
 }
 
 void MainWindow::M_Save_Settings(){
@@ -636,13 +562,18 @@ void MainWindow::M_Load_Settings(){
                                 "./",
                                 tr("Texts (*.json);;All files (*.*)"));
     if (filename.isEmpty()) return;
-    Settings_Get();//для начального заполнения "буфера" настроек
-    if (s.Load(filename))
+    QFile file(filename);
+    if (!file.open(QFile::ReadOnly|QFile::Text))
+    {
+        QMessageBox::critical(nullptr,tr("Error"),tr("0002 unable to load file"));
+        return;
+    }
+    Settings_Get();
+    if (s.JSON_deserialize(QJsonDocument::fromJson(file.readAll()).object()))
     {
         Settings_Set();
         update();
     }
-    else QMessageBox::critical(nullptr,tr("Error"),tr("0002 unable to load file"));
 }
 void MainWindow::Img_Report() //служебная функция
 {
@@ -656,7 +587,7 @@ void MainWindow::BiomGrad() //служебная функция
     for (int i=-50;i<=50;i++)
     {
         s.temperature=i;
-        Gen(false,ui->progressBar,&planet);
+        Gen(false,&planet);
         QString name=QString::number(i+50)+" ("+QString::number(i)+").png";
         planet.img.save("C:/Users/Никита/Desktop/biom/"+name);
     }
@@ -674,5 +605,96 @@ void MainWindow::Report(QString s) //служебная функция
 MainWindow::~MainWindow()
 {
     delete ui;
+}
+
+void MainWindow::scheduleLivePreview()
+{
+    if (liveSuspended || !ui->action_live->isChecked() || !liveTimer)
+        return;
+    liveTimer->start();
+}
+
+void MainWindow::runLivePreview()
+{
+    if (liveSuspended || !ui->action_live->isChecked())
+        return;
+    Settings_Get();
+    if (isEmtyPlanet)
+    {
+        Gen(true, &planet);
+        isEmtyPlanet = false;
+        applyPlanetToView();
+        return;
+    }
+    if (appearanceOnlyLive && glWidget)
+    {
+        planet.s = s;
+        const SphereVec3 shine = latLonDegToSphere(s.shine_lat, s.shine_lon);
+        planet.x_shine = shine.x;
+        planet.y_shine = shine.y;
+        planet.z_shine = shine.z;
+        const SphereVec3 polar = latLonDegToSphere(s.polar_lat, s.polar_lon);
+        planet.x_polar = polar.x;
+        planet.y_polar = polar.y;
+        planet.z_polar = polar.z;
+        glWidget->refreshAppearance();
+        return;
+    }
+    Gen(false, &planet);
+    applyPlanetToView();
+}
+
+void MainWindow::addLatLonControls(QWidget *parent,
+                                  QSlider *&latSlider, QSlider *&lonSlider,
+                                  QLabel *&latTitle, QLabel *&lonTitle,
+                                  QLabel *&latValue, QLabel *&lonValue)
+{
+    auto makeTitle = [parent](int y) {
+        QLabel *label = new QLabel(parent);
+        label->setGeometry(20, y, 200, 24);
+        QFont font("Consolas", 10);
+        label->setFont(font);
+        return label;
+    };
+    auto makeValue = [parent](int y) {
+        QLabel *label = new QLabel("0", parent);
+        label->setGeometry(240, y, 50, 24);
+        QFont font("Consolas", 10);
+        label->setFont(font);
+        label->setAlignment(Qt::AlignCenter);
+        return label;
+    };
+    auto makeSlider = [parent](int y, int min, int max, int value) {
+        QSlider *slider = new QSlider(Qt::Horizontal, parent);
+        slider->setGeometry(20, y, 221, 16);
+        slider->setRange(min, max);
+        slider->setValue(value);
+        return slider;
+    };
+
+    latTitle = makeTitle(110);
+    latSlider = makeSlider(140, -90, 90, 0);
+    latValue = makeValue(135);
+    lonTitle = makeTitle(180);
+    lonSlider = makeSlider(210, -180, 180, 0);
+    lonValue = makeValue(205);
+    latValue->setGeometry(230, 135, 41, 21);
+    lonValue->setGeometry(230, 205, 41, 21);
+    latValue->setText(QString::number(latSlider->value()));
+    lonValue->setText(QString::number(lonSlider->value()));
+    connect(latSlider, &QSlider::valueChanged, latValue, QOverload<int>::of(&QLabel::setNum));
+    connect(lonSlider, &QSlider::valueChanged, lonValue, QOverload<int>::of(&QLabel::setNum));
+}
+
+void MainWindow::retranslateCoordLabels()
+{
+    if (!labelShineLatTitle)
+        return;
+    labelShineLatTitle->setText(tr("Latitude"));
+    labelShineLonTitle->setText(tr("Longitude"));
+    labelPolarLatTitle->setText(tr("Latitude"));
+    labelPolarLonTitle->setText(tr("Longitude"));
+    if (btnResetCamera)
+        btnResetCamera->setText(tr("Reset camera"));
 }
 

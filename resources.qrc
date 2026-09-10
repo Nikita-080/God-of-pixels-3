@@ -39,6 +39,7 @@
         <file>res/images/window.png</file>
     </qresource>
     <qresource prefix="/css_files">
+        <file>res/css_files/app.qss</file>
         <file>res/css_files/button.css</file>
         <file>res/css_files/combobox.css</file>
         <file>res/css_files/menubar.css</file>

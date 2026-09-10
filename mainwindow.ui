@@ -296,10 +296,7 @@
      </font>
     </property>
     <property name="styleSheet">
-     <string notr="true">border-width: 3px;
-border-style: solid;
-border-color: rgb(110, 170, 200);
-</string>
+     <string notr="true"/>
     </property>
     <property name="text">
      <string>Create</string>
@@ -439,9 +436,7 @@ border-color: rgb(110, 170, 200);
      </font>
     </property>
     <property name="styleSheet">
-     <string notr="true">border-width: 3px;
-border-style: solid;
-border-color: rgb(110, 170, 200);</string>
+     <string notr="true"/>
     </property>
     <property name="text">
      <string>Change</string>
@@ -1089,10 +1084,10 @@ color: rgb(255, 255, 255);</string>
 QSlider::handle:horizontal {selection-background-color: rgb(0, 255, 0);}</string>
       </property>
       <property name="minimum">
-       <number>4</number>
+       <number>1</number>
       </property>
       <property name="maximum">
-       <number>8</number>
+       <number>20</number>
       </property>
       <property name="orientation">
        <enum>Qt::Horizontal</enum>
@@ -1244,7 +1239,7 @@ QSlider::handle:horizontal {selection-background-color: rgb(0, 255, 0);}</string
        </font>
       </property>
       <property name="text">
-       <string>Randomness</string>
+       <string>Amplitude</string>
       </property>
      </widget>
      <widget class="QSlider" name="horizontalSlider_2">
@@ -2085,7 +2080,7 @@ margin: 5px;}</string>
       </property>
       <item>
        <property name="text">
-        <string>diamond square</string>
+        <string>noise</string>
        </property>
       </item>
       <item>
@@ -7497,9 +7492,7 @@ margin: 5px;}</string>
      </rect>
     </property>
     <property name="styleSheet">
-     <string notr="true">border-width: 3px;
-border-style: solid;
-border-color: rgb(110, 170, 200);</string>
+     <string notr="true"/>
     </property>
     <property name="text">
      <string/>
@@ -7521,9 +7514,7 @@ border-color: rgb(110, 170, 200);</string>
      </rect>
     </property>
     <property name="styleSheet">
-     <string notr="true">border-width: 3px;
-border-style: solid;
-border-color: rgb(110, 170, 200);</string>
+     <string notr="true"/>
     </property>
     <property name="text">
      <string/>
@@ -7550,9 +7541,7 @@ border-color: rgb(110, 170, 200);</string>
      </font>
     </property>
     <property name="styleSheet">
-     <string notr="true">border-width: 3px;
-border-style: solid;
-border-color: rgb(110, 170, 200);</string>
+     <string notr="true"/>
     </property>
     <property name="text">
      <string/>
@@ -8094,6 +8083,7 @@ color: rgb(255, 255, 255);</string>
     <addaction name="action_4"/>
     <addaction name="action_5"/>
     <addaction name="action_10"/>
+    <addaction name="action_live"/>
    </widget>
    <widget class="QMenu" name="menu_3">
     <property name="title">
@@ -8154,6 +8144,17 @@ color: rgb(255, 255, 255);</string>
   <action name="action_10">
    <property name="text">
     <string>Switch language</string>
+   </property>
+  </action>
+  <action name="action_live">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>Live preview</string>
    </property>
   </action>
  </widget>
