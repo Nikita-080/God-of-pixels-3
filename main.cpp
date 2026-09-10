@@ -1,12 +1,12 @@
 #include "mainwindow.h"
 #include <QApplication>
-#include <QStyleFactory>
+#include <QSurfaceFormat>
 #include <QTranslator>
 
 int main(int argc, char *argv[]){
-    //строки ниже портят программу, и я не помню, зачем их писал. надо разобраться
-    //QApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
-    //QApplication::setStyle(QStyleFactory::create("Fusion"));
+    QSurfaceFormat fmt;
+    fmt.setDepthBufferSize(24);
+    QSurfaceFormat::setDefaultFormat(fmt);
     QApplication a(argc, argv);
     MainWindow w;
     w.show();
