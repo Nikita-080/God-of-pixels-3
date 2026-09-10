@@ -13,6 +13,7 @@ const char dirImage[] = "paths/image";
 const char dirPlanet[] = "paths/planet";
 const char dirSettings[] = "paths/settings";
 const char dirAutogen[] = "paths/autogen";
+const char windowGeometry[] = "ui/windowGeometry";
 }
 
 inline QString startPath(const char *dirKey, const QString &fileName = QString())

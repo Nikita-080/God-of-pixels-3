@@ -17,6 +17,8 @@ SOURCES += \
     planet.cpp \
     planetglwidget.cpp \
     planetsettings.cpp \
+    previewpanel.cpp \
+    settingspanel.cpp \
     terrafactory.cpp \
     windowsettings.cpp
 
@@ -33,6 +35,8 @@ HEADERS += \
     planet.h \
     planetglwidget.h \
     planetsettings.h \
+    previewpanel.h \
+    settingspanel.h \
     spheremath.h \
     terrafactory.h \
     windowsettings.h

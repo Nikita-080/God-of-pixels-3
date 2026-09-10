@@ -3,17 +3,29 @@ QWidget {
 }
 QLabel, QGroupBox, QRadioButton, QCheckBox {
     color: rgb(110, 170, 200);
+    background-color: transparent;
 }
+QSlider::groove:horizontal {
+    height: 6px;
+    background: rgb(50, 50, 50);
+    border-radius: 3px;
+}
+QSlider::handle:horizontal,
 QSlider::handle {
     background-color: rgb(0, 255, 0);
+    width: 14px;
+    height: 14px;
+    margin: -5px 0;
     border-radius: 7px;
-    border-color: rgb(0, 255, 127);
+    border: 1px solid rgb(0, 255, 127);
 }
+QSlider::add-page:horizontal,
 QSlider::add-page {
     background: rgb(200, 200, 200);
     margin: 5px;
     margin-right: 0px;
 }
+QSlider::sub-page:horizontal,
 QSlider::sub-page {
     background: rgb(0, 255, 0);
     margin: 5px;
@@ -21,37 +33,33 @@ QSlider::sub-page {
 }
 QSlider::handle:disabled {
     background-color: rgb(0, 170, 0);
-    border-radius: 7px;
     border-color: rgb(0, 170, 85);
 }
 QSlider::add-page:disabled {
     background: rgb(133, 133, 133);
-    margin: 5px;
-    margin-right: 0px;
 }
 QSlider::sub-page:disabled {
     background: rgb(0, 170, 0);
-    margin: 5px;
-    margin-left: 0px;
-}
-QMenuBar::item:selected {
-    background-color: rgb(50, 50, 50);
-    color: rgb(255, 0, 0);
 }
 QMenuBar {
     background-color: rgb(0, 0, 0);
-    color: rgb(255, 0, 0);
+    color: rgb(110, 170, 200);
 }
-QMenu::item:selected {
+QMenuBar::item:selected {
     background-color: rgb(50, 50, 50);
-    color: rgb(255, 0, 0);
+    color: rgb(0, 255, 127);
 }
 QMenu {
     background-color: rgb(0, 0, 0);
-    color: rgb(255, 0, 0);
+    color: rgb(110, 170, 200);
+}
+QMenu::item:selected {
+    background-color: rgb(50, 50, 50);
+    color: rgb(0, 255, 127);
 }
 QTabWidget::pane {
     border: 3px solid rgb(128, 128, 128);
+    background-color: rgb(0, 0, 0);
 }
 QTabBar::tab {
     background-color: black;
@@ -75,56 +83,152 @@ QToolButton {
     color: rgb(110, 170, 200);
 }
 QComboBox {
-    background-color: black;
+    background-color: rgb(0, 0, 0);
     color: rgb(0, 255, 127);
     border: 2px solid rgb(110, 170, 200);
+    padding: 4px 8px;
+    min-height: 24px;
+}
+QComboBox:hover {
+    border-color: rgb(0, 255, 127);
+}
+QComboBox::drop-down {
+    subcontrol-origin: padding;
+    subcontrol-position: center right;
+    width: 22px;
+    border-left: 1px solid rgb(110, 170, 200);
+    background: rgb(0, 30, 40);
+}
+QComboBox::down-arrow {
+    width: 8px;
+    height: 8px;
+    background-color: rgb(0, 255, 127);
 }
 QComboBox QAbstractItemView {
+    background-color: rgb(0, 0, 0);
     color: rgb(110, 170, 200);
     selection-background-color: rgb(50, 50, 50);
-    selection-color: rgb(110, 170, 200);
+    selection-color: rgb(0, 255, 127);
+    border: 1px solid rgb(110, 170, 200);
 }
-QPushButton#pushButton,
-QPushButton#pushButton_18,
-QPushButton#pushButton_19,
-QPushButton#pushButton_20,
-QPushButton#pushButton_3,
-QPushButton#pushButton_4,
-QPushButton#pushButton_5 {
-    background-repeat: no-repeat;
-    border: none;
-}
-QPushButton#pushButton { background-image: url(":/images/res/images/pushButton_m.png"); }
-QPushButton#pushButton:hover { background-image: url(":/images/res/images/pushButton_t.png"); }
-QPushButton#pushButton:pressed { background-image: url(":/images/res/images/pushButton_b.png"); }
-QPushButton#pushButton_18 { background-image: url(":/images/res/images/pushButton_18_m.png"); }
-QPushButton#pushButton_18:hover { background-image: url(":/images/res/images/pushButton_18_t.png"); }
-QPushButton#pushButton_18:pressed { background-image: url(":/images/res/images/pushButton_18_b.png"); }
-QPushButton#pushButton_19 { background-image: url(":/images/res/images/pushButton_19_m.png"); }
-QPushButton#pushButton_19:hover { background-image: url(":/images/res/images/pushButton_19_t.png"); }
-QPushButton#pushButton_19:pressed { background-image: url(":/images/res/images/pushButton_19_b.png"); }
-QPushButton#pushButton_20 { background-image: url(":/images/res/images/pushButton_20_m.png"); }
-QPushButton#pushButton_20:hover { background-image: url(":/images/res/images/pushButton_20_t.png"); }
-QPushButton#pushButton_20:pressed { background-image: url(":/images/res/images/pushButton_20_b.png"); }
-QPushButton#pushButton_3 { background-image: url(":/images/res/images/pushButton_3_m.png"); }
-QPushButton#pushButton_3:hover { background-image: url(":/images/res/images/pushButton_3_t.png"); }
-QPushButton#pushButton_3:pressed { background-image: url(":/images/res/images/pushButton_3_b.png"); }
-QPushButton#pushButton_4 { background-image: url(":/images/res/images/pushButton_4_m.png"); }
-QPushButton#pushButton_4:hover { background-image: url(":/images/res/images/pushButton_4_t.png"); }
-QPushButton#pushButton_4:pressed { background-image: url(":/images/res/images/pushButton_4_b.png"); }
-QPushButton#pushButton_5 { background-image: url(":/images/res/images/pushButton_5_m.png"); }
-QPushButton#pushButton_5:hover { background-image: url(":/images/res/images/pushButton_5_t.png"); }
-QPushButton#pushButton_5:pressed { background-image: url(":/images/res/images/pushButton_5_b.png"); }
-QPushButton#btnResetCamera {
-    border: none;
-    color: rgb(110, 170, 200);
-    font-family: Consolas;
-    font-size: 11pt;
-}
+QProgressBar {
     border-width: 3px;
     border-style: solid;
     border-color: rgb(0, 255, 127);
     color: rgb(255, 255, 255);
     background: rgb(0, 0, 0);
     text-align: center;
+}
+QColorDialog {
+    background-color: #f0f0f0;
+    color: #202020;
+}
+QColorDialog QWidget {
+    background-color: #f0f0f0;
+    color: #202020;
+}
+QColorDialog QLabel {
+    background: transparent;
+    color: #202020;
+}
+QColorDialog QPushButton {
+    background-color: #e6e6e6;
+    color: #202020;
+    border: 1px solid #808080;
+    min-width: 72px;
+    min-height: 24px;
+    padding: 4px 12px;
+}
+QColorDialog QPushButton:hover {
+    background-color: #f4f4f4;
+}
+QColorDialog QSpinBox,
+QColorDialog QLineEdit {
+    background-color: #ffffff;
+    color: #202020;
+    border: 1px solid #808080;
+}
+QPushButton#btnViewPlanet,
+QPushButton#btnAutogen,
+QPushButton#btnViewDescription,
+QPushButton#btnViewSystem,
+QPushButton#btnViewMap {
+    background-repeat: no-repeat;
+    background-position: center;
+    border: none;
+}
+QPushButton#btnViewPlanet { background-image: url(":/images/res/images/pushButton_m.png"); }
+QPushButton#btnViewPlanet:hover { background-image: url(":/images/res/images/pushButton_t.png"); }
+QPushButton#btnViewPlanet:pressed { background-image: url(":/images/res/images/pushButton_b.png"); }
+QPushButton#btnAutogen { background-image: url(":/images/res/images/pushButton_20_m.png"); }
+QPushButton#btnAutogen:hover { background-image: url(":/images/res/images/pushButton_20_t.png"); }
+QPushButton#btnAutogen:pressed { background-image: url(":/images/res/images/pushButton_20_b.png"); }
+QPushButton#btnViewDescription { background-image: url(":/images/res/images/pushButton_3_m.png"); }
+QPushButton#btnViewDescription:hover { background-image: url(":/images/res/images/pushButton_3_t.png"); }
+QPushButton#btnViewDescription:pressed { background-image: url(":/images/res/images/pushButton_3_b.png"); }
+QPushButton#btnViewSystem { background-image: url(":/images/res/images/pushButton_4_m.png"); }
+QPushButton#btnViewSystem:hover { background-image: url(":/images/res/images/pushButton_4_t.png"); }
+QPushButton#btnViewSystem:pressed { background-image: url(":/images/res/images/pushButton_4_b.png"); }
+QPushButton#btnViewMap { background-image: url(":/images/res/images/pushButton_5_m.png"); }
+QPushButton#btnViewMap:hover { background-image: url(":/images/res/images/pushButton_5_t.png"); }
+QPushButton#btnViewMap:pressed { background-image: url(":/images/res/images/pushButton_5_b.png"); }
+QPushButton#btnResetCamera,
+QPushButton#btnCreate,
+QPushButton#btnRecreate {
+    border: 2px solid rgb(110, 170, 200);
+    color: rgb(110, 170, 200);
+    background-color: rgb(0, 0, 0);
+    font-family: Consolas;
+}
+QPushButton#btnResetCamera {
+    font-size: 11pt;
+    min-height: 32px;
+    padding: 6px 10px;
+}
+QPushButton#btnCreate,
+QPushButton#btnRecreate {
+    font-size: 18pt;
+    min-height: 52px;
+    padding: 8px 12px;
+}
+QPushButton#btnResetCamera:hover,
+QPushButton#btnCreate:hover,
+QPushButton#btnRecreate:hover {
+    border: 2px solid rgb(145, 200, 228);
+    color: rgb(160, 210, 230);
+    background-color: rgb(9, 24, 31);
+    padding-top: 5px;
+    padding-bottom: 5px;
+}
+QPushButton#btnResetCamera:pressed,
+QPushButton#btnCreate:pressed,
+QPushButton#btnRecreate:pressed {
+    border: 2px solid rgb(85, 135, 155);
+    color: rgb(90, 145, 170);
+    background-color: rgb(0, 0, 0);
+    padding-top: 7px;
+    padding-bottom: 7px;
+}
+QLabel#labelEmptyPreview {
+    color: rgb(110, 170, 200);
+}
+QLabel#labelPlanetName {
+    color: rgb(110, 170, 200);
+}
+QCheckBox#checkLivePreview {
+    color: rgb(110, 170, 200);
+    font-family: Consolas;
+    font-size: 11pt;
+    min-height: 28px;
+    padding: 6px 8px 10px 4px;
+    border: 2px solid rgb(110, 170, 200);
+}
+QCheckBox#checkLivePreview:hover {
+    border-color: rgb(145, 200, 228);
+    color: rgb(160, 210, 230);
+    background-color: rgb(9, 24, 31);
+}
+QCheckBox#checkLivePreview:pressed {
+    border-color: rgb(85, 135, 155);
+    color: rgb(90, 145, 170);
 }
