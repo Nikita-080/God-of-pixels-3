@@ -6,6 +6,8 @@
 #include <QFormLayout>
 #include <QGroupBox>
 #include <QFileDialog>
+#include <QMessageBox>
+#include <QRadioButton>
 #include "appsettings.h"
 
 windowsettings::windowsettings(const QString &language, QWidget *parent)
@@ -13,6 +15,7 @@ windowsettings::windowsettings(const QString &language, QWidget *parent)
     , ui(new Ui::windowsettings)
 {
     ui->setupUi(this);
+    setWindowTitle(tr("Autogen"));
 
     QFormLayout *formLayout = new QFormLayout();
     QGroupBox *groupBox = new QGroupBox();
@@ -42,8 +45,8 @@ windowsettings::windowsettings(const QString &language, QWidget *parent)
     ui->radioButton->setChecked(true);
     ui->groupBox_2->setEnabled(false);
 
-    connect(ui->radioButton, &QPushButton::clicked, this, &windowsettings::ChangeType);
-    connect(ui->radioButton_2, &QPushButton::clicked, this, &windowsettings::ChangeType);
+    connect(ui->radioButton, &QRadioButton::toggled, this, &windowsettings::ChangeType);
+    connect(ui->radioButton_2, &QRadioButton::toggled, this, &windowsettings::ChangeType);
     connect(ui->pushButton_3, &QPushButton::clicked, this, &windowsettings::TakeAll);
     connect(ui->pushButton_4, &QPushButton::clicked, this, &windowsettings::TakeNothing);
     connect(ui->pushButton, &QPushButton::clicked, this, &windowsettings::AskFile);
@@ -64,12 +67,35 @@ void windowsettings::ButtonCancel()
 
 void windowsettings::EndWindow()
 {
-    resultSettings.save_type = ui->radioButton->isChecked();
-    resultSettings.picturetype = ui->checkBox->isChecked();
-    resultSettings.path = ui->radioButton->isChecked() ? filepath : dirpath;
-    resultSettings.height = ui->lineEdit_2->text().toInt();
-    resultSettings.width = ui->lineEdit_3->text().toInt();
-    resultSettings.number = ui->lineEdit_5->text().toInt();
+    const bool collage = ui->radioButton->isChecked();
+    const QString path = collage ? ui->lineEdit->text().trimmed() : ui->lineEdit_4->text().trimmed();
+    const int height = ui->lineEdit_2->text().toInt();
+    const int width = ui->lineEdit_3->text().toInt();
+    const int number = ui->lineEdit_5->text().toInt();
+    if (path.isEmpty())
+    {
+        QMessageBox::warning(this, tr("Autogen"),
+                             collage ? tr("Choose a file for the collage.")
+                                     : tr("Choose a folder for the images."));
+        return;
+    }
+    if (collage && (width < 1 || height < 1))
+    {
+        QMessageBox::warning(this, tr("Autogen"), tr("Collage width and height must be at least 1."));
+        return;
+    }
+    if (!collage && number < 1)
+    {
+        QMessageBox::warning(this, tr("Autogen"), tr("Number of images must be at least 1."));
+        return;
+    }
+
+    resultSettings.mode = collage ? AutoGenMode::Collage : AutoGenMode::SeparateFiles;
+    resultSettings.extendedFormat = ui->checkBox->isChecked();
+    resultSettings.path = path;
+    resultSettings.height = height;
+    resultSettings.width = width;
+    resultSettings.number = number;
     resultSettings.isRndList.clear();
     for (QCheckBox *box : rndarr)
         resultSettings.isRndList.append(box->isChecked());
@@ -78,17 +104,23 @@ void windowsettings::EndWindow()
 
 void windowsettings::AskFile()
 {
-    filepath = QFileDialog::getSaveFileName(this, tr("Save collage"),
+    const QString chosen = QFileDialog::getSaveFileName(this, tr("Save collage"),
                                             startPath(AppKeys::dirAutogen, QStringLiteral("image.png")),
                                             tr("Image (*.png);;All files (*.*)"));
+    if (chosen.isEmpty())
+        return;
+    filepath = chosen;
     rememberPath(AppKeys::dirAutogen, filepath);
     ui->lineEdit->setText(filepath);
 }
 
 void windowsettings::AskDir()
 {
-    dirpath = QFileDialog::getExistingDirectory(this, tr("Save images"),
+    const QString chosen = QFileDialog::getExistingDirectory(this, tr("Save images"),
                                                 startPath(AppKeys::dirAutogen, QString()));
+    if (chosen.isEmpty())
+        return;
+    dirpath = chosen;
     rememberPath(AppKeys::dirAutogen, dirpath);
     ui->lineEdit_4->setText(dirpath);
 }

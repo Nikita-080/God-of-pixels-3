@@ -24,6 +24,8 @@ static PlanetSettings testSettings()
     s.noise = 0;
     s.is_gradient = false;
     s.is_plant = false;
+    s.is_civ = false;
+    s.civ_color = QColor("#ffcc66");
     s.shine = 5;
     s.shine_lat = 25;
     s.shine_lon = 90;

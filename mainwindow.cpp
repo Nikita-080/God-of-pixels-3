@@ -26,6 +26,29 @@
 #include <QCloseEvent>
 #include <QEvent>
 
+namespace {
+
+QString uniquePngPath(const QDir &dir, const QString &rawName)
+{
+    QString base = rawName;
+    for (int i = 0; i < base.size(); ++i)
+    {
+        const QChar c = base.at(i);
+        if (!(c.isLetterOrNumber() || c == QLatin1Char('_') || c == QLatin1Char('-')))
+            base[i] = QLatin1Char('_');
+    }
+    if (base.isEmpty())
+        base = QStringLiteral("planet");
+    QString name = base + QStringLiteral(".png");
+    int n = 2;
+    while (dir.exists(name))
+        name = QStringLiteral("%1_%2.png").arg(base).arg(n++);
+    return dir.filePath(name);
+}
+
+} // namespace
+
+
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
@@ -42,6 +65,7 @@ MainWindow::MainWindow(QWidget *parent)
     , genQueued(false)
     , genQueuedCreateNew(false)
     , genQueuedSeed(0)
+    , autogenRunning(false)
 {
     QSettings st;
     language = st.value(AppKeys::language, QStringLiteral("en")).toString();
@@ -55,7 +79,6 @@ MainWindow::MainWindow(QWidget *parent)
 
     ui->setupUi(this);
     ui->action_live->setChecked(st.value(AppKeys::livePreview, false).toBool());
-    ui->progressBar->hide();
     ui->tabWidget->setIconSize(QSize(60, 60));
     for (int i = 0; i < 10; ++i)
     {
@@ -122,6 +145,7 @@ MainWindow::MainWindow(QWidget *parent)
 
 MainWindow::~MainWindow()
 {
+    autogenRunning = false;
     if (genThread)
     {
         disconnect(genThread, nullptr, this, nullptr);
@@ -225,19 +249,11 @@ void MainWindow::setupMainLayout()
     ui->btnViewMap->setFixedSize(122, 122);
     ui->btnLogo->setFixedSize(150, 150);
     ui->progressAutogen->setFixedHeight(31);
-    ui->progressAutogenSub->setFixedHeight(31);
-    ui->progressBar->setFixedHeight(31);
-
-    auto *progressCol = new QVBoxLayout;
-    progressCol->setSpacing(8);
-    progressCol->addWidget(ui->progressAutogen);
-    progressCol->addWidget(ui->progressAutogenSub);
-    progressCol->addStretch();
 
     auto *autogenRow = new QHBoxLayout;
     autogenRow->setSpacing(10);
     autogenRow->addWidget(ui->btnAutogen);
-    autogenRow->addLayout(progressCol, 1);
+    autogenRow->addWidget(ui->progressAutogen, 1);
 
     auto *viewRow = new QHBoxLayout;
     viewRow->setSpacing(0);
@@ -259,7 +275,6 @@ void MainWindow::setupMainLayout()
     auto *previewCol = new QVBoxLayout;
     previewCol->setSpacing(8);
     previewCol->addWidget(preview, 1);
-    previewCol->addWidget(ui->progressBar);
 
     auto *root = new QHBoxLayout(ui->centralwidget);
     root->setContentsMargins(10, 8, 10, 8);
@@ -274,66 +289,159 @@ void MainWindow::setupMainLayout()
 
 void MainWindow::AutoGen()
 {
+    if (autogenRunning || genRunning)
+        return;
+
     windowsettings win(language, this);
     if (win.exec() != QDialog::Accepted)
         return;
     box = win.settings();
+
+    autogenRunning = true;
     beginLoadingWatch();
     ui->btnAutogen->setEnabled(false);
+    ui->btnCreate->setEnabled(false);
+    ui->btnRecreate->setEnabled(false);
     ui->progressAutogen->setValue(0);
+
     Settings_Get();
-    if (box.save_type == 1)
+    const PlanetSettings base = s;
+    bool ok = true;
+
+    if (box.mode == AutoGenMode::Collage)
     {
-        int delta = box.picturetype ? 658 : 257;
-        int count = 0;
-        const double percent = 1.0 * box.height * box.width / 100;
-        QImage image(box.width * delta, box.height * delta, QImage::Format_RGB32);
-        QPainter p;
-        p.begin(&image);
-        for (int i = 0; i < box.height; ++i)
+        const int total = box.width * box.height;
+        QVector<QImage> tiles;
+        tiles.reserve(total);
+        int done = 0;
+        for (int row = 0; row < box.height && autogenRunning; ++row)
         {
-            for (int k = 0; k < box.width; ++k)
+            for (int col = 0; col < box.width && autogenRunning; ++col)
             {
-                s.Random(box.isRndList);
+                PlanetSettings next = base;
+                next.Random(box.isRndList);
+                s = next;
                 Gen(true, &autoplanet);
-                if (box.picturetype)
-                    p.drawImage(k * delta, i * delta, autoplanet.img_final);
-                else
-                    p.drawImage(k * delta, i * delta, autoplanet.img_nonscale);
-                ++count;
-                ui->progressAutogen->setValue(qRound(1.0 * count / percent));
+                tiles.append(autogenPreviewTile());
+                ++done;
+                ui->progressAutogen->setValue(qRound(100.0 * done / total));
                 QApplication::processEvents();
             }
         }
-        image.save(box.path);
-        ui->progressAutogen->setValue(100);
+        s = base;
+
+        int cellW = 0;
+        int cellH = 0;
+        for (const QImage &tile : tiles)
+        {
+            cellW = qMax(cellW, tile.width());
+            cellH = qMax(cellH, tile.height());
+        }
+        if (cellW <= 0 || cellH <= 0)
+        {
+            QMessageBox::critical(this, tr("Error"), tr("0001 unable to save file"));
+            ok = false;
+        }
+        else
+        {
+            QImage image(cellW * box.width, cellH * box.height, QImage::Format_RGB32);
+            image.fill(Qt::black);
+            QPainter p(&image);
+            for (int i = 0; i < tiles.size(); ++i)
+            {
+                const int row = i / box.width;
+                const int col = i % box.width;
+                const QImage &tile = tiles.at(i);
+                const int x = col * cellW + (cellW - tile.width()) / 2;
+                const int y = row * cellH + (cellH - tile.height()) / 2;
+                p.drawImage(x, y, tile);
+            }
+            p.end();
+            if (!image.save(box.path))
+            {
+                QMessageBox::critical(this, tr("Error"), tr("0001 unable to save file"));
+                ok = false;
+            }
+        }
     }
     else
     {
-        const double percent = 1.0 * box.number / 100;
-        for (int k = 0; k < box.number; ++k)
+        const QDir dir(box.path);
+        for (int k = 0; k < box.number && autogenRunning; ++k)
         {
-            s.Random(box.isRndList);
+            PlanetSettings next = base;
+            next.Random(box.isRndList);
+            s = next;
             Gen(true, &autoplanet);
-            ui->progressAutogen->setValue(qRound(1.0 * k / percent));
+            const QImage photo = autogenPreviewTile();
+            const QString filename = uniquePngPath(dir, autoplanet.name);
+            if (!photo.save(filename))
+            {
+                QMessageBox::critical(this, tr("Error"), tr("0001 unable to save file"));
+                ok = false;
+                break;
+            }
+            ui->progressAutogen->setValue(qRound(100.0 * (k + 1) / box.number));
             QApplication::processEvents();
-            QImage photo = box.picturetype ? autoplanet.img_final : autoplanet.img_nonscale;
-            photo.save(QDir(box.path).filePath(autoplanet.name + ".png"));
         }
-        ui->progressAutogen->setValue(100);
+        s = base;
     }
+
+    if (ok)
+        ui->progressAutogen->setValue(100);
+    finishAutogen();
+}
+
+QImage MainWindow::autogenPreviewTile()
+{
+    if (preview)
+    {
+        preview->setHasPlanet(true);
+        preview->showGlobe();
+        preview->glWidget()->setPlanet(&autoplanet);
+        preview->glWidget()->refreshTextures();
+        preview->glWidget()->repaint();
+        const QImage shot = preview->glWidget()->captureView();
+        if (!shot.isNull())
+            autoplanet.img_view = shot;
+        preview->setPlanetName(autoplanet.name);
+    }
+    autoplanet.FinalImage();
+    if (box.extendedFormat)
+        return autoplanet.img_final;
+    if (!autoplanet.img_view.isNull())
+        return autoplanet.img_view;
+    return autoplanet.img;
+}
+
+void MainWindow::finishAutogen()
+{
+    autogenRunning = false;
     ui->btnAutogen->setEnabled(true);
+    ui->btnCreate->setEnabled(true);
+    ui->btnRecreate->setEnabled(true);
     endLoadingWatch();
+    if (!isEmtyPlanet)
+        applyPlanetToView();
+    else if (preview)
+    {
+        preview->glWidget()->setPlanet(nullptr);
+        preview->setHasPlanet(false);
+    }
 }
 
 void MainWindow::CreateNewPlanet()
 {
+    if (autogenRunning)
+        return;
     Settings_Get();
     startGeneration(true);
 }
 
 void MainWindow::RecreatePlanet()
 {
+    if (autogenRunning)
+        return;
     Settings_Get();
     startGeneration(isEmtyPlanet);
 }
@@ -505,6 +613,8 @@ void MainWindow::endLoadingWatch()
 
 void MainWindow::startGeneration(bool createNew, int seed)
 {
+    if (autogenRunning)
+        return;
     if (genRunning)
     {
         genQueued = true;
@@ -651,14 +761,14 @@ void MainWindow::Report(QString s)
 
 void MainWindow::scheduleLivePreview()
 {
-    if (isEmtyPlanet || liveSuspended || !ui->action_live->isChecked() || !liveTimer)
+    if (autogenRunning || isEmtyPlanet || liveSuspended || !ui->action_live->isChecked() || !liveTimer)
         return;
     liveTimer->start();
 }
 
 void MainWindow::runLivePreview()
 {
-    if (isEmtyPlanet || liveSuspended || !ui->action_live->isChecked())
+    if (autogenRunning || isEmtyPlanet || liveSuspended || !ui->action_live->isChecked())
         return;
     Settings_Get();
     if (appearanceOnlyLive && preview)

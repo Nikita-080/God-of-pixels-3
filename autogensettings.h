@@ -3,18 +3,24 @@
 #include <QVector>
 #include <QString>
 
+enum class AutoGenMode
+{
+    Collage,
+    SeparateFiles
+};
+
 class AutoGenSettings
 {
 public:
-    bool save_type;
-    bool picturetype;
+    AutoGenMode mode;
+    bool extendedFormat;
     QString path;
     int height;
     int width;
     int number;
-    QVector <bool> isRndList;
-public:
+    QVector<bool> isRndList;
+
     AutoGenSettings();
 };
 
-#endif // AUTOGENSETTINGS_H
+#endif

@@ -34,3 +34,5 @@ ring color
 north
 ring material
 ring intensity
+intelligence
+civilization color

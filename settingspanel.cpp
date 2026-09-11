@@ -104,6 +104,17 @@ SettingsPanel::SettingsPanel(QTabWidget *tabs, QWidget *parent)
     checkFillLight->setFont(QFont(QStringLiteral("Consolas"), 10));
     checkFillLight->setChecked(true);
 
+    auto *lifeTab = child<QWidget>("tab_4");
+    checkCiv = new QCheckBox(lifeTab);
+    checkCiv->setObjectName(QStringLiteral("checkCiv"));
+    checkCiv->setGeometry(10, 84, 241, 22);
+    checkCiv->setFont(QFont(QStringLiteral("Consolas"), 10));
+    btnColorCiv = new QPushButton(lifeTab);
+    btnColorCiv->setObjectName(QStringLiteral("btnColorCiv"));
+    btnColorCiv->setGeometry(10, 116, 141, 51);
+    btnColorCiv->setFont(QFont(QStringLiteral("Consolas"), 10));
+    ColorSwatch::setColor(btnColorCiv, QColor(QStringLiteral("#ffcc66")));
+
     auto *ringTab = child<QWidget>("tab_9");
     labelRingMaterial = new QLabel(ringTab);
     labelRingMaterial->setGeometry(10, 250, 240, 24);
@@ -175,7 +186,8 @@ SettingsPanel::SettingsPanel(QTabWidget *tabs, QWidget *parent)
         child<QPushButton>("btnColorMountain"), child<QPushButton>("btnColorPlain"),
         child<QPushButton>("btnColorBeach"), child<QPushButton>("btnColorShallow"),
         child<QPushButton>("btnColorOcean"), child<QPushButton>("btnColorCloud"),
-        child<QPushButton>("btnColorAtmo"), child<QPushButton>("btnColorRing")
+        child<QPushButton>("btnColorAtmo"), child<QPushButton>("btnColorRing"),
+        btnColorCiv
     };
     for (QPushButton *b : colors)
     {
@@ -187,7 +199,7 @@ SettingsPanel::SettingsPanel(QTabWidget *tabs, QWidget *parent)
             if (!color.isValid())
                 return;
             ColorSwatch::setColor(b, color);
-            notify(false);
+            notify(b == btnColorCiv);
         });
     }
 
@@ -242,7 +254,7 @@ void SettingsPanel::wireLiveUpdates()
     connect(ms, &MultiSlider::valueChanged, this, requestFull);
 
     const char *checks[] = {
-        "checkCloud", "checkCorrection", "checkPlant", "checkGradient"
+        "checkCloud", "checkCorrection", "checkPlant", "checkGradient", "checkCiv"
     };
     for (const char *name : checks)
     {
@@ -298,6 +310,8 @@ void SettingsPanel::collect(PlanetSettings &s) const
         s.is_gradient = v->isChecked();
     if (auto *v = child<QCheckBox>("checkPlant"))
         s.is_plant = v->isChecked();
+    s.is_civ = checkCiv && checkCiv->isChecked();
+    s.civ_color = ColorSwatch::color(btnColorCiv);
     if (auto *v = child<QSlider>("sliderShine"))
         s.shine = v->value();
     s.shine_lat = sliderShineLat->value();
@@ -374,6 +388,9 @@ void SettingsPanel::push(const PlanetSettings &s)
         v->setChecked(s.is_gradient);
     if (auto *v = child<QCheckBox>("checkPlant"))
         v->setChecked(s.is_plant);
+    if (checkCiv)
+        checkCiv->setChecked(s.is_civ);
+    ColorSwatch::setColor(btnColorCiv, s.civ_color);
     if (auto *v = child<QSlider>("sliderShine"))
         v->setValue(s.shine);
     sliderShineLat->setValue(s.shine_lat);
@@ -431,4 +448,8 @@ void SettingsPanel::retranslate()
     labelRingIntensity->setText(QCoreApplication::translate("MainWindow", "Intensity"));
     labelPolarLatTitle->setText(QCoreApplication::translate("MainWindow", "Latitude"));
     labelPolarLonTitle->setText(QCoreApplication::translate("MainWindow", "Longitude"));
+    if (checkCiv)
+        checkCiv->setText(QCoreApplication::translate("MainWindow", "Intelligence"));
+    if (btnColorCiv)
+        btnColorCiv->setText(QCoreApplication::translate("MainWindow", "Color"));
 }

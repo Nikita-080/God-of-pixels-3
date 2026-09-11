@@ -140,6 +140,10 @@
         <translation>Растения</translation>
     </message>
     <message>
+        <source>Intelligence</source>
+        <translation>Разум</translation>
+    </message>
+    <message>
         <location filename="mainwindow.ui" line="4332"/>
         <source>Life</source>
         <translation>Жизнь</translation>
@@ -299,6 +303,10 @@
     <message>
         <source>Live preview</source>
         <translation>Обновлять сразу</translation>
+    </message>
+    <message>
+        <source>Create a planet to see the preview</source>
+        <translation>Создайте планету, чтобы увидеть превью</translation>
     </message>
     <message>
         <source>Amplitude</source>
@@ -633,6 +641,10 @@
         <translation>Диалог</translation>
     </message>
     <message>
+        <source>Autogen</source>
+        <translation>Автоген</translation>
+    </message>
+    <message>
         <location filename="windowsettings.ui" line="69"/>
         <source>collage</source>
         <translation>коллаж</translation>
@@ -645,7 +657,7 @@
     </message>
     <message>
         <location filename="windowsettings.ui" line="430"/>
-        <source>heigh</source>
+        <source>height</source>
         <translation>высота</translation>
     </message>
     <message>
@@ -707,6 +719,22 @@
         <location filename="windowsettings.cpp" line="95"/>
         <source>Save images</source>
         <translation>Сохранить изображение</translation>
+    </message>
+    <message>
+        <source>Choose a file for the collage.</source>
+        <translation>Выберите файл для коллажа.</translation>
+    </message>
+    <message>
+        <source>Choose a folder for the images.</source>
+        <translation>Выберите папку для изображений.</translation>
+    </message>
+    <message>
+        <source>Collage width and height must be at least 1.</source>
+        <translation>Ширина и высота коллажа должны быть не меньше 1.</translation>
+    </message>
+    <message>
+        <source>Number of images must be at least 1.</source>
+        <translation>Количество изображений должно быть не меньше 1.</translation>
     </message>
 </context>
 </TS>

@@ -27,6 +27,8 @@ public:
     int noise;
     bool is_gradient;
     bool is_plant;
+    bool is_civ;
+    QColor civ_color;
     int shine;
     int shine_lat;
     int shine_lon;

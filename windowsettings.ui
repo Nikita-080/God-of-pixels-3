@@ -427,7 +427,7 @@ border-color: rgb(110, 170, 200);</string>
      </font>
     </property>
     <property name="text">
-     <string>heigh</string>
+     <string>height</string>
     </property>
    </widget>
    <widget class="QLabel" name="label_2">

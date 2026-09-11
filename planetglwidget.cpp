@@ -193,6 +193,25 @@ static const char *kBlitFrag =
     "  gl_FragColor = texture2D(uTex, vUv);\n"
     "}\n";
 
+static const char *kCityVert =
+    "#version 120\n"
+    "attribute vec3 aPos;\n"
+    "uniform mat4 uMvp;\n"
+    "uniform float uSize;\n"
+    "void main() {\n"
+    "  gl_Position = uMvp * vec4(aPos, 1.0);\n"
+    "  gl_PointSize = uSize;\n"
+    "}\n";
+
+static const char *kCityFrag =
+    "#version 120\n"
+    "uniform vec3 uColor;\n"
+    "void main() {\n"
+    "  vec2 d = gl_PointCoord - vec2(0.5);\n"
+    "  float a = exp(-dot(d, d) * 14.0);\n"
+    "  gl_FragColor = vec4(uColor, a);\n"
+    "}\n";
+
 PlanetGLWidget::PlanetGLWidget(QWidget *parent)
     : QOpenGLWidget(parent)
     , planet(nullptr)
@@ -200,9 +219,11 @@ PlanetGLWidget::PlanetGLWidget(QWidget *parent)
     , ringVbo(QOpenGLBuffer::VertexBuffer)
     , rockVbo(QOpenGLBuffer::VertexBuffer)
     , blitVbo(QOpenGLBuffer::VertexBuffer)
+    , cityVbo(QOpenGLBuffer::VertexBuffer)
     , sphereVertexCount(0)
     , ringVertexCount(0)
     , rockVertexCount(0)
+    , cityVertexCount(0)
     , azimuth(kDefaultAzimuth)
     , elevation(kDefaultElevation)
     , cameraDistance(defaultCameraDistance())
@@ -221,6 +242,7 @@ PlanetGLWidget::~PlanetGLWidget()
     ringVbo.destroy();
     rockVbo.destroy();
     blitVbo.destroy();
+    cityVbo.destroy();
     albedo.reset();
     clouds.reset();
     doneCurrent();
@@ -233,6 +255,7 @@ void PlanetGLWidget::setPlanet(const Planet *p)
     {
         refreshTextures();
         rebuildRings();
+        rebuildCities();
         refreshAppearance();
         update();
     }
@@ -307,6 +330,11 @@ void PlanetGLWidget::initializeGL()
     blitProg.bindAttributeLocation("aPos", 0);
     blitProg.bindAttributeLocation("aUv", 1);
     blitProg.link();
+
+    cityProg.addShaderFromSourceCode(QOpenGLShader::Vertex, kCityVert);
+    cityProg.addShaderFromSourceCode(QOpenGLShader::Fragment, kCityFrag);
+    cityProg.bindAttributeLocation("aPos", 0);
+    cityProg.link();
 
     buildSphere(96, 64);
     rebuildRings();
@@ -473,6 +501,33 @@ void PlanetGLWidget::rebuildRings()
     }
 }
 
+void PlanetGLWidget::rebuildCities()
+{
+    if (!ready)
+        return;
+    makeCurrent();
+    cityVertexCount = 0;
+    QVector<float> data;
+    if (planet && planet->s.is_civ)
+    {
+        data.reserve(planet->cities.size() * 3);
+        for (const CityLight &c : planet->cities)
+        {
+            data << c.x << c.y << c.z;
+        }
+    }
+    cityVertexCount = data.size() / 3;
+    if (cityVbo.isCreated())
+        cityVbo.destroy();
+    if (!data.isEmpty())
+    {
+        cityVbo.create();
+        cityVbo.bind();
+        cityVbo.allocate(data.constData(), data.size() * int(sizeof(float)));
+        cityVbo.release();
+    }
+}
+
 void PlanetGLWidget::uploadTexture(std::unique_ptr<QOpenGLTexture> &tex, const QImage &img, bool repeatU)
 {
     tex.reset();
@@ -493,6 +548,7 @@ void PlanetGLWidget::refreshTextures()
     makeCurrent();
     uploadTexture(albedo, planet->img, true);
     uploadTexture(clouds, planet->img_clouds, true);
+    rebuildCities();
     doneCurrent();
 }
 
@@ -552,6 +608,37 @@ void PlanetGLWidget::drawScene(const QMatrix4x4 &proj, const QMatrix4x4 &view, c
     glDrawArrays(GL_TRIANGLES, 0, sphereVertexCount);
     sphereVbo.release();
     planetProg.release();
+
+    if (cityVertexCount > 0 && cityVbo.isCreated() && planet->s.is_civ)
+    {
+#ifndef GL_POINT_SPRITE
+#define GL_POINT_SPRITE 0x8861
+#endif
+#ifndef GL_PROGRAM_POINT_SIZE
+#define GL_PROGRAM_POINT_SIZE 0x8642
+#endif
+        glEnable(GL_PROGRAM_POINT_SIZE);
+        glEnable(GL_POINT_SPRITE);
+        glEnable(GL_BLEND);
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+        glDepthMask(GL_FALSE);
+        cityProg.bind();
+        cityProg.setUniformValue("uMvp", mvp);
+        cityProg.setUniformValue("uSize", 5.5f);
+        cityProg.setUniformValue("uColor", QVector3D(planet->s.civ_color.redF(),
+                                                     planet->s.civ_color.greenF(),
+                                                     planet->s.civ_color.blueF()));
+        cityVbo.bind();
+        cityProg.enableAttributeArray(0);
+        cityProg.setAttributeBuffer(0, GL_FLOAT, 0, 3, 3 * sizeof(float));
+        glDrawArrays(GL_POINTS, 0, cityVertexCount);
+        cityVbo.release();
+        cityProg.release();
+        glDepthMask(GL_TRUE);
+        glDisable(GL_BLEND);
+        glDisable(GL_POINT_SPRITE);
+        glDisable(GL_PROGRAM_POINT_SIZE);
+    }
 
     if (planet->s.is_cloud && clouds)
     {

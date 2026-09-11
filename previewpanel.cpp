@@ -171,7 +171,7 @@ void PreviewPanel::setLoading(bool loading)
 
 void PreviewPanel::retranslate()
 {
-    emptyLabel->setText(tr("Create a planet to see the preview"));
+    emptyLabel->setText(QCoreApplication::translate("MainWindow", "Create a planet to see the preview"));
     live->setText(QCoreApplication::translate("MainWindow", "Live preview"));
     btnResetCamera->setText(QCoreApplication::translate("MainWindow", "Reset camera"));
 }

@@ -20,6 +20,8 @@ PlanetSettings::PlanetSettings()
     polar_lon = 0;
     ring_material = 0;
     ring_intensity = 2;
+    is_civ = false;
+    civ_color = QColor(QStringLiteral("#ffcc66"));
 }
 
 int PlanetSettings::RAND(int a, int b)
@@ -58,6 +60,8 @@ QJsonObject PlanetSettings::JSON_serialize()
     jobject["noise"] = noise;
     jobject["is_gradient"] = is_gradient;
     jobject["is_plant"] = is_plant;
+    jobject["is_civ"] = is_civ;
+    jobject["civ_color"] = civ_color.name();
     jobject["shine"] = shine;
     jobject["shine_lat"] = shine_lat;
     jobject["shine_lon"] = shine_lon;
@@ -118,6 +122,8 @@ bool PlanetSettings::JSON_deserialize(QJsonObject jobject)
             noise = jobject["noise"].toInt();
             is_gradient = jobject["is_gradient"].toBool();
             is_plant = jobject["is_plant"].toBool();
+            is_civ = jobject.contains("is_civ") ? jobject["is_civ"].toBool() : false;
+            civ_color = jobject.contains("civ_color") ? QColor(jobject["civ_color"].toString()) : QColor(QStringLiteral("#ffcc66"));
             shine = jobject["shine"].toInt();
             shine_lat = jobject["shine_lat"].toInt();
             shine_lon = jobject["shine_lon"].toInt();
@@ -222,4 +228,6 @@ void PlanetSettings::Random(QVector<bool> isRnd){
     if (isRnd.size() > 33 && isRnd[33]) { polar_lat=RAND(-90,90); polar_lon=RAND(-180,180); }
     if (isRnd.size() > 34 && isRnd[34]) ring_material=RAND(0,1);
     if (isRnd.size() > 35 && isRnd[35]) ring_intensity=RAND(0,10);
+    if (isRnd.size() > 36 && isRnd[36]) is_civ=RAND(0,1);
+    if (isRnd.size() > 37 && isRnd[37]) civ_color=QColor(RAND(0,255),RAND(0,255),RAND(0,255));
 }

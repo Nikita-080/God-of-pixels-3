@@ -26,6 +26,13 @@ struct RingRock
     QColor color;
 };
 
+struct CityLight
+{
+    float x;
+    float y;
+    float z;
+};
+
 class Planet
 {
 public:
@@ -48,7 +55,6 @@ public:
     QImage img_sys;
     QImage img_gal;
     QImage img_final;
-    QImage img_nonscale;
     QImage img_view;
     QString name;
     double x_shine;
@@ -74,6 +80,7 @@ public:
     QVector<RingRock> ring_rocks;
     double ring_inner;
     double ring_outer;
+    QVector<CityLight> cities;
     PlanetSettings s;
 
     void TMapCreating();
@@ -90,6 +97,7 @@ public:
     void CloudImageCreating();
     void Name();
     void Plant();
+    void Civilization();
     void SystemMap();
     void GenerateDescription();
     void CalculateDescription();

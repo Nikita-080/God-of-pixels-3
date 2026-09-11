@@ -44,6 +44,8 @@ private:
     void CreateNewPlanet();
     void RecreatePlanet();
     void AutoGen();
+    QImage autogenPreviewTile();
+    void finishAutogen();
     void ShowPlanet();
     void ShowDescription();
     void ShowSystem();
@@ -81,6 +83,7 @@ private:
     bool genQueued;
     bool genQueuedCreateNew;
     int genQueuedSeed;
+    bool autogenRunning;
 };
 
 #endif

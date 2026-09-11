@@ -16,6 +16,8 @@
     "is_cloud": false,
     "is_gradient": false,
     "is_plant": false,
+    "is_civ": false,
+    "civ_color": "#ffff00",
     "is_ring": false,
     "iterations": 500,
     "mountain_color": "#b4b4b4",
