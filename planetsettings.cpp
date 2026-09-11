@@ -200,8 +200,8 @@ void PlanetSettings::Random(QVector<bool> isRnd){
     if (isRnd[17]) { shine_lat=RAND(-90,90); shine_lon=RAND(-180,180); }
     if (isRnd[18]) name_algorithm=RAND(1,3);
     if (isRnd[19]) is_cloud=RAND(0,1);
-    if (isRnd[20]) cloud_size=RAND(1,20);
-    if (isRnd[21]) cloud_quality=RAND(1,10);
+    if (isRnd[20]) cloud_size=RAND(1,10);
+    if (isRnd[21]) cloud_quality=RAND(1,6);
     if (isRnd[22]) cloud_transparent=RAND(0,10);
     if (isRnd[23]) correction=RAND(0,1);
     if (isRnd[24]) cloud_color=QColor(RAND(0,255),RAND(0,255),RAND(0,255));

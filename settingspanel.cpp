@@ -105,6 +105,10 @@ SettingsPanel::SettingsPanel(QTabWidget *tabs, QWidget *parent)
 
     if (auto *slider = child<QSlider>("sliderIterations"))
         slider->setEnabled(false);
+    if (auto *slider = child<QSlider>("sliderCloudSize"))
+        slider->setRange(1, 10);
+    if (auto *slider = child<QSlider>("sliderCloudQuality"))
+        slider->setRange(1, 6);
 
     const char *valueSliders[] = {
         "sliderWorldSize", "sliderRandomness", "sliderTemperature", "sliderShine",
@@ -174,7 +178,7 @@ void SettingsPanel::wireLiveUpdates()
 
     const char *fullSliders[] = {
         "sliderWorldSize", "sliderRandomness", "sliderTemperature", "sliderIterations",
-        "sliderNoise", "sliderCloudSize", "sliderCloudQuality", "sliderCloudTransparent"
+        "sliderNoise", "sliderCloudSize", "sliderCloudQuality"
     };
     for (const char *name : fullSliders)
     {
@@ -183,7 +187,7 @@ void SettingsPanel::wireLiveUpdates()
     }
     const char *appearanceSliders[] = {
         "sliderShine", "sliderAtmoTransparent", "sliderAtmoSize",
-        "sliderRingInner", "sliderRingOuter"
+        "sliderRingInner", "sliderRingOuter", "sliderCloudTransparent"
     };
     for (const char *name : appearanceSliders)
     {
@@ -199,13 +203,15 @@ void SettingsPanel::wireLiveUpdates()
     connect(ms, &MultiSlider::valueChanged, this, requestFull);
 
     const char *checks[] = {
-        "checkCloud", "checkCorrection", "checkAtmo", "checkRing", "checkPlant", "checkGradient"
+        "checkCloud", "checkCorrection", "checkRing", "checkPlant", "checkGradient"
     };
     for (const char *name : checks)
     {
         if (auto *b = child<QCheckBox>(name))
             connect(b, &QCheckBox::toggled, this, requestFull);
     }
+    if (auto *b = child<QCheckBox>("checkAtmo"))
+        connect(b, &QCheckBox::toggled, this, requestAppearance);
     if (auto *r = child<QRadioButton>("radioName1"))
         connect(r, &QRadioButton::toggled, this, requestFull);
     if (auto *r = child<QRadioButton>("radioName2"))

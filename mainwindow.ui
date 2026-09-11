@@ -5304,7 +5304,7 @@ margin: 5px;}</string>
        <number>1</number>
       </property>
       <property name="maximum">
-       <number>20</number>
+       <number>10</number>
       </property>
       <property name="orientation">
        <enum>Qt::Horizontal</enum>
@@ -5439,7 +5439,7 @@ margin: 5px;}</string>
        <number>1</number>
       </property>
       <property name="maximum">
-       <number>10</number>
+       <number>6</number>
       </property>
       <property name="orientation">
        <enum>Qt::Horizontal</enum>

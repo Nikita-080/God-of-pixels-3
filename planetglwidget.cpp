@@ -33,16 +33,10 @@ static const char *kPlanetVert =
 static const char *kPlanetFrag =
     "#version 120\n"
     "uniform sampler2D uAlbedo;\n"
-    "uniform sampler2D uClouds;\n"
     "uniform vec3 uLight;\n"
     "uniform vec3 uCam;\n"
-    "uniform vec3 uAtmoColor;\n"
     "uniform float uShine;\n"
     "uniform float uFillLight;\n"
-    "uniform float uHasClouds;\n"
-    "uniform float uCloudAlpha;\n"
-    "uniform float uHasAtmo;\n"
-    "uniform float uAtmo;\n"
     "varying vec3 vWorld;\n"
     "varying vec3 vNormal;\n"
     "varying vec2 vUv;\n"
@@ -56,17 +50,92 @@ static const char *kPlanetFrag =
     "  if (uFillLight > 0.5)\n"
     "    lit += max(dot(n, viewDir), 0.0) * fillI;\n"
     "  vec3 albedo = texture2D(uAlbedo, vUv).rgb;\n"
-    "  if (uHasClouds > 0.5) {\n"
-    "    vec4 c = texture2D(uClouds, vUv);\n"
-    "    float k = c.a * uCloudAlpha;\n"
-    "    albedo = mix(albedo, c.rgb, k);\n"
-    "  }\n"
     "  vec3 col = albedo * lit;\n"
-    "  if (uHasAtmo > 0.5) {\n"
-    "    float fres = pow(1.0 - abs(dot(n, viewDir)), 2.2);\n"
-    "    col = mix(col, uAtmoColor, fres * uAtmo);\n"
-    "  }\n"
     "  gl_FragColor = vec4(col, 1.0);\n"
+    "}\n";
+
+static const char *kCloudVert =
+    "#version 120\n"
+    "attribute vec3 aPos;\n"
+    "attribute vec3 aNormal;\n"
+    "attribute vec2 aUv;\n"
+    "uniform mat4 uMvp;\n"
+    "uniform mat4 uModel;\n"
+    "varying vec3 vWorld;\n"
+    "varying vec3 vNormal;\n"
+    "varying vec2 vUv;\n"
+    "void main() {\n"
+    "  vec4 wp = uModel * vec4(aPos, 1.0);\n"
+    "  vWorld = wp.xyz;\n"
+    "  vNormal = mat3(uModel) * aNormal;\n"
+    "  vUv = aUv;\n"
+    "  gl_Position = uMvp * vec4(aPos, 1.0);\n"
+    "}\n";
+
+static const char *kCloudFrag =
+    "#version 120\n"
+    "uniform sampler2D uClouds;\n"
+    "uniform vec3 uLight;\n"
+    "uniform vec3 uCam;\n"
+    "uniform float uShine;\n"
+    "uniform float uFillLight;\n"
+    "uniform float uCloudAlpha;\n"
+    "varying vec3 vWorld;\n"
+    "varying vec3 vNormal;\n"
+    "varying vec2 vUv;\n"
+    "void main() {\n"
+    "  vec4 c = texture2D(uClouds, vUv);\n"
+    "  float a = c.a * uCloudAlpha;\n"
+    "  if (a < 0.02) discard;\n"
+    "  vec3 n = normalize(vNormal);\n"
+    "  vec3 l = normalize(uLight);\n"
+    "  vec3 viewDir = normalize(uCam - vWorld);\n"
+    "  float wrap = max(dot(n, l) * 0.5 + 0.5, 0.0);\n"
+    "  float lit = wrap * (uShine * 0.08 + 0.55);\n"
+    "  if (uFillLight > 0.5)\n"
+    "    lit += max(dot(n, viewDir), 0.0) * 0.2;\n"
+    "  gl_FragColor = vec4(c.rgb * lit, a);\n"
+    "}\n";
+
+static const char *kAtmoVert =
+    "#version 120\n"
+    "attribute vec3 aPos;\n"
+    "attribute vec3 aNormal;\n"
+    "uniform mat4 uMvp;\n"
+    "uniform mat4 uModel;\n"
+    "varying vec3 vWorld;\n"
+    "varying vec3 vNormal;\n"
+    "void main() {\n"
+    "  vec4 wp = uModel * vec4(aPos, 1.0);\n"
+    "  vWorld = wp.xyz;\n"
+    "  vNormal = mat3(uModel) * aNormal;\n"
+    "  gl_Position = uMvp * vec4(aPos, 1.0);\n"
+    "}\n";
+
+static const char *kAtmoFrag =
+    "#version 120\n"
+    "uniform vec3 uLight;\n"
+    "uniform vec3 uCam;\n"
+    "uniform vec3 uAtmoColor;\n"
+    "uniform float uShine;\n"
+    "uniform float uFillLight;\n"
+    "uniform float uAtmo;\n"
+    "uniform float uAtmoSize;\n"
+    "varying vec3 vWorld;\n"
+    "varying vec3 vNormal;\n"
+    "void main() {\n"
+    "  vec3 n = normalize(vNormal);\n"
+    "  vec3 l = normalize(uLight);\n"
+    "  vec3 viewDir = normalize(uCam - vWorld);\n"
+    "  float ndv = max(dot(n, viewDir), 0.0);\n"
+    "  float limb = pow(1.0 - ndv, mix(4.8, 0.35, uAtmoSize));\n"
+    "  float haze = mix(limb, 1.0, uAtmo) * uAtmo;\n"
+    "  float mainI = uShine * 0.1 + 0.5;\n"
+    "  float lit = max(dot(n, l), 0.0) * mainI;\n"
+    "  if (uFillLight > 0.5)\n"
+    "    lit += max(dot(n, viewDir), 0.0) * 0.15;\n"
+    "  vec3 col = uAtmoColor * (0.4 + 0.6 * lit);\n"
+    "  gl_FragColor = vec4(col, haze);\n"
     "}\n";
 
 static const char *kRingVert =
@@ -205,6 +274,19 @@ void PlanetGLWidget::initializeGL()
     planetProg.bindAttributeLocation("aUv", 2);
     planetProg.link();
 
+    cloudProg.addShaderFromSourceCode(QOpenGLShader::Vertex, kCloudVert);
+    cloudProg.addShaderFromSourceCode(QOpenGLShader::Fragment, kCloudFrag);
+    cloudProg.bindAttributeLocation("aPos", 0);
+    cloudProg.bindAttributeLocation("aNormal", 1);
+    cloudProg.bindAttributeLocation("aUv", 2);
+    cloudProg.link();
+
+    atmoProg.addShaderFromSourceCode(QOpenGLShader::Vertex, kAtmoVert);
+    atmoProg.addShaderFromSourceCode(QOpenGLShader::Fragment, kAtmoFrag);
+    atmoProg.bindAttributeLocation("aPos", 0);
+    atmoProg.bindAttributeLocation("aNormal", 1);
+    atmoProg.link();
+
     ringProg.addShaderFromSourceCode(QOpenGLShader::Vertex, kRingVert);
     ringProg.addShaderFromSourceCode(QOpenGLShader::Fragment, kRingFrag);
     ringProg.bindAttributeLocation("aPos", 0);
@@ -324,7 +406,8 @@ void PlanetGLWidget::uploadTexture(std::unique_ptr<QOpenGLTexture> &tex, const Q
     tex.reset();
     if (img.isNull())
         return;
-    tex.reset(new QOpenGLTexture(img, QOpenGLTexture::DontGenerateMipMaps));
+    tex.reset(new QOpenGLTexture(img.convertToFormat(QImage::Format_RGBA8888),
+                                QOpenGLTexture::DontGenerateMipMaps));
     tex->setMinificationFilter(QOpenGLTexture::Linear);
     tex->setMagnificationFilter(QOpenGLTexture::Linear);
     tex->setWrapMode(QOpenGLTexture::DirectionS, repeatU ? QOpenGLTexture::Repeat : QOpenGLTexture::ClampToEdge);
@@ -378,24 +461,12 @@ void PlanetGLWidget::drawScene(const QMatrix4x4 &proj, const QMatrix4x4 &view, c
     planetProg.setUniformValue("uModel", model);
     planetProg.setUniformValue("uLight", light);
     planetProg.setUniformValue("uCam", cameraPos());
-    planetProg.setUniformValue("uAtmoColor", QVector3D(planet->s.atmo_color.redF(),
-                                                       planet->s.atmo_color.greenF(),
-                                                       planet->s.atmo_color.blueF()));
     planetProg.setUniformValue("uShine", float(planet->s.shine));
     planetProg.setUniformValue("uFillLight", planet->s.is_fill_light ? 1.0f : 0.0f);
-    planetProg.setUniformValue("uHasClouds", planet->s.is_cloud ? 1.0f : 0.0f);
-    planetProg.setUniformValue("uCloudAlpha", float(qBound(0.0, 1.0 - 0.09 * planet->s.cloud_transparent, 1.0)));
-    planetProg.setUniformValue("uHasAtmo", planet->s.is_atmo ? 1.0f : 0.0f);
-    planetProg.setUniformValue("uAtmo", float(qBound(0.0, 1.0 - 0.1 * planet->s.atmo_transparent, 1.0)));
     if (albedo)
     {
         albedo->bind(0);
         planetProg.setUniformValue("uAlbedo", 0);
-    }
-    if (clouds)
-    {
-        clouds->bind(1);
-        planetProg.setUniformValue("uClouds", 1);
     }
     sphereVbo.bind();
     planetProg.enableAttributeArray(0);
@@ -407,6 +478,71 @@ void PlanetGLWidget::drawScene(const QMatrix4x4 &proj, const QMatrix4x4 &view, c
     glDrawArrays(GL_TRIANGLES, 0, sphereVertexCount);
     sphereVbo.release();
     planetProg.release();
+
+    if (planet->s.is_cloud && clouds)
+    {
+        QMatrix4x4 cloudModel = model;
+        cloudModel.scale(1.02f);
+        glEnable(GL_BLEND);
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+        glDepthMask(GL_FALSE);
+        cloudProg.bind();
+        cloudProg.setUniformValue("uMvp", proj * view * cloudModel);
+        cloudProg.setUniformValue("uModel", cloudModel);
+        cloudProg.setUniformValue("uLight", light);
+        cloudProg.setUniformValue("uCam", cameraPos());
+        cloudProg.setUniformValue("uShine", float(planet->s.shine));
+        cloudProg.setUniformValue("uFillLight", planet->s.is_fill_light ? 1.0f : 0.0f);
+        cloudProg.setUniformValue("uCloudAlpha", float(qBound(0.0, 1.0 - 0.1 * planet->s.cloud_transparent, 1.0)));
+        clouds->bind(0);
+        cloudProg.setUniformValue("uClouds", 0);
+        sphereVbo.bind();
+        cloudProg.enableAttributeArray(0);
+        cloudProg.enableAttributeArray(1);
+        cloudProg.enableAttributeArray(2);
+        cloudProg.setAttributeBuffer(0, GL_FLOAT, 0, 3, 8 * sizeof(float));
+        cloudProg.setAttributeBuffer(1, GL_FLOAT, 3 * sizeof(float), 3, 8 * sizeof(float));
+        cloudProg.setAttributeBuffer(2, GL_FLOAT, 6 * sizeof(float), 2, 8 * sizeof(float));
+        glDrawArrays(GL_TRIANGLES, 0, sphereVertexCount);
+        sphereVbo.release();
+        cloudProg.release();
+        glDepthMask(GL_TRUE);
+        glDisable(GL_BLEND);
+    }
+
+    if (planet->s.is_atmo)
+    {
+        const float cover = float(qBound(0.0, 1.0 - 0.1 * planet->s.atmo_transparent, 1.0));
+        const float sizeK = float(qBound(0.0, (planet->s.atmo_size - 1) / 9.0, 1.0));
+        const float atmoScale = 1.0f + 0.03f * float(qBound(1, planet->s.atmo_size, 10));
+        QMatrix4x4 atmoModel = model;
+        atmoModel.scale(atmoScale);
+        glEnable(GL_BLEND);
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+        glDepthMask(GL_FALSE);
+        atmoProg.bind();
+        atmoProg.setUniformValue("uMvp", proj * view * atmoModel);
+        atmoProg.setUniformValue("uModel", atmoModel);
+        atmoProg.setUniformValue("uLight", light);
+        atmoProg.setUniformValue("uCam", cameraPos());
+        atmoProg.setUniformValue("uAtmoColor", QVector3D(planet->s.atmo_color.redF(),
+                                                         planet->s.atmo_color.greenF(),
+                                                         planet->s.atmo_color.blueF()));
+        atmoProg.setUniformValue("uShine", float(planet->s.shine));
+        atmoProg.setUniformValue("uFillLight", planet->s.is_fill_light ? 1.0f : 0.0f);
+        atmoProg.setUniformValue("uAtmo", cover);
+        atmoProg.setUniformValue("uAtmoSize", sizeK);
+        sphereVbo.bind();
+        atmoProg.enableAttributeArray(0);
+        atmoProg.enableAttributeArray(1);
+        atmoProg.setAttributeBuffer(0, GL_FLOAT, 0, 3, 8 * sizeof(float));
+        atmoProg.setAttributeBuffer(1, GL_FLOAT, 3 * sizeof(float), 3, 8 * sizeof(float));
+        glDrawArrays(GL_TRIANGLES, 0, sphereVertexCount);
+        sphereVbo.release();
+        atmoProg.release();
+        glDepthMask(GL_TRUE);
+        glDisable(GL_BLEND);
+    }
 
     if (planet->s.is_ring)
     {

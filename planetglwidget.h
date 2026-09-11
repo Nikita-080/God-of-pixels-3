@@ -50,6 +50,8 @@ private:
 
     const Planet *planet;
     QOpenGLShaderProgram planetProg;
+    QOpenGLShaderProgram cloudProg;
+    QOpenGLShaderProgram atmoProg;
     QOpenGLShaderProgram ringProg;
     QOpenGLShaderProgram blitProg;
     QOpenGLBuffer sphereVbo;
