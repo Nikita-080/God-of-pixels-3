@@ -27,6 +27,7 @@ static PlanetSettings testSettings()
     s.shine = 5;
     s.shine_lat = 25;
     s.shine_lon = 90;
+    s.is_fill_light = true;
     s.polar_lat = 90;
     s.polar_lon = 0;
     s.name_algorithm = 3;
@@ -79,6 +80,7 @@ void TestPlanet::jsonRoundTrip()
     QCOMPARE(b.ice_color, a.ice_color);
     QCOMPARE(b.shine_lat, a.shine_lat);
     QCOMPARE(b.shine_lon, a.shine_lon);
+    QCOMPARE(b.is_fill_light, a.is_fill_light);
     QCOMPARE(b.polar_lat, a.polar_lat);
     QCOMPARE(b.polar_lon, a.polar_lon);
     QCOMPARE(a.JSON_serialize()["version"].toInt(), 2);

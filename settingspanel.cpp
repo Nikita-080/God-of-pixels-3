@@ -97,6 +97,12 @@ SettingsPanel::SettingsPanel(QTabWidget *tabs, QWidget *parent)
     addLatLon(child<QWidget>("tab_10"), sliderPolarLat, sliderPolarLon,
               labelPolarLatTitle, labelPolarLonTitle);
 
+    checkFillLight = new QCheckBox(child<QWidget>("tab_5"));
+    checkFillLight->setObjectName(QStringLiteral("checkFillLight"));
+    checkFillLight->setGeometry(10, 250, 260, 31);
+    checkFillLight->setFont(QFont(QStringLiteral("Consolas"), 10));
+    checkFillLight->setChecked(true);
+
     if (auto *slider = child<QSlider>("sliderIterations"))
         slider->setEnabled(false);
 
@@ -187,6 +193,7 @@ void SettingsPanel::wireLiveUpdates()
 
     connect(sliderShineLat, &QSlider::valueChanged, this, requestAppearance);
     connect(sliderShineLon, &QSlider::valueChanged, this, requestAppearance);
+    connect(checkFillLight, &QCheckBox::toggled, this, requestAppearance);
     connect(sliderPolarLat, &QSlider::valueChanged, this, requestFull);
     connect(sliderPolarLon, &QSlider::valueChanged, this, requestFull);
     connect(ms, &MultiSlider::valueChanged, this, requestFull);
@@ -248,6 +255,7 @@ void SettingsPanel::collect(PlanetSettings &s) const
         s.shine = v->value();
     s.shine_lat = sliderShineLat->value();
     s.shine_lon = sliderShineLon->value();
+    s.is_fill_light = checkFillLight->isChecked();
     if (child<QRadioButton>("radioName1") && child<QRadioButton>("radioName1")->isChecked())
         s.name_algorithm = 1;
     else if (child<QRadioButton>("radioName2") && child<QRadioButton>("radioName2")->isChecked())
@@ -321,6 +329,7 @@ void SettingsPanel::push(const PlanetSettings &s)
         v->setValue(s.shine);
     sliderShineLat->setValue(s.shine_lat);
     sliderShineLon->setValue(s.shine_lon);
+    checkFillLight->setChecked(s.is_fill_light);
     if (s.name_algorithm == 1)
         child<QRadioButton>("radioName1")->setChecked(true);
     else if (s.name_algorithm == 2)
@@ -363,6 +372,7 @@ void SettingsPanel::retranslate()
     ms->ReloadText();
     labelShineLatTitle->setText(QCoreApplication::translate("MainWindow", "Latitude"));
     labelShineLonTitle->setText(QCoreApplication::translate("MainWindow", "Longitude"));
+    checkFillLight->setText(QCoreApplication::translate("MainWindow", "Fill light"));
     labelPolarLatTitle->setText(QCoreApplication::translate("MainWindow", "Latitude"));
     labelPolarLonTitle->setText(QCoreApplication::translate("MainWindow", "Longitude"));
 }

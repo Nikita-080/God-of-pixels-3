@@ -150,6 +150,10 @@
         <translation>Освещение</translation>
     </message>
     <message>
+        <source>Fill light</source>
+        <translation>Заполняющий свет</translation>
+    </message>
+    <message>
         <source>Latitude</source>
         <translation>Широта</translation>
     </message>

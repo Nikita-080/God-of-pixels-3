@@ -32,6 +32,7 @@
     "shine": 5,
     "shine_lat": 25,
     "shine_lon": 90,
+    "is_fill_light": true,
     "structure": [
         40,
         95,
@@ -44,5 +45,5 @@
     ],
     "temperature": 15,
     "terramode": 1,
-    "world_size": 10
+    "world_size": 4
 }

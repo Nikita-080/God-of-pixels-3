@@ -30,6 +30,7 @@ public:
     int shine;
     int shine_lat;
     int shine_lon;
+    bool is_fill_light;
     int name_algorithm;
     bool is_cloud;
     int cloud_size;

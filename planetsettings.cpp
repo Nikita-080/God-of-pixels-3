@@ -15,6 +15,7 @@ PlanetSettings::PlanetSettings()
     rnd.seed(midnight.secsTo(QTime::currentTime()));
     shine_lat = 25;
     shine_lon = 90;
+    is_fill_light = true;
     polar_lat = 90;
     polar_lon = 0;
 }
@@ -58,6 +59,7 @@ QJsonObject PlanetSettings::JSON_serialize()
     jobject["shine"] = shine;
     jobject["shine_lat"] = shine_lat;
     jobject["shine_lon"] = shine_lon;
+    jobject["is_fill_light"] = is_fill_light;
     jobject["name_algorithm"] = name_algorithm;
     jobject["is_cloud"] = is_cloud;
     jobject["cloud_size"] = cloud_size;
@@ -115,6 +117,7 @@ bool PlanetSettings::JSON_deserialize(QJsonObject jobject)
             shine = jobject["shine"].toInt();
             shine_lat = jobject["shine_lat"].toInt();
             shine_lon = jobject["shine_lon"].toInt();
+            is_fill_light = jobject.contains("is_fill_light") ? jobject["is_fill_light"].toBool() : true;
             name_algorithm = jobject["name_algorithm"].toInt();
             is_cloud = jobject["is_cloud"].toBool();
             cloud_size = jobject["cloud_size"].toInt();

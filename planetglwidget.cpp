@@ -38,6 +38,7 @@ static const char *kPlanetFrag =
     "uniform vec3 uCam;\n"
     "uniform vec3 uAtmoColor;\n"
     "uniform float uShine;\n"
+    "uniform float uFillLight;\n"
     "uniform float uHasClouds;\n"
     "uniform float uCloudAlpha;\n"
     "uniform float uHasAtmo;\n"
@@ -49,8 +50,11 @@ static const char *kPlanetFrag =
     "  vec3 n = normalize(vNormal);\n"
     "  vec3 l = normalize(uLight);\n"
     "  vec3 viewDir = normalize(uCam - vWorld);\n"
-    "  float ndl = max(dot(n, l), 0.0);\n"
-    "  float lit = ndl * (uShine * 0.1 + 0.5);\n"
+    "  float mainI = uShine * 0.1 + 0.5;\n"
+    "  float fillI = 0.3 * 0.5;\n"
+    "  float lit = max(dot(n, l), 0.0) * mainI;\n"
+    "  if (uFillLight > 0.5)\n"
+    "    lit += max(dot(n, viewDir), 0.0) * fillI;\n"
     "  vec3 albedo = texture2D(uAlbedo, vUv).rgb;\n"
     "  if (uHasClouds > 0.5) {\n"
     "    vec4 c = texture2D(uClouds, vUv);\n"
@@ -82,13 +86,18 @@ static const char *kRingVert =
 static const char *kRingFrag =
     "#version 120\n"
     "uniform vec3 uLight;\n"
+    "uniform vec3 uCam;\n"
+    "uniform float uFillLight;\n"
     "uniform vec3 uColor0;\n"
     "uniform vec3 uColor1;\n"
     "varying float vBand;\n"
     "varying vec3 vPos;\n"
     "void main() {\n"
     "  vec3 l = normalize(uLight);\n"
-    "  float shade = 0.45 + 0.55 * max(dot(normalize(vPos), l), 0.0);\n"
+    "  vec3 n = normalize(vPos);\n"
+    "  float shade = 0.45 + 0.55 * max(dot(n, l), 0.0);\n"
+    "  if (uFillLight > 0.5)\n"
+    "    shade += 0.55 * 0.3 * 0.5 * max(dot(n, normalize(uCam)), 0.0);\n"
     "  vec3 col = mix(uColor0, uColor1, vBand) * shade;\n"
     "  gl_FragColor = vec4(col, 0.92);\n"
     "}\n";
@@ -262,8 +271,8 @@ void PlanetGLWidget::buildSphere(int slices, int stacks)
             const QVector3D p10(qSin(phi0) * qCos(th1), qCos(phi0), qSin(phi0) * qSin(th1));
             const QVector3D p01(qSin(phi1) * qCos(th0), qCos(phi1), qSin(phi1) * qSin(th0));
             const QVector3D p11(qSin(phi1) * qCos(th1), qCos(phi1), qSin(phi1) * qSin(th1));
-            const QVector3D tri[6] = {p00, p01, p11, p00, p11, p10};
-            const float uv[6][2] = {{u0, v0}, {u0, v1}, {u1, v1}, {u0, v0}, {u1, v1}, {u1, v0}};
+            const QVector3D tri[6] = {p00, p10, p11, p00, p11, p01};
+            const float uv[6][2] = {{u0, v0}, {u1, v0}, {u1, v1}, {u0, v0}, {u1, v1}, {u0, v1}};
             for (int i = 0; i < 6; ++i)
             {
                 data << tri[i].x() << tri[i].y() << tri[i].z();
@@ -373,6 +382,7 @@ void PlanetGLWidget::drawScene(const QMatrix4x4 &proj, const QMatrix4x4 &view, c
                                                        planet->s.atmo_color.greenF(),
                                                        planet->s.atmo_color.blueF()));
     planetProg.setUniformValue("uShine", float(planet->s.shine));
+    planetProg.setUniformValue("uFillLight", planet->s.is_fill_light ? 1.0f : 0.0f);
     planetProg.setUniformValue("uHasClouds", planet->s.is_cloud ? 1.0f : 0.0f);
     planetProg.setUniformValue("uCloudAlpha", float(qBound(0.0, 1.0 - 0.09 * planet->s.cloud_transparent, 1.0)));
     planetProg.setUniformValue("uHasAtmo", planet->s.is_atmo ? 1.0f : 0.0f);
@@ -410,6 +420,8 @@ void PlanetGLWidget::drawScene(const QMatrix4x4 &proj, const QMatrix4x4 &view, c
         ringProg.setUniformValue("uMvp", proj * view * ringModel);
         ringProg.setUniformValue("uModel", ringModel);
         ringProg.setUniformValue("uLight", light);
+        ringProg.setUniformValue("uCam", cameraPos());
+        ringProg.setUniformValue("uFillLight", planet->s.is_fill_light ? 1.0f : 0.0f);
         QColor c0 = planet->ring_colors.isEmpty() ? planet->s.ring_color : planet->ring_colors.first();
         QColor c1 = planet->ring_colors.size() > 1 ? planet->ring_colors.last() : c0.darker(130);
         ringProg.setUniformValue("uColor0", QVector3D(c0.redF(), c0.greenF(), c0.blueF()));
@@ -500,8 +512,8 @@ void PlanetGLWidget::mouseMoveEvent(QMouseEvent *event)
         return;
     const QPoint d = event->pos() - lastPos;
     lastPos = event->pos();
-    azimuth += d.x() * 0.4f;
-    elevation -= d.y() * 0.4f;
+    azimuth -= d.x() * 0.4f;
+    elevation += d.y() * 0.4f;
     elevation = qBound(-89.0f, elevation, 89.0f);
     update();
 }

@@ -40,6 +40,7 @@ private:
     QSlider *sliderShineLon;
     QSlider *sliderPolarLat;
     QSlider *sliderPolarLon;
+    QCheckBox *checkFillLight;
     QLabel *labelShineLatTitle;
     QLabel *labelShineLonTitle;
     QLabel *labelPolarLatTitle;
