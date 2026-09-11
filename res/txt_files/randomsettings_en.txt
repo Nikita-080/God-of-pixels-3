@@ -32,3 +32,5 @@ ring internal R
 ring external R
 ring color
 north
+ring material
+ring intensity

@@ -236,6 +236,22 @@
         <translation>R внешний</translation>
     </message>
     <message>
+        <source>Material</source>
+        <translation>Материал</translation>
+    </message>
+    <message>
+        <source>Gaseous</source>
+        <translation>Газовые</translation>
+    </message>
+    <message>
+        <source>Meteoritic</source>
+        <translation>Метеоритные</translation>
+    </message>
+    <message>
+        <source>Intensity</source>
+        <translation>Интенсивность</translation>
+    </message>
+    <message>
         <location filename="mainwindow.ui" line="7414"/>
         <source>North</source>
         <translation>Северный полюс</translation>

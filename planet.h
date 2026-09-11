@@ -2,11 +2,29 @@
 #define PLANET_H
 #include <QVector>
 #include <QImage>
+#include <QColor>
 #include <QRandomGenerator>
 #include <planetsettings.h>
 #include <facts.h>
 #include "spheremath.h"
 class QPainter;
+
+struct RingBand
+{
+    float inner;
+    float outer;
+    QColor color;
+    bool empty;
+};
+
+struct RingRock
+{
+    float x;
+    float y;
+    float z;
+    float radius;
+    QColor color;
+};
 
 class Planet
 {
@@ -52,6 +70,8 @@ public:
     int ice_pixel_count;
     QVector<QColor> ring_colors;
     QVector<QColor> ring_colors_dark;
+    QVector<RingBand> ring_bands;
+    QVector<RingRock> ring_rocks;
     double ring_inner;
     double ring_outer;
     PlanetSettings s;

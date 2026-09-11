@@ -27,6 +27,8 @@
     "polar_lon": 0,
     "randomness": 2,
     "ring_color": "#e6b060",
+    "ring_material": 0,
+    "ring_intensity": 2,
     "rock_color": "#808080",
     "shallow_color": "#2828ff",
     "shine": 5,

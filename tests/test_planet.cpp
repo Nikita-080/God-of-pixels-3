@@ -45,6 +45,8 @@ static PlanetSettings testSettings()
     s.R_internal_ring = 3;
     s.R_external_ring = 3;
     s.ring_color = QColor("#e6b060");
+    s.ring_material = 0;
+    s.ring_intensity = 2;
     s.rebuildDerived();
     return s;
 }

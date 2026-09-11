@@ -38,7 +38,7 @@ protected:
 
 private:
     void buildSphere(int slices, int stacks);
-    void buildRings(int segments);
+    void rebuildRings();
     void buildBlitQuad();
     void ensureSceneFbo(int res);
     void uploadTexture(std::unique_ptr<QOpenGLTexture> &tex, const QImage &img, bool repeatU);
@@ -56,10 +56,12 @@ private:
     QOpenGLShaderProgram blitProg;
     QOpenGLBuffer sphereVbo;
     QOpenGLBuffer ringVbo;
+    QOpenGLBuffer rockVbo;
     QOpenGLBuffer blitVbo;
     std::unique_ptr<QOpenGLFramebufferObject> sceneFbo;
     int sphereVertexCount;
     int ringVertexCount;
+    int rockVertexCount;
     std::unique_ptr<QOpenGLTexture> albedo;
     std::unique_ptr<QOpenGLTexture> clouds;
     float azimuth;

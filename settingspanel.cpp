@@ -8,6 +8,7 @@
 #include <QComboBox>
 #include <QCheckBox>
 #include <QRadioButton>
+#include <QButtonGroup>
 #include <QPushButton>
 #include <QColorDialog>
 #include <QVBoxLayout>
@@ -102,6 +103,42 @@ SettingsPanel::SettingsPanel(QTabWidget *tabs, QWidget *parent)
     checkFillLight->setGeometry(10, 250, 260, 31);
     checkFillLight->setFont(QFont(QStringLiteral("Consolas"), 10));
     checkFillLight->setChecked(true);
+
+    auto *ringTab = child<QWidget>("tab_9");
+    labelRingMaterial = new QLabel(ringTab);
+    labelRingMaterial->setGeometry(10, 250, 240, 24);
+    labelRingMaterial->setFont(QFont(QStringLiteral("Consolas"), 10));
+    radioRingGas = new QRadioButton(ringTab);
+    radioRingGas->setObjectName(QStringLiteral("radioRingGas"));
+    radioRingGas->setGeometry(10, 274, 260, 28);
+    radioRingGas->setFont(QFont(QStringLiteral("Consolas"), 10));
+    radioRingGas->setChecked(true);
+    radioRingMeteor = new QRadioButton(ringTab);
+    radioRingMeteor->setObjectName(QStringLiteral("radioRingMeteor"));
+    radioRingMeteor->setGeometry(10, 302, 260, 28);
+    radioRingMeteor->setFont(QFont(QStringLiteral("Consolas"), 10));
+    auto *ringGroup = new QButtonGroup(this);
+    ringGroup->addButton(radioRingGas, 0);
+    ringGroup->addButton(radioRingMeteor, 1);
+    labelRingIntensity = new QLabel(ringTab);
+    labelRingIntensity->setGeometry(10, 336, 240, 24);
+    labelRingIntensity->setFont(QFont(QStringLiteral("Consolas"), 10));
+    sliderRingIntensity = new QSlider(Qt::Horizontal, ringTab);
+    sliderRingIntensity->setObjectName(QStringLiteral("sliderRingIntensity"));
+    sliderRingIntensity->setGeometry(10, 364, 221, 16);
+    sliderRingIntensity->setRange(0, 10);
+    sliderRingIntensity->setValue(2);
+    QLabel *ringIntValue = new QLabel(QStringLiteral("2"), ringTab);
+    ringIntValue->setGeometry(230, 358, 41, 21);
+    ringIntValue->setFont(QFont(QStringLiteral("Consolas"), 10));
+    ringIntValue->setAlignment(Qt::AlignCenter);
+    connect(sliderRingIntensity, &QSlider::valueChanged, ringIntValue, QOverload<int>::of(&QLabel::setNum));
+    if (ringTab)
+    {
+        const QRect bounds = ringTab->childrenRect();
+        ringTab->setMinimumSize(qMax(bounds.right() + 12, 380),
+                                qMax(bounds.bottom() + 12, 500));
+    }
 
     if (auto *slider = child<QSlider>("sliderIterations"))
         slider->setEnabled(false);
@@ -198,12 +235,14 @@ void SettingsPanel::wireLiveUpdates()
     connect(sliderShineLat, &QSlider::valueChanged, this, requestAppearance);
     connect(sliderShineLon, &QSlider::valueChanged, this, requestAppearance);
     connect(checkFillLight, &QCheckBox::toggled, this, requestAppearance);
+    connect(radioRingGas, &QRadioButton::toggled, this, requestAppearance);
+    connect(sliderRingIntensity, &QSlider::valueChanged, this, requestAppearance);
     connect(sliderPolarLat, &QSlider::valueChanged, this, requestFull);
     connect(sliderPolarLon, &QSlider::valueChanged, this, requestFull);
     connect(ms, &MultiSlider::valueChanged, this, requestFull);
 
     const char *checks[] = {
-        "checkCloud", "checkCorrection", "checkRing", "checkPlant", "checkGradient"
+        "checkCloud", "checkCorrection", "checkPlant", "checkGradient"
     };
     for (const char *name : checks)
     {
@@ -211,6 +250,8 @@ void SettingsPanel::wireLiveUpdates()
             connect(b, &QCheckBox::toggled, this, requestFull);
     }
     if (auto *b = child<QCheckBox>("checkAtmo"))
+        connect(b, &QCheckBox::toggled, this, requestAppearance);
+    if (auto *b = child<QCheckBox>("checkRing"))
         connect(b, &QCheckBox::toggled, this, requestAppearance);
     if (auto *r = child<QRadioButton>("radioName1"))
         connect(r, &QRadioButton::toggled, this, requestFull);
@@ -293,6 +334,8 @@ void SettingsPanel::collect(PlanetSettings &s) const
     if (auto *v = child<QSlider>("sliderRingOuter"))
         s.R_external_ring = v->value();
     s.ring_color = ColorSwatch::color(child<QPushButton>("btnColorRing"));
+    s.ring_material = radioRingMeteor->isChecked() ? 1 : 0;
+    s.ring_intensity = sliderRingIntensity->value();
     s.polar_lat = sliderPolarLat->value();
     s.polar_lon = sliderPolarLon->value();
 }
@@ -367,6 +410,9 @@ void SettingsPanel::push(const PlanetSettings &s)
     if (auto *v = child<QSlider>("sliderRingOuter"))
         v->setValue(s.R_external_ring);
     ColorSwatch::setColor(child<QPushButton>("btnColorRing"), s.ring_color);
+    radioRingGas->setChecked(s.ring_material != 1);
+    radioRingMeteor->setChecked(s.ring_material == 1);
+    sliderRingIntensity->setValue(s.ring_intensity);
     sliderPolarLat->setValue(s.polar_lat);
     sliderPolarLon->setValue(s.polar_lon);
     updateAlgoEnabled();
@@ -379,6 +425,10 @@ void SettingsPanel::retranslate()
     labelShineLatTitle->setText(QCoreApplication::translate("MainWindow", "Latitude"));
     labelShineLonTitle->setText(QCoreApplication::translate("MainWindow", "Longitude"));
     checkFillLight->setText(QCoreApplication::translate("MainWindow", "Fill light"));
+    labelRingMaterial->setText(QCoreApplication::translate("MainWindow", "Material"));
+    radioRingGas->setText(QCoreApplication::translate("MainWindow", "Gaseous"));
+    radioRingMeteor->setText(QCoreApplication::translate("MainWindow", "Meteoritic"));
+    labelRingIntensity->setText(QCoreApplication::translate("MainWindow", "Intensity"));
     labelPolarLatTitle->setText(QCoreApplication::translate("MainWindow", "Latitude"));
     labelPolarLonTitle->setText(QCoreApplication::translate("MainWindow", "Longitude"));
 }

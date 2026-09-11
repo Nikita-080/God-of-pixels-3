@@ -141,14 +141,17 @@ static const char *kAtmoFrag =
 static const char *kRingVert =
     "#version 120\n"
     "attribute vec3 aPos;\n"
-    "attribute float aBand;\n"
+    "attribute vec3 aNormal;\n"
+    "attribute vec3 aColor;\n"
     "uniform mat4 uMvp;\n"
     "uniform mat4 uModel;\n"
-    "varying float vBand;\n"
     "varying vec3 vPos;\n"
+    "varying vec3 vNormal;\n"
+    "varying vec3 vColor;\n"
     "void main() {\n"
-    "  vBand = aBand;\n"
     "  vPos = (uModel * vec4(aPos, 1.0)).xyz;\n"
+    "  vNormal = mat3(uModel) * aNormal;\n"
+    "  vColor = aColor;\n"
     "  gl_Position = uMvp * vec4(aPos, 1.0);\n"
     "}\n";
 
@@ -157,18 +160,19 @@ static const char *kRingFrag =
     "uniform vec3 uLight;\n"
     "uniform vec3 uCam;\n"
     "uniform float uFillLight;\n"
-    "uniform vec3 uColor0;\n"
-    "uniform vec3 uColor1;\n"
-    "varying float vBand;\n"
+    "uniform float uTwoSided;\n"
     "varying vec3 vPos;\n"
+    "varying vec3 vNormal;\n"
+    "varying vec3 vColor;\n"
     "void main() {\n"
+    "  vec3 n = normalize(vNormal);\n"
     "  vec3 l = normalize(uLight);\n"
-    "  vec3 n = normalize(vPos);\n"
-    "  float shade = 0.45 + 0.55 * max(dot(n, l), 0.0);\n"
+    "  float ndl = dot(n, l);\n"
+    "  if (uTwoSided > 0.5) ndl = abs(ndl);\n"
+    "  float shade = 0.45 + 0.55 * max(ndl, 0.0);\n"
     "  if (uFillLight > 0.5)\n"
-    "    shade += 0.55 * 0.3 * 0.5 * max(dot(n, normalize(uCam)), 0.0);\n"
-    "  vec3 col = mix(uColor0, uColor1, vBand) * shade;\n"
-    "  gl_FragColor = vec4(col, 0.92);\n"
+    "    shade += 0.12 * max(dot(normalize(vPos), normalize(uCam)), 0.0);\n"
+    "  gl_FragColor = vec4(vColor * shade, 0.92);\n"
     "}\n";
 
 static const char *kBlitVert =
@@ -194,9 +198,11 @@ PlanetGLWidget::PlanetGLWidget(QWidget *parent)
     , planet(nullptr)
     , sphereVbo(QOpenGLBuffer::VertexBuffer)
     , ringVbo(QOpenGLBuffer::VertexBuffer)
+    , rockVbo(QOpenGLBuffer::VertexBuffer)
     , blitVbo(QOpenGLBuffer::VertexBuffer)
     , sphereVertexCount(0)
     , ringVertexCount(0)
+    , rockVertexCount(0)
     , azimuth(kDefaultAzimuth)
     , elevation(kDefaultElevation)
     , cameraDistance(defaultCameraDistance())
@@ -213,6 +219,7 @@ PlanetGLWidget::~PlanetGLWidget()
     sceneFbo.reset();
     sphereVbo.destroy();
     ringVbo.destroy();
+    rockVbo.destroy();
     blitVbo.destroy();
     albedo.reset();
     clouds.reset();
@@ -225,6 +232,7 @@ void PlanetGLWidget::setPlanet(const Planet *p)
     if (ready)
     {
         refreshTextures();
+        rebuildRings();
         refreshAppearance();
         update();
     }
@@ -290,7 +298,8 @@ void PlanetGLWidget::initializeGL()
     ringProg.addShaderFromSourceCode(QOpenGLShader::Vertex, kRingVert);
     ringProg.addShaderFromSourceCode(QOpenGLShader::Fragment, kRingFrag);
     ringProg.bindAttributeLocation("aPos", 0);
-    ringProg.bindAttributeLocation("aBand", 1);
+    ringProg.bindAttributeLocation("aNormal", 1);
+    ringProg.bindAttributeLocation("aColor", 2);
     ringProg.link();
 
     blitProg.addShaderFromSourceCode(QOpenGLShader::Vertex, kBlitVert);
@@ -300,7 +309,7 @@ void PlanetGLWidget::initializeGL()
     blitProg.link();
 
     buildSphere(96, 64);
-    buildRings(160);
+    rebuildRings();
     buildBlitQuad();
     ready = true;
     if (planet)
@@ -372,33 +381,96 @@ void PlanetGLWidget::buildSphere(int slices, int stacks)
     sphereVbo.release();
 }
 
-void PlanetGLWidget::buildRings(int segments)
+void PlanetGLWidget::rebuildRings()
 {
-    QVector<float> data;
-    const float inner = 1.25f;
-    const float outer = 2.05f;
-    for (int i = 0; i < segments; ++i)
+    if (!ready)
+        return;
+    makeCurrent();
+    ringVertexCount = 0;
+    rockVertexCount = 0;
+    QVector<float> ringData;
+    QVector<float> rockData;
+    if (planet && planet->s.is_ring)
     {
-        const float t0 = float(i) / segments * float(2.0 * M_PI);
-        const float t1 = float(i + 1) / segments * float(2.0 * M_PI);
-        const QVector3D i0(inner * qCos(t0), 0, inner * qSin(t0));
-        const QVector3D o0(outer * qCos(t0), 0, outer * qSin(t0));
-        const QVector3D i1(inner * qCos(t1), 0, inner * qSin(t1));
-        const QVector3D o1(outer * qCos(t1), 0, outer * qSin(t1));
-        const QVector3D pts[6] = {i0, o0, o1, i0, o1, i1};
-        const float band[6] = {0, 1, 1, 0, 1, 0};
-        for (int k = 0; k < 6; ++k)
+        if (planet->s.ring_material != 1)
         {
-            data << pts[k].x() << pts[k].y() << pts[k].z() << band[k];
+            const int segments = 160;
+            for (const RingBand &band : planet->ring_bands)
+            {
+                if (band.empty)
+                    continue;
+                const QVector3D col(band.color.redF(), band.color.greenF(), band.color.blueF());
+                for (int i = 0; i < segments; ++i)
+                {
+                    const float t0 = float(i) / segments * float(2.0 * M_PI);
+                    const float t1 = float(i + 1) / segments * float(2.0 * M_PI);
+                    const QVector3D i0(band.inner * qCos(t0), 0, band.inner * qSin(t0));
+                    const QVector3D o0(band.outer * qCos(t0), 0, band.outer * qSin(t0));
+                    const QVector3D i1(band.inner * qCos(t1), 0, band.inner * qSin(t1));
+                    const QVector3D o1(band.outer * qCos(t1), 0, band.outer * qSin(t1));
+                    const QVector3D pts[6] = {i0, o0, o1, i0, o1, i1};
+                    for (int k = 0; k < 6; ++k)
+                    {
+                        ringData << pts[k].x() << pts[k].y() << pts[k].z();
+                        ringData << 0.f << 1.f << 0.f;
+                        ringData << col.x() << col.y() << col.z();
+                    }
+                }
+            }
+        }
+        else
+        {
+            const int slices = 10;
+            const int stacks = 6;
+            for (const RingRock &rock : planet->ring_rocks)
+            {
+                const QVector3D col(rock.color.redF(), rock.color.greenF(), rock.color.blueF());
+                const QVector3D c(rock.x, rock.y, rock.z);
+                for (int y = 0; y < stacks; ++y)
+                {
+                    const float phi0 = float(y) / stacks * float(M_PI);
+                    const float phi1 = float(y + 1) / stacks * float(M_PI);
+                    for (int x = 0; x < slices; ++x)
+                    {
+                        const float th0 = float(x) / slices * float(2.0 * M_PI);
+                        const float th1 = float(x + 1) / slices * float(2.0 * M_PI);
+                        const QVector3D n00(qSin(phi0) * qCos(th0), qCos(phi0), qSin(phi0) * qSin(th0));
+                        const QVector3D n10(qSin(phi0) * qCos(th1), qCos(phi0), qSin(phi0) * qSin(th1));
+                        const QVector3D n01(qSin(phi1) * qCos(th0), qCos(phi1), qSin(phi1) * qSin(th0));
+                        const QVector3D n11(qSin(phi1) * qCos(th1), qCos(phi1), qSin(phi1) * qSin(th1));
+                        const QVector3D nrm[6] = {n00, n10, n11, n00, n11, n01};
+                        for (int k = 0; k < 6; ++k)
+                        {
+                            const QVector3D p = c + nrm[k] * rock.radius;
+                            rockData << p.x() << p.y() << p.z();
+                            rockData << nrm[k].x() << nrm[k].y() << nrm[k].z();
+                            rockData << col.x() << col.y() << col.z();
+                        }
+                    }
+                }
+            }
         }
     }
-    ringVertexCount = data.size() / 4;
+    ringVertexCount = ringData.size() / 9;
     if (ringVbo.isCreated())
         ringVbo.destroy();
-    ringVbo.create();
-    ringVbo.bind();
-    ringVbo.allocate(data.constData(), data.size() * int(sizeof(float)));
-    ringVbo.release();
+    if (!ringData.isEmpty())
+    {
+        ringVbo.create();
+        ringVbo.bind();
+        ringVbo.allocate(ringData.constData(), ringData.size() * int(sizeof(float)));
+        ringVbo.release();
+    }
+    rockVertexCount = rockData.size() / 9;
+    if (rockVbo.isCreated())
+        rockVbo.destroy();
+    if (!rockData.isEmpty())
+    {
+        rockVbo.create();
+        rockVbo.bind();
+        rockVbo.allocate(rockData.constData(), rockData.size() * int(sizeof(float)));
+        rockVbo.release();
+    }
 }
 
 void PlanetGLWidget::uploadTexture(std::unique_ptr<QOpenGLTexture> &tex, const QImage &img, bool repeatU)
@@ -426,6 +498,8 @@ void PlanetGLWidget::refreshTextures()
 
 void PlanetGLWidget::refreshAppearance()
 {
+    if (ready)
+        rebuildRings();
     update();
 }
 
@@ -544,31 +618,43 @@ void PlanetGLWidget::drawScene(const QMatrix4x4 &proj, const QMatrix4x4 &view, c
         glDisable(GL_BLEND);
     }
 
-    if (planet->s.is_ring)
+    if (planet->s.is_ring && (ringVertexCount > 0 || rockVertexCount > 0))
     {
         glDisable(GL_CULL_FACE);
         glEnable(GL_BLEND);
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
         QMatrix4x4 ringModel = model * ringBasis();
-        float scale = float((planet->ring_inner + planet->ring_outer) * 0.5 / 1.65);
-        ringModel.scale(scale);
         ringProg.bind();
         ringProg.setUniformValue("uMvp", proj * view * ringModel);
         ringProg.setUniformValue("uModel", ringModel);
         ringProg.setUniformValue("uLight", light);
         ringProg.setUniformValue("uCam", cameraPos());
         ringProg.setUniformValue("uFillLight", planet->s.is_fill_light ? 1.0f : 0.0f);
-        QColor c0 = planet->ring_colors.isEmpty() ? planet->s.ring_color : planet->ring_colors.first();
-        QColor c1 = planet->ring_colors.size() > 1 ? planet->ring_colors.last() : c0.darker(130);
-        ringProg.setUniformValue("uColor0", QVector3D(c0.redF(), c0.greenF(), c0.blueF()));
-        ringProg.setUniformValue("uColor1", QVector3D(c1.redF(), c1.greenF(), c1.blueF()));
-        ringVbo.bind();
-        ringProg.enableAttributeArray(0);
-        ringProg.enableAttributeArray(1);
-        ringProg.setAttributeBuffer(0, GL_FLOAT, 0, 3, 4 * sizeof(float));
-        ringProg.setAttributeBuffer(1, GL_FLOAT, 3 * sizeof(float), 1, 4 * sizeof(float));
-        glDrawArrays(GL_TRIANGLES, 0, ringVertexCount);
-        ringVbo.release();
+        auto drawLit = [this](QOpenGLBuffer &vbo, int count) {
+            if (count <= 0 || !vbo.isCreated())
+                return;
+            vbo.bind();
+            ringProg.enableAttributeArray(0);
+            ringProg.enableAttributeArray(1);
+            ringProg.enableAttributeArray(2);
+            ringProg.setAttributeBuffer(0, GL_FLOAT, 0, 3, 9 * sizeof(float));
+            ringProg.setAttributeBuffer(1, GL_FLOAT, 3 * sizeof(float), 3, 9 * sizeof(float));
+            ringProg.setAttributeBuffer(2, GL_FLOAT, 6 * sizeof(float), 3, 9 * sizeof(float));
+            glDrawArrays(GL_TRIANGLES, 0, count);
+            vbo.release();
+        };
+        if (planet->s.ring_material == 1)
+        {
+            ringProg.setUniformValue("uTwoSided", 0.0f);
+            glEnable(GL_CULL_FACE);
+            glDisable(GL_BLEND);
+            drawLit(rockVbo, rockVertexCount);
+        }
+        else
+        {
+            ringProg.setUniformValue("uTwoSided", 1.0f);
+            drawLit(ringVbo, ringVertexCount);
+        }
         ringProg.release();
         glDisable(GL_BLEND);
         glEnable(GL_CULL_FACE);

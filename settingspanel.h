@@ -41,6 +41,11 @@ private:
     QSlider *sliderPolarLat;
     QSlider *sliderPolarLon;
     QCheckBox *checkFillLight;
+    QRadioButton *radioRingGas;
+    QRadioButton *radioRingMeteor;
+    QSlider *sliderRingIntensity;
+    QLabel *labelRingMaterial;
+    QLabel *labelRingIntensity;
     QLabel *labelShineLatTitle;
     QLabel *labelShineLonTitle;
     QLabel *labelPolarLatTitle;

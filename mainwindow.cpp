@@ -672,6 +672,7 @@ void MainWindow::runLivePreview()
         planet.x_polar = polar.x;
         planet.y_polar = polar.y;
         planet.z_polar = polar.z;
+        planet.PrepareRings();
         preview->glWidget()->refreshAppearance();
         return;
     }

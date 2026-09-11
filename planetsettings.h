@@ -46,6 +46,8 @@ public:
     int R_internal_ring;
     int R_external_ring;
     QColor ring_color;
+    int ring_material;
+    int ring_intensity;
     int polar_lat;
     int polar_lon;
     QVector <double> true_structure;

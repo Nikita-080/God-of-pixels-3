@@ -18,6 +18,8 @@ PlanetSettings::PlanetSettings()
     is_fill_light = true;
     polar_lat = 90;
     polar_lon = 0;
+    ring_material = 0;
+    ring_intensity = 2;
 }
 
 int PlanetSettings::RAND(int a, int b)
@@ -75,6 +77,8 @@ QJsonObject PlanetSettings::JSON_serialize()
     jobject["R_internal_ring"] = R_internal_ring;
     jobject["R_external_ring"] = R_external_ring;
     jobject["ring_color"] = ring_color.name();
+    jobject["ring_material"] = ring_material;
+    jobject["ring_intensity"] = ring_intensity;
     jobject["polar_lat"] = polar_lat;
     jobject["polar_lon"] = polar_lon;
 
@@ -133,6 +137,8 @@ bool PlanetSettings::JSON_deserialize(QJsonObject jobject)
             R_internal_ring = jobject["R_internal_ring"].toInt();
             R_external_ring = jobject["R_external_ring"].toInt();
             ring_color = jobject["ring_color"].toString();
+            ring_material = jobject.contains("ring_material") ? jobject["ring_material"].toInt() : 0;
+            ring_intensity = jobject.contains("ring_intensity") ? jobject["ring_intensity"].toInt() : 2;
             polar_lat = jobject["polar_lat"].toInt();
             polar_lon = jobject["polar_lon"].toInt();
             rebuildDerived();
@@ -213,5 +219,7 @@ void PlanetSettings::Random(QVector<bool> isRnd){
     if (isRnd[30]) R_internal_ring=RAND(1,5);
     if (isRnd[31]) R_external_ring=RAND(1,5);
     if (isRnd[32]) ring_color=QColor(RAND(0,255),RAND(0,255),RAND(0,255));
-    if (isRnd[33]) { polar_lat=RAND(-90,90); polar_lon=RAND(-180,180); }
+    if (isRnd.size() > 33 && isRnd[33]) { polar_lat=RAND(-90,90); polar_lon=RAND(-180,180); }
+    if (isRnd.size() > 34 && isRnd[34]) ring_material=RAND(0,1);
+    if (isRnd.size() > 35 && isRnd[35]) ring_intensity=RAND(0,10);
 }
