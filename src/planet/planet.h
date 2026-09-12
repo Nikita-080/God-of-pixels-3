@@ -108,6 +108,7 @@ public:
     void Generate();
     QImage ImageReport(const QVector<QVector<double>> &data, QColor lowcolor, QColor highcolor);
     void SetSeed(int value = 0);
+    void UseSeed(int value);
     SphereVec3 TexelXYZ(int x, int y) const;
     double ArcPolarDistance(int x, int y) const;
     int viewResolution() const;

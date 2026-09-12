@@ -181,13 +181,17 @@ bool PlanetSettings::Load(QString path){
     }
     return false;
 }
-void PlanetSettings::Random(QVector<bool> isRnd){
-    if (isRnd[0]) terramode=RAND(0,1);
-    if (isRnd[1]) randomness=RAND(1,10);
-    if (isRnd[2]) iterations=RAND(50,1000);
-    if (isRnd[3]) world_size=RAND(1,20);
-    if (isRnd[4]) temperature=RAND(-90,140);
-    if (isRnd[5])
+void PlanetSettings::Random(const QVector<bool> &isRnd)
+{
+    rnd.seed(QRandomGenerator::global()->generate());
+    auto on = [&](int i) { return i >= 0 && i < isRnd.size() && isRnd[i]; };
+
+    if (on(0)) terramode=RAND(0,1);
+    if (on(1)) randomness=RAND(1,10);
+    if (on(2)) iterations=RAND(50,1000);
+    if (on(3)) world_size=RAND(1,20);
+    if (on(4)) temperature=RAND(-90,140);
+    if (on(5))
     {
         structure[0]=40;
         structure[7]=425;
@@ -195,39 +199,39 @@ void PlanetSettings::Random(QVector<bool> isRnd){
         {
             int num=RAND(structure[i-1],425);
             structure[i]=num;
-            true_structure[i]=280-((num-40)*280*1.0/385);
         }
+        rebuildDerived();
     }
-    if (isRnd[6]) ice_color=QColor(RAND(0,255),RAND(0,255),RAND(0,255));
-    if (isRnd[7]) rock_color=QColor(RAND(0,255),RAND(0,255),RAND(0,255));
-    if (isRnd[8]) mountain_color=QColor(RAND(0,255),RAND(0,255),RAND(0,255));
-    if (isRnd[9]) plain_color=QColor(RAND(0,255),RAND(0,255),RAND(0,255));
-    if (isRnd[10]) beach_color=QColor(RAND(0,255),RAND(0,255),RAND(0,255));
-    if (isRnd[11]) shallow_color=QColor(RAND(0,255),RAND(0,255),RAND(0,255));
-    if (isRnd[12]) ocean_color=QColor(RAND(0,255),RAND(0,255),RAND(0,255));
-    if (isRnd[13]) noise=RAND(1,100);
-    if (isRnd[14]) is_gradient=RAND(0,1);
-    if (isRnd[15]) is_plant=RAND(0,1);
-    if (isRnd[16]) shine=RAND(0,5);
-    if (isRnd[17]) { shine_lat=RAND(-90,90); shine_lon=RAND(-180,180); }
-    if (isRnd[18]) name_algorithm=RAND(1,3);
-    if (isRnd[19]) is_cloud=RAND(0,1);
-    if (isRnd[20]) cloud_size=RAND(1,10);
-    if (isRnd[21]) cloud_quality=RAND(1,6);
-    if (isRnd[22]) cloud_transparent=RAND(0,10);
-    if (isRnd[23]) correction=RAND(0,1);
-    if (isRnd[24]) cloud_color=QColor(RAND(0,255),RAND(0,255),RAND(0,255));
-    if (isRnd[25]) is_atmo=RAND(0,1);
-    if (isRnd[26]) atmo_transparent=RAND(0,10);
-    if (isRnd[27]) atmo_size=RAND(1,10);
-    if (isRnd[28]) atmo_color=QColor(RAND(0,255),RAND(0,255),RAND(0,255));
-    if (isRnd[29]) is_ring=RAND(0,1);
-    if (isRnd[30]) R_internal_ring=RAND(1,5);
-    if (isRnd[31]) R_external_ring=RAND(1,5);
-    if (isRnd[32]) ring_color=QColor(RAND(0,255),RAND(0,255),RAND(0,255));
-    if (isRnd.size() > 33 && isRnd[33]) { polar_lat=RAND(-90,90); polar_lon=RAND(-180,180); }
-    if (isRnd.size() > 34 && isRnd[34]) ring_material=RAND(0,1);
-    if (isRnd.size() > 35 && isRnd[35]) ring_intensity=RAND(0,10);
-    if (isRnd.size() > 36 && isRnd[36]) is_civ=RAND(0,1);
-    if (isRnd.size() > 37 && isRnd[37]) civ_color=QColor(RAND(0,255),RAND(0,255),RAND(0,255));
+    if (on(6)) ice_color=QColor(RAND(0,255),RAND(0,255),RAND(0,255));
+    if (on(7)) rock_color=QColor(RAND(0,255),RAND(0,255),RAND(0,255));
+    if (on(8)) mountain_color=QColor(RAND(0,255),RAND(0,255),RAND(0,255));
+    if (on(9)) plain_color=QColor(RAND(0,255),RAND(0,255),RAND(0,255));
+    if (on(10)) beach_color=QColor(RAND(0,255),RAND(0,255),RAND(0,255));
+    if (on(11)) shallow_color=QColor(RAND(0,255),RAND(0,255),RAND(0,255));
+    if (on(12)) ocean_color=QColor(RAND(0,255),RAND(0,255),RAND(0,255));
+    if (on(13)) noise=RAND(1,100);
+    if (on(14)) is_gradient=RAND(0,1);
+    if (on(15)) is_plant=RAND(0,1);
+    if (on(16)) shine=RAND(0,5);
+    if (on(17)) { shine_lat=RAND(-90,90); shine_lon=RAND(-180,180); }
+    if (on(18)) name_algorithm=RAND(1,3);
+    if (on(19)) is_cloud=RAND(0,1);
+    if (on(20)) cloud_size=RAND(1,10);
+    if (on(21)) cloud_quality=RAND(1,6);
+    if (on(22)) cloud_transparent=RAND(0,10);
+    if (on(23)) correction=RAND(0,1);
+    if (on(24)) cloud_color=QColor(RAND(0,255),RAND(0,255),RAND(0,255));
+    if (on(25)) is_atmo=RAND(0,1);
+    if (on(26)) atmo_transparent=RAND(0,10);
+    if (on(27)) atmo_size=RAND(1,10);
+    if (on(28)) atmo_color=QColor(RAND(0,255),RAND(0,255),RAND(0,255));
+    if (on(29)) is_ring=RAND(0,1);
+    if (on(30)) R_internal_ring=RAND(1,5);
+    if (on(31)) R_external_ring=RAND(1,5);
+    if (on(32)) ring_color=QColor(RAND(0,255),RAND(0,255),RAND(0,255));
+    if (on(33)) { polar_lat=RAND(-90,90); polar_lon=RAND(-180,180); }
+    if (on(34)) ring_material=RAND(0,1);
+    if (on(35)) ring_intensity=RAND(0,10);
+    if (on(36)) is_civ=RAND(0,1);
+    if (on(37)) civ_color=QColor(RAND(0,255),RAND(0,255),RAND(0,255));
 }

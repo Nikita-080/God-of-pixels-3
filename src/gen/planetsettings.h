@@ -60,7 +60,7 @@ public:
     QJsonObject JSON_serialize();
     bool JSON_deserialize(QJsonObject);
     void rebuildDerived();
-    void Random(QVector<bool>);
+    void Random(const QVector<bool> &isRnd);
 private:
     int RAND(int x, int y);
     QJsonArray VecToJson(QVector<int>);

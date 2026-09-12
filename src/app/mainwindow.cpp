@@ -22,9 +22,17 @@
 #include <QDir>
 #include <QHBoxLayout>
 #include <QVBoxLayout>
+#include <QSizePolicy>
 #include <QCheckBox>
 #include <QCloseEvent>
 #include <QEvent>
+#include <QSize>
+#include <QElapsedTimer>
+#include <QTextEdit>
+#include <QTextCursor>
+#include <QTextCharFormat>
+#include <QTime>
+#include <QFileInfo>
 
 namespace {
 
@@ -66,6 +74,10 @@ MainWindow::MainWindow(QWidget *parent)
     , genQueuedCreateNew(false)
     , genQueuedSeed(0)
     , autogenRunning(false)
+    , autogenGl(nullptr)
+    , opConsole(nullptr)
+    , genActiveOp(GenOp::None)
+    , genQueuedOp(GenOp::None)
 {
     QSettings st;
     language = st.value(AppKeys::language, QStringLiteral("en")).toString();
@@ -250,6 +262,17 @@ void MainWindow::setupMainLayout()
     ui->btnLogo->setFixedSize(150, 150);
     ui->progressAutogen->setFixedHeight(31);
 
+    opConsole = new QTextEdit;
+    opConsole->setObjectName(QStringLiteral("opConsole"));
+    opConsole->setReadOnly(true);
+    opConsole->setUndoRedoEnabled(false);
+    opConsole->setAcceptRichText(false);
+    opConsole->setLineWrapMode(QTextEdit::WidgetWidth);
+    opConsole->setMinimumHeight(80);
+    opConsole->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+    opConsole->setFont(QFont(QStringLiteral("Consolas"), 10));
+    opConsole->document()->setMaximumBlockCount(500);
+
     auto *autogenRow = new QHBoxLayout;
     autogenRow->setSpacing(10);
     autogenRow->addWidget(ui->btnAutogen);
@@ -270,7 +293,7 @@ void MainWindow::setupMainLayout()
     actionsCol->addLayout(autogenRow);
     actionsCol->addLayout(viewRow);
     actionsCol->addWidget(ui->btnLogo, 0, Qt::AlignHCenter);
-    actionsCol->addStretch();
+    actionsCol->addWidget(opConsole, 1);
 
     auto *previewCol = new QVBoxLayout;
     previewCol->setSpacing(8);
@@ -298,7 +321,7 @@ void MainWindow::AutoGen()
     box = win.settings();
 
     autogenRunning = true;
-    beginLoadingWatch();
+    showLoadingOverlay();
     ui->btnAutogen->setEnabled(false);
     ui->btnCreate->setEnabled(false);
     ui->btnRecreate->setEnabled(false);
@@ -307,6 +330,8 @@ void MainWindow::AutoGen()
     Settings_Get();
     const PlanetSettings base = s;
     bool ok = true;
+    QElapsedTimer autogenTimer;
+    autogenTimer.start();
 
     if (box.mode == AutoGenMode::Collage)
     {
@@ -389,29 +414,52 @@ void MainWindow::AutoGen()
 
     if (ok)
         ui->progressAutogen->setValue(100);
+    logOp(tr("Autogen"), autogenTimer.elapsed(), ok, box.path);
     finishAutogen();
 }
 
 QImage MainWindow::autogenPreviewTile()
 {
-    if (preview)
+    QImage shot;
+    if (PlanetGLWidget *gl = ensureAutogenGl())
     {
-        preview->setHasPlanet(true);
-        preview->showGlobe();
-        preview->glWidget()->setPlanet(&autoplanet);
-        preview->glWidget()->refreshTextures();
-        preview->glWidget()->repaint();
-        const QImage shot = preview->glWidget()->captureView();
-        if (!shot.isNull())
-            autoplanet.img_view = shot;
-        preview->setPlanetName(autoplanet.name);
+        gl->setPlanet(&autoplanet);
+        gl->refreshTextures();
+        gl->repaint();
+        shot = gl->captureView().copy();
+        gl->setPlanet(nullptr);
     }
+    if (!shot.isNull())
+        autoplanet.img_view = shot;
     autoplanet.FinalImage();
     if (box.extendedFormat)
-        return autoplanet.img_final;
-    if (!autoplanet.img_view.isNull())
-        return autoplanet.img_view;
-    return autoplanet.img;
+        return autoplanet.img_final.copy();
+    if (!shot.isNull())
+        return shot;
+    return autoplanet.img.copy();
+}
+
+PlanetGLWidget *MainWindow::ensureAutogenGl()
+{
+    QSize side(257, 257);
+    if (preview && preview->glWidget())
+        side = preview->glWidget()->size();
+    side.setWidth(qMax(257, side.width()));
+    side.setHeight(qMax(257, side.height()));
+    if (!autogenGl)
+    {
+        autogenGl = new PlanetGLWidget(this);
+        autogenGl->setAttribute(Qt::WA_DontShowOnScreen);
+        autogenGl->setFixedSize(side);
+        autogenGl->show();
+        QApplication::processEvents();
+    }
+    else if (autogenGl->size() != side)
+    {
+        autogenGl->setFixedSize(side);
+        QApplication::processEvents();
+    }
+    return autogenGl;
 }
 
 void MainWindow::finishAutogen()
@@ -420,14 +468,9 @@ void MainWindow::finishAutogen()
     ui->btnAutogen->setEnabled(true);
     ui->btnCreate->setEnabled(true);
     ui->btnRecreate->setEnabled(true);
+    if (autogenGl)
+        autogenGl->setPlanet(nullptr);
     endLoadingWatch();
-    if (!isEmtyPlanet)
-        applyPlanetToView();
-    else if (preview)
-    {
-        preview->glWidget()->setPlanet(nullptr);
-        preview->setHasPlanet(false);
-    }
 }
 
 void MainWindow::CreateNewPlanet()
@@ -435,7 +478,7 @@ void MainWindow::CreateNewPlanet()
     if (autogenRunning)
         return;
     Settings_Get();
-    startGeneration(true);
+    startGeneration(true, 0, GenOp::Create);
 }
 
 void MainWindow::RecreatePlanet()
@@ -443,7 +486,37 @@ void MainWindow::RecreatePlanet()
     if (autogenRunning)
         return;
     Settings_Get();
-    startGeneration(isEmtyPlanet);
+    startGeneration(isEmtyPlanet, 0, isEmtyPlanet ? GenOp::Create : GenOp::Recreate);
+}
+
+void MainWindow::logOp(const QString &action, qint64 ms, bool ok, const QString &detail)
+{
+    if (!opConsole)
+        return;
+    QString text = QStringLiteral("[%1] %2")
+                       .arg(QTime::currentTime().toString(QStringLiteral("HH:mm:ss")), action);
+    if (!detail.isEmpty())
+        text += QStringLiteral("  ") + detail;
+    text += QStringLiteral("  ") + QString::number(ms) + QStringLiteral(" ms");
+
+    QTextCursor cur = opConsole->textCursor();
+    cur.movePosition(QTextCursor::End);
+    QTextCharFormat okFmt;
+    okFmt.setForeground(QColor(0, 255, 0));
+    cur.setCharFormat(okFmt);
+    cur.insertText(text);
+    if (!ok)
+    {
+        QTextCharFormat errFmt;
+        errFmt.setForeground(QColor(255, 48, 48));
+        errFmt.setFontWeight(QFont::Bold);
+        cur.setCharFormat(errFmt);
+        cur.insertText(QStringLiteral("  [ERR]"));
+    }
+    cur.setCharFormat(okFmt);
+    cur.insertText(QStringLiteral("\n"));
+    opConsole->setTextCursor(cur);
+    opConsole->ensureCursorVisible();
 }
 
 void MainWindow::applyPlanetToView()
@@ -498,15 +571,13 @@ void MainWindow::M_Save_Image()
     if (filename.isEmpty())
         return;
     rememberPath(AppKeys::dirImage, filename);
-    try
-    {
-        QImage out = planet.img_view.isNull() ? planet.img : planet.img_view;
-        out.save(filename);
-    }
-    catch (...)
-    {
+    QElapsedTimer t;
+    t.start();
+    const QImage out = planet.img_view.isNull() ? planet.img : planet.img_view;
+    const bool ok = out.save(filename);
+    logOp(tr("Save image"), t.elapsed(), ok, QFileInfo(filename).fileName());
+    if (!ok)
         QMessageBox::critical(nullptr, tr("Error"), tr("0001 unable to save file"));
-    }
 }
 
 void MainWindow::M_Save_Full_Image()
@@ -518,14 +589,12 @@ void MainWindow::M_Save_Full_Image()
     if (filename.isEmpty())
         return;
     rememberPath(AppKeys::dirImage, filename);
-    try
-    {
-        planet.img_final.save(filename);
-    }
-    catch (...)
-    {
+    QElapsedTimer t;
+    t.start();
+    const bool ok = planet.img_final.save(filename);
+    logOp(tr("Save full image"), t.elapsed(), ok, QFileInfo(filename).fileName());
+    if (!ok)
         QMessageBox::critical(nullptr, tr("Error"), tr("0001 unable to save file"));
-    }
 }
 
 void MainWindow::M_Load_Planet()
@@ -537,25 +606,26 @@ void MainWindow::M_Load_Planet()
     if (filename.isEmpty())
         return;
     rememberPath(AppKeys::dirPlanet, filename);
+    QElapsedTimer t;
+    t.start();
     QFile file(filename);
-    file.open(QFile::ReadOnly | QFile::Text);
-    try
+    if (!file.open(QFile::ReadOnly | QFile::Text))
     {
-        const QString a = file.readAll();
-        QJsonObject jobject = QJsonDocument::fromJson(a.toUtf8()).object();
-        if (!s.JSON_deserialize(jobject["settings"].toObject()))
-        {
-            file.close();
-            return;
-        }
-        Settings_Set();
-        startGeneration(true, jobject["seed"].toInt());
-    }
-    catch (...)
-    {
+        logOp(tr("Load planet"), t.elapsed(), false, QFileInfo(filename).fileName());
         QMessageBox::critical(nullptr, tr("Error"), tr("0002 unable to load file"));
+        return;
     }
+    const QString a = file.readAll();
     file.close();
+    const QJsonObject jobject = QJsonDocument::fromJson(a.toUtf8()).object();
+    if (!s.JSON_deserialize(jobject["settings"].toObject()))
+    {
+        logOp(tr("Load planet"), t.elapsed(), false, QFileInfo(filename).fileName());
+        QMessageBox::critical(nullptr, tr("Error"), tr("0002 unable to load file"));
+        return;
+    }
+    Settings_Set();
+    startGeneration(true, jobject["seed"].toInt(), GenOp::Load);
 }
 
 void MainWindow::M_Save_Planet()
@@ -567,8 +637,11 @@ void MainWindow::M_Save_Planet()
     if (filename.isEmpty())
         return;
     rememberPath(AppKeys::dirPlanet, filename);
+    QElapsedTimer t;
+    t.start();
     QFile file(filename);
-    if (file.open(QFile::WriteOnly | QFile::Text))
+    const bool ok = file.open(QFile::WriteOnly | QFile::Text);
+    if (ok)
     {
         QJsonObject jobject;
         jobject["seed"] = planet.seed;
@@ -577,10 +650,9 @@ void MainWindow::M_Save_Planet()
         stream << QJsonDocument(jobject).toJson();
         file.close();
     }
-    else
-    {
+    logOp(tr("Save planet"), t.elapsed(), ok, QFileInfo(filename).fileName());
+    if (!ok)
         QMessageBox::critical(nullptr, tr("Error"), tr("0001 unable to save file"));
-    }
 }
 
 void MainWindow::Gen(bool isCreateNew, Planet *p, int seed)
@@ -588,6 +660,8 @@ void MainWindow::Gen(bool isCreateNew, Planet *p, int seed)
     p->s = s;
     if (isCreateNew)
         p->SetSeed(seed);
+    else
+        p->UseSeed(p->seed);
     p->Generate();
 }
 
@@ -611,7 +685,7 @@ void MainWindow::endLoadingWatch()
         preview->setLoading(false);
 }
 
-void MainWindow::startGeneration(bool createNew, int seed)
+void MainWindow::startGeneration(bool createNew, int seed, GenOp op)
 {
     if (autogenRunning)
         return;
@@ -620,10 +694,14 @@ void MainWindow::startGeneration(bool createNew, int seed)
         genQueued = true;
         genQueuedCreateNew = createNew;
         genQueuedSeed = seed;
+        genQueuedOp = op;
         return;
     }
 
     genRunning = true;
+    genActiveOp = op;
+    if (op != GenOp::None)
+        genOpTimer.start();
     beginLoadingWatch();
 
     auto *work = new Planet;
@@ -631,6 +709,8 @@ void MainWindow::startGeneration(bool createNew, int seed)
     work->s = s;
     if (createNew)
         work->SetSeed(seed);
+    else
+        work->UseSeed(planet.seed);
 
     QThread *thread = QThread::create([work]() { work->Generate(); });
     genThread = thread;
@@ -638,33 +718,48 @@ void MainWindow::startGeneration(bool createNew, int seed)
         if (genThread == thread)
             genThread = nullptr;
         thread->deleteLater();
-        if (genQueued)
+
+        const bool queued = genQueued;
+        const bool queuedCreate = genQueuedCreateNew;
+        const int queuedSeed = genQueuedSeed;
+        const GenOp queuedOp = genQueuedOp;
+        genQueued = false;
+
+        if (queued && queuedCreate)
         {
             delete work;
             if (genWork == work)
                 genWork = nullptr;
             genRunning = false;
-            const bool queuedCreate = genQueuedCreateNew;
-            const int queuedSeed = genQueuedSeed;
-            genQueued = false;
-            startGeneration(queuedCreate, queuedSeed);
+            startGeneration(true, queuedSeed, queuedOp);
             return;
         }
+
         planet = *work;
         delete work;
         if (genWork == work)
             genWork = nullptr;
         isEmtyPlanet = false;
         applyPlanetToView();
+        const GenOp finishedOp = genActiveOp;
+        const qint64 elapsed = genOpTimer.elapsed();
+        genActiveOp = GenOp::None;
         genRunning = false;
         endLoadingWatch();
-        if (genQueued)
+        if (finishedOp != GenOp::None)
         {
-            const bool queuedCreate = genQueuedCreateNew;
-            const int queuedSeed = genQueuedSeed;
-            genQueued = false;
-            startGeneration(queuedCreate, queuedSeed);
+            QString action;
+            switch (finishedOp)
+            {
+            case GenOp::Create: action = tr("Create"); break;
+            case GenOp::Recreate: action = tr("Recreate"); break;
+            case GenOp::Load: action = tr("Load planet"); break;
+            default: break;
+            }
+            logOp(action, elapsed, true, planet.name);
         }
+        if (queued)
+            startGeneration(false, 0, queuedOp);
     });
     thread->start();
 }
@@ -672,9 +767,13 @@ void MainWindow::startGeneration(bool createNew, int seed)
 void MainWindow::M_Load_Base_Settings()
 {
     Settings_Get();
-    if (s.Load(":/txt_files/res/txt_files/settingsbase.json"))
+    QElapsedTimer t;
+    t.start();
+    const bool ok = s.Load(":/txt_files/res/txt_files/settingsbase.json");
+    if (ok)
         Settings_Set();
-    else
+    logOp(tr("Load default settings"), t.elapsed(), ok);
+    if (!ok)
         QMessageBox::critical(nullptr, tr("Error"), tr("0003 unable to load default settings"));
 }
 
@@ -702,7 +801,11 @@ void MainWindow::M_Save_Settings()
         return;
     rememberPath(AppKeys::dirSettings, filename);
     Settings_Get();
-    if (!s.Save(filename))
+    QElapsedTimer t;
+    t.start();
+    const bool ok = s.Save(filename);
+    logOp(tr("Save settings"), t.elapsed(), ok, QFileInfo(filename).fileName());
+    if (!ok)
         QMessageBox::critical(nullptr, tr("Error"), tr("0001 unable to save file"));
 }
 
@@ -715,18 +818,25 @@ void MainWindow::M_Load_Settings()
     if (filename.isEmpty())
         return;
     rememberPath(AppKeys::dirSettings, filename);
+    QElapsedTimer t;
+    t.start();
     QFile file(filename);
     if (!file.open(QFile::ReadOnly | QFile::Text))
     {
+        logOp(tr("Load settings"), t.elapsed(), false, QFileInfo(filename).fileName());
         QMessageBox::critical(nullptr, tr("Error"), tr("0002 unable to load file"));
         return;
     }
     Settings_Get();
-    if (s.JSON_deserialize(QJsonDocument::fromJson(file.readAll()).object()))
+    const bool ok = s.JSON_deserialize(QJsonDocument::fromJson(file.readAll()).object());
+    if (ok)
     {
         Settings_Set();
         update();
     }
+    logOp(tr("Load settings"), t.elapsed(), ok, QFileInfo(filename).fileName());
+    if (!ok)
+        QMessageBox::critical(nullptr, tr("Error"), tr("0002 unable to load file"));
 }
 
 void MainWindow::Img_Report()

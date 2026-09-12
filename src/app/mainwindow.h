@@ -3,14 +3,17 @@
 
 #include <QMainWindow>
 #include <QTranslator>
+#include <QElapsedTimer>
 #include <planet.h>
 #include <autogensettings.h>
 #include <planetsettings.h>
 
 class PreviewPanel;
 class SettingsPanel;
+class PlanetGLWidget;
 class QTimer;
 class QThread;
+class QTextEdit;
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -28,6 +31,14 @@ protected:
     void closeEvent(QCloseEvent *event) override;
 
 private:
+    enum class GenOp
+    {
+        None,
+        Create,
+        Recreate,
+        Load
+    };
+
     void setupMainLayout();
     void SetStyle();
     void Settings_Get();
@@ -45,6 +56,7 @@ private:
     void RecreatePlanet();
     void AutoGen();
     QImage autogenPreviewTile();
+    PlanetGLWidget *ensureAutogenGl();
     void finishAutogen();
     void ShowPlanet();
     void ShowDescription();
@@ -54,7 +66,8 @@ private:
     void scheduleLivePreview();
     void runLivePreview();
     void applyPlanetToView();
-    void startGeneration(bool createNew, int seed = 0);
+    void startGeneration(bool createNew, int seed = 0, GenOp op = GenOp::None);
+    void logOp(const QString &action, qint64 ms, bool ok, const QString &detail = QString());
     void beginLoadingWatch();
     void endLoadingWatch();
     void showLoadingOverlay();
@@ -84,6 +97,11 @@ private:
     bool genQueuedCreateNew;
     int genQueuedSeed;
     bool autogenRunning;
+    PlanetGLWidget *autogenGl;
+    QTextEdit *opConsole;
+    GenOp genActiveOp;
+    GenOp genQueuedOp;
+    QElapsedTimer genOpTimer;
 };
 
 #endif

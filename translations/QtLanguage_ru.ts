@@ -437,6 +437,34 @@
         <translation>0003 не удалось загрузить настройки по умолчанию</translation>
     </message>
     <message>
+        <source>Recreate</source>
+        <translation>Пересоздать</translation>
+    </message>
+    <message>
+        <source>Autogen</source>
+        <translation>Автоген</translation>
+    </message>
+    <message>
+        <source>Save image</source>
+        <translation>Сохранить изображение</translation>
+    </message>
+    <message>
+        <source>Save full image</source>
+        <translation>Сохранить полную картинку</translation>
+    </message>
+    <message>
+        <source>Save settings</source>
+        <translation>Сохранить настройки</translation>
+    </message>
+    <message>
+        <source>Load settings</source>
+        <translation>Загрузить настройки</translation>
+    </message>
+    <message>
+        <source>Load default settings</source>
+        <translation>Загрузить настройки по умолчанию</translation>
+    </message>
+    <message>
         <location filename="mainwindow.cpp" line="622"/>
         <source>Save file</source>
         <translation>Сохранить файл</translation>

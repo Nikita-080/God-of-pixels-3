@@ -22,6 +22,12 @@ void Planet::SetSeed(int value)
     rnd.seed(static_cast<quint32>(seed));
 }
 
+void Planet::UseSeed(int value)
+{
+    seed = value;
+    rnd.seed(static_cast<quint32>(seed));
+}
+
 int Planet::RAND(int a, int b)
 {
     return rnd.bounded(a, b + 1);
