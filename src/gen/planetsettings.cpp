@@ -22,6 +22,7 @@ PlanetSettings::PlanetSettings()
     ring_intensity = 2;
     is_civ = false;
     civ_color = QColor(QStringLiteral("#ffcc66"));
+    seismicity = 0;
 }
 
 int PlanetSettings::RAND(int a, int b)
@@ -49,6 +50,7 @@ QJsonObject PlanetSettings::JSON_serialize()
     jobject["iterations"] = iterations;
     jobject["world_size"] = world_size;
     jobject["temperature"] = temperature;
+    jobject["seismicity"] = seismicity;
     jobject["structure"]=VecToJson(structure);
     jobject["ice_color"] = ice_color.name();
     jobject["rock_color"] = rock_color.name();
@@ -111,6 +113,7 @@ bool PlanetSettings::JSON_deserialize(QJsonObject jobject)
             iterations = jobject["iterations"].toInt();
             world_size = jobject["world_size"].toInt();
             temperature = jobject["temperature"].toInt();
+            seismicity = jobject.contains("seismicity") ? jobject["seismicity"].toInt() : 0;
             structure =JsonToVec(jobject["structure"].toArray());
             ice_color = jobject["ice_color"].toString();
             rock_color = jobject["rock_color"].toString();
@@ -234,4 +237,5 @@ void PlanetSettings::Random(const QVector<bool> &isRnd)
     if (on(35)) ring_intensity=RAND(0,10);
     if (on(36)) is_civ=RAND(0,1);
     if (on(37)) civ_color=QColor(RAND(0,255),RAND(0,255),RAND(0,255));
+    if (on(38)) seismicity=RAND(0,12);
 }

@@ -44,6 +44,8 @@ void Planet::Civilization()
         {
             if (matrix[x][y] <= water_level)
                 continue;
+            if (!faultKind.isEmpty() && faultKind[x][y] != 0)
+                continue;
             const double T = t_map[x][y];
             if (T < -8.0)
                 continue;

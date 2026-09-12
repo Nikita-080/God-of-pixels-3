@@ -3,6 +3,7 @@
 #include <QVector>
 #include <QImage>
 #include <QColor>
+#include <QtGlobal>
 #include <QRandomGenerator>
 #include <planetsettings.h>
 #include <facts.h>
@@ -70,6 +71,8 @@ public:
     QVector<QVector<double>> c_map;
     QVector<QVector<double>> t_map;
     QVector<QVector<double>> r_map;
+    QVector<QVector<quint8>> faultKind;
+    QVector<QVector<double>> lavaHeat;
     QColor color_black;
     int plant_pixel_count;
     int water_pixel_count;
@@ -88,6 +91,9 @@ public:
     void Calculator();
     void CreateMatrixNew();
     void FixMatrix();
+    void ApplyFaults();
+    void ApplyLavaClimate();
+    void PaintFaults();
     void LevelCreating();
     void ImageCreating();
     void PrepareRings();

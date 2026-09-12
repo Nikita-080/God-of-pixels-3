@@ -87,6 +87,8 @@ void Planet::Plant()
         {
             if (matrix[i][k] > water_level)
             {
+                if (!faultKind.isEmpty() && faultKind[i][k] != 0)
+                    continue;
                 double T = t_map[i][k];
                 double W = r_map[i][k];
                 if (W >= 0 && W <= 450 && T >= -15 && T <= 35)
@@ -139,6 +141,8 @@ void Planet::Polar()
             double T = t_map[i][j];
             if (T < -15)
             {
+                if (!faultKind.isEmpty() && faultKind[i][j] != 0)
+                    continue;
                 ice_pixel_count++;
                 QRgb *line = reinterpret_cast<QRgb *>(img.scanLine(j));
                 if (s.is_gradient)

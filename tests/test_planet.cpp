@@ -85,6 +85,7 @@ void TestPlanet::jsonRoundTrip()
     QCOMPARE(b.shine_lat, a.shine_lat);
     QCOMPARE(b.shine_lon, a.shine_lon);
     QCOMPARE(b.is_fill_light, a.is_fill_light);
+    QCOMPARE(b.seismicity, a.seismicity);
     QCOMPARE(b.polar_lat, a.polar_lat);
     QCOMPARE(b.polar_lon, a.polar_lon);
     QCOMPARE(a.JSON_serialize()["version"].toInt(), 2);

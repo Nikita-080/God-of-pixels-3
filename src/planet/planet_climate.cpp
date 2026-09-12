@@ -111,4 +111,12 @@ void Planet::RMapCreating()
             r_map[i][k] *= wet;
         }
     }
+    if (!lavaHeat.isEmpty() && lavaHeat.size() == map_w)
+    {
+        for (int i = 0; i < map_w; ++i)
+        {
+            for (int k = 0; k < map_h; ++k)
+                r_map[i][k] *= (1.0 - 0.85 * qBound(0.0, lavaHeat[i][k], 1.0));
+        }
+    }
 }

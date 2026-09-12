@@ -57,6 +57,8 @@ SettingsPanel::SettingsPanel(QTabWidget *tabs, QWidget *parent)
     , labelAvgColor(nullptr)
     , btnAvgLand(nullptr)
     , btnAvgWater(nullptr)
+    , labelSeismicity(nullptr)
+    , sliderSeismicity(nullptr)
     , updating(false)
 {
     auto *layout = new QVBoxLayout(this);
@@ -191,6 +193,30 @@ SettingsPanel::SettingsPanel(QTabWidget *tabs, QWidget *parent)
     if (auto *slider = child<QSlider>("sliderCloudQuality"))
         slider->setRange(1, 6);
 
+    if (QWidget *mainTab = child<QWidget>("tab"))
+    {
+        labelSeismicity = new QLabel(mainTab);
+        labelSeismicity->setGeometry(20, 360, 171, 31);
+        labelSeismicity->setFont(QFont(QStringLiteral("Consolas"), 10));
+        sliderSeismicity = new QSlider(Qt::Horizontal, mainTab);
+        sliderSeismicity->setObjectName(QStringLiteral("sliderSeismicity"));
+        sliderSeismicity->setGeometry(20, 400, 221, 16);
+        sliderSeismicity->setRange(0, 12);
+        sliderSeismicity->setValue(0);
+        QLabel *seisValue = new QLabel(QStringLiteral("0"), mainTab);
+        seisValue->setObjectName(QStringLiteral("labelSeismicityValue"));
+        seisValue->setGeometry(240, 390, 41, 21);
+        seisValue->setFont(QFont(QStringLiteral("Consolas"), 10));
+        seisValue->setAlignment(Qt::AlignCenter);
+        connect(sliderSeismicity, &QSlider::valueChanged, seisValue, QOverload<int>::of(&QLabel::setNum));
+        labelSeismicity->show();
+        sliderSeismicity->show();
+        seisValue->show();
+        const QRect bounds = mainTab->childrenRect();
+        mainTab->setMinimumSize(qMax(bounds.right() + 12, 380),
+                                qMax(bounds.bottom() + 12, 500));
+    }
+
     if (QWidget *colorTab = child<QWidget>("tab_3"))
     {
         labelAvgColor = new QLabel(colorTab);
@@ -306,7 +332,7 @@ void SettingsPanel::wireLiveUpdates()
 
     const char *fullSliders[] = {
         "sliderWorldSize", "sliderRandomness", "sliderTemperature", "sliderIterations",
-        "sliderNoise", "sliderCloudSize", "sliderCloudQuality"
+        "sliderNoise", "sliderCloudSize", "sliderCloudQuality", "sliderSeismicity"
     };
     for (const char *name : fullSliders)
     {
@@ -374,6 +400,8 @@ void SettingsPanel::collect(PlanetSettings &s) const
         s.world_size = v->value();
     if (auto *v = child<QSlider>("sliderTemperature"))
         s.temperature = v->value();
+    if (sliderSeismicity)
+        s.seismicity = sliderSeismicity->value();
     s.structure = ms->GetData();
     s.true_structure = ms->GetTrueData();
     s.ice_color = ColorSwatch::color(child<QPushButton>("btnColorIce"));
@@ -453,6 +481,8 @@ void SettingsPanel::push(const PlanetSettings &s)
         v->setValue(s.world_size);
     if (auto *v = child<QSlider>("sliderTemperature"))
         v->setValue(s.temperature);
+    if (sliderSeismicity)
+        sliderSeismicity->setValue(s.seismicity);
     ms->SetData(s.structure);
     ColorSwatch::setColor(child<QPushButton>("btnColorIce"), s.ice_color);
     ColorSwatch::setColor(child<QPushButton>("btnColorRock"), s.rock_color);
@@ -534,6 +564,8 @@ void SettingsPanel::retranslate()
         btnColorCiv->setText(QCoreApplication::translate("MainWindow", "Color"));
     if (labelAvgColor)
         labelAvgColor->setText(QCoreApplication::translate("MainWindow", "Average"));
+    if (labelSeismicity)
+        labelSeismicity->setText(QCoreApplication::translate("MainWindow", "Seismicity"));
 }
 
 void SettingsPanel::refreshAverageSwatches()

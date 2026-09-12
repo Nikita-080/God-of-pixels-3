@@ -124,6 +124,10 @@
         <translation>Среднее</translation>
     </message>
     <message>
+        <source>Seismicity</source>
+        <translation>Сейсмичность</translation>
+    </message>
+    <message>
         <location filename="mainwindow.ui" line="3808"/>
         <source>Colors</source>
         <translation>Цвета</translation>

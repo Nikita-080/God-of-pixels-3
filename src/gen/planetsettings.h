@@ -16,6 +16,7 @@ public:
     int world_size;
     int randomness;
     int temperature;
+    int seismicity;
     QVector <int> structure;
     QColor ice_color;
     QColor rock_color;

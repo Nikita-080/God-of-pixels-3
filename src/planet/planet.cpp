@@ -38,12 +38,15 @@ void Planet::Generate()
     CreateMatrixNew();
     Calculator();
     FixMatrix();
+    ApplyFaults();
     LevelCreating();
     ImageCreating();
     TMapCreating();
+    ApplyLavaClimate();
     RMapCreating();
     Plant();
     Polar();
+    PaintFaults();
     Noise();
     Civilization();
     CloudMapCreating();

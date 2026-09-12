@@ -27,6 +27,7 @@ SOURCES += \
     src/planet/planet_cards.cpp \
     src/planet/planet_climate.cpp \
     src/planet/planet_clouds.cpp \
+    src/planet/planet_faults.cpp \
     src/planet/planet_life.cpp \
     src/planet/planet_name.cpp \
     src/planet/planet_rings.cpp \

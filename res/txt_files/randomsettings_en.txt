@@ -36,3 +36,4 @@ ring material
 ring intensity
 intelligence
 civilization color
+seismicity

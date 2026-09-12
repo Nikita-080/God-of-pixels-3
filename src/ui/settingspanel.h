@@ -58,6 +58,8 @@ private:
     QLabel *labelAvgColor;
     QPushButton *btnAvgLand;
     QPushButton *btnAvgWater;
+    QLabel *labelSeismicity;
+    QSlider *sliderSeismicity;
     bool updating;
 };
 

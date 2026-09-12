@@ -11,7 +11,7 @@ void Planet::GenerateDescription()
     facts.gravitation = QString::number(RAND(0, 2)) + "." + QString::number(RAND(0, 9));
     facts.resources = Resources();
     facts.radiation = RAND(0, 12);
-    facts.seismicity = RAND(0, 12);
+    facts.seismicity = qBound(0, s.seismicity, 12);
 }
 
 void Planet::CalculateDescription()
