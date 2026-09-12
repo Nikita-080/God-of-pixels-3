@@ -120,6 +120,10 @@
         <translation>Цвет</translation>
     </message>
     <message>
+        <source>Average</source>
+        <translation>Среднее</translation>
+    </message>
+    <message>
         <location filename="mainwindow.ui" line="3808"/>
         <source>Colors</source>
         <translation>Цвета</translation>

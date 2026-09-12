@@ -31,6 +31,9 @@ private:
     void wireLiveUpdates();
     void updateAlgoEnabled();
     void notify(bool appearanceOnly);
+    void refreshAverageSwatches();
+    void applyLandFromAverage(const QColor &center);
+    void applyWaterFromAverage(const QColor &center);
     template <typename T>
     T *child(const char *name) const;
 
@@ -52,6 +55,9 @@ private:
     QLabel *labelShineLonTitle;
     QLabel *labelPolarLatTitle;
     QLabel *labelPolarLonTitle;
+    QLabel *labelAvgColor;
+    QPushButton *btnAvgLand;
+    QPushButton *btnAvgWater;
     bool updating;
 };
 

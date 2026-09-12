@@ -167,6 +167,8 @@ MainWindow::~MainWindow()
     }
     delete genWork;
     genWork = nullptr;
+    delete autogenGl;
+    autogenGl = nullptr;
     delete ui;
 }
 
@@ -448,15 +450,23 @@ PlanetGLWidget *MainWindow::ensureAutogenGl()
     side.setHeight(qMax(257, side.height()));
     if (!autogenGl)
     {
-        autogenGl = new PlanetGLWidget(this);
-        autogenGl->setAttribute(Qt::WA_DontShowOnScreen);
+        autogenGl = new PlanetGLWidget;
+        autogenGl->setWindowFlags(Qt::Tool | Qt::FramelessWindowHint
+                                 | Qt::WindowDoesNotAcceptFocus | Qt::WindowTransparentForInput);
+        autogenGl->setAttribute(Qt::WA_DontShowOnScreen, true);
+        autogenGl->setAttribute(Qt::WA_ShowWithoutActivating, true);
+        autogenGl->setAttribute(Qt::WA_QuitOnClose, false);
+        autogenGl->setWindowOpacity(0.0);
         autogenGl->setFixedSize(side);
+        autogenGl->move(-20000, -20000);
         autogenGl->show();
         QApplication::processEvents();
+        autogenGl->move(-20000, -20000);
     }
     else if (autogenGl->size() != side)
     {
         autogenGl->setFixedSize(side);
+        autogenGl->move(-20000, -20000);
         QApplication::processEvents();
     }
     return autogenGl;
@@ -469,7 +479,12 @@ void MainWindow::finishAutogen()
     ui->btnCreate->setEnabled(true);
     ui->btnRecreate->setEnabled(true);
     if (autogenGl)
+    {
         autogenGl->setPlanet(nullptr);
+        autogenGl->hide();
+        autogenGl->deleteLater();
+        autogenGl = nullptr;
+    }
     endLoadingWatch();
 }
 

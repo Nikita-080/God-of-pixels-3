@@ -10,10 +10,40 @@
 #include <QRadioButton>
 #include <QButtonGroup>
 #include <QPushButton>
-#include <QColorDialog>
+#include <QList>
 #include <QVBoxLayout>
 #include <QFont>
 #include <QSizePolicy>
+#include <QColorDialog>
+
+namespace {
+QColor averageRgb(const QList<QColor> &colors)
+{
+    qint64 r = 0;
+    qint64 g = 0;
+    qint64 b = 0;
+    int n = 0;
+    for (const QColor &c : colors)
+    {
+        if (!c.isValid())
+            continue;
+        r += c.red();
+        g += c.green();
+        b += c.blue();
+        ++n;
+    }
+    if (n == 0)
+        return QColor(66, 66, 66);
+    return QColor(int(r / n), int(g / n), int(b / n));
+}
+
+QColor scaleRgb(const QColor &c, double k)
+{
+    return QColor(qBound(0, qRound(c.red() * k), 255),
+                  qBound(0, qRound(c.green() * k), 255),
+                  qBound(0, qRound(c.blue() * k), 255));
+}
+}
 
 template <typename T>
 T *SettingsPanel::child(const char *name) const
@@ -24,6 +54,9 @@ T *SettingsPanel::child(const char *name) const
 SettingsPanel::SettingsPanel(QTabWidget *tabs, QWidget *parent)
     : QWidget(parent)
     , tabs(tabs)
+    , labelAvgColor(nullptr)
+    , btnAvgLand(nullptr)
+    , btnAvgWater(nullptr)
     , updating(false)
 {
     auto *layout = new QVBoxLayout(this);
@@ -158,6 +191,26 @@ SettingsPanel::SettingsPanel(QTabWidget *tabs, QWidget *parent)
     if (auto *slider = child<QSlider>("sliderCloudQuality"))
         slider->setRange(1, 6);
 
+    if (QWidget *colorTab = child<QWidget>("tab_3"))
+    {
+        labelAvgColor = new QLabel(colorTab);
+        labelAvgColor->setGeometry(290, 40, 80, 31);
+        labelAvgColor->setFont(QFont(QStringLiteral("Consolas")));
+        labelAvgColor->setAlignment(Qt::AlignCenter);
+        btnAvgLand = new QPushButton(colorTab);
+        btnAvgLand->setObjectName(QStringLiteral("btnAvgLand"));
+        btnAvgLand->setGeometry(310, 75, 40, 220);
+        btnAvgWater = new QPushButton(colorTab);
+        btnAvgWater->setObjectName(QStringLiteral("btnAvgWater"));
+        btnAvgWater->setGeometry(310, 300, 40, 85);
+        labelAvgColor->show();
+        btnAvgLand->show();
+        btnAvgWater->show();
+        const QRect bounds = colorTab->childrenRect();
+        colorTab->setMinimumSize(qMax(bounds.right() + 12, 380),
+                                 qMax(bounds.bottom() + 12, 500));
+    }
+
     const char *valueSliders[] = {
         "sliderWorldSize", "sliderRandomness", "sliderTemperature", "sliderShine",
         "sliderCloudSize", "sliderCloudQuality", "sliderCloudTransparent",
@@ -199,9 +252,35 @@ SettingsPanel::SettingsPanel(QTabWidget *tabs, QWidget *parent)
             if (!color.isValid())
                 return;
             ColorSwatch::setColor(b, color);
+            refreshAverageSwatches();
             notify(b == btnColorCiv);
         });
     }
+    if (btnAvgLand)
+    {
+        connect(btnAvgLand, &QPushButton::clicked, this, [this]() {
+            const QColor current = ColorSwatch::color(btnAvgLand);
+            const QColor color = QColorDialog::getColor(current, nullptr);
+            if (!color.isValid())
+                return;
+            applyLandFromAverage(color);
+            refreshAverageSwatches();
+            notify(false);
+        });
+    }
+    if (btnAvgWater)
+    {
+        connect(btnAvgWater, &QPushButton::clicked, this, [this]() {
+            const QColor current = ColorSwatch::color(btnAvgWater);
+            const QColor color = QColorDialog::getColor(current, nullptr);
+            if (!color.isValid())
+                return;
+            applyWaterFromAverage(color);
+            refreshAverageSwatches();
+            notify(false);
+        });
+    }
+    refreshAverageSwatches();
 
     wireLiveUpdates();
     updateAlgoEnabled();
@@ -432,6 +511,7 @@ void SettingsPanel::push(const PlanetSettings &s)
     sliderRingIntensity->setValue(s.ring_intensity);
     sliderPolarLat->setValue(s.polar_lat);
     sliderPolarLon->setValue(s.polar_lon);
+    refreshAverageSwatches();
     updateAlgoEnabled();
     updating = false;
 }
@@ -452,4 +532,42 @@ void SettingsPanel::retranslate()
         checkCiv->setText(QCoreApplication::translate("MainWindow", "Intelligence"));
     if (btnColorCiv)
         btnColorCiv->setText(QCoreApplication::translate("MainWindow", "Color"));
+    if (labelAvgColor)
+        labelAvgColor->setText(QCoreApplication::translate("MainWindow", "Average"));
+}
+
+void SettingsPanel::refreshAverageSwatches()
+{
+    if (btnAvgLand)
+    {
+        ColorSwatch::setColor(btnAvgLand, averageRgb({
+            ColorSwatch::color(child<QPushButton>("btnColorIce")),
+            ColorSwatch::color(child<QPushButton>("btnColorRock")),
+            ColorSwatch::color(child<QPushButton>("btnColorMountain")),
+            ColorSwatch::color(child<QPushButton>("btnColorPlain")),
+            ColorSwatch::color(child<QPushButton>("btnColorBeach"))
+        }));
+    }
+    if (btnAvgWater)
+    {
+        ColorSwatch::setColor(btnAvgWater, averageRgb({
+            ColorSwatch::color(child<QPushButton>("btnColorShallow")),
+            ColorSwatch::color(child<QPushButton>("btnColorOcean"))
+        }));
+    }
+}
+
+void SettingsPanel::applyLandFromAverage(const QColor &center)
+{
+    ColorSwatch::setColor(child<QPushButton>("btnColorIce"), scaleRgb(center, 0.70));
+    ColorSwatch::setColor(child<QPushButton>("btnColorRock"), scaleRgb(center, 0.85));
+    ColorSwatch::setColor(child<QPushButton>("btnColorMountain"), scaleRgb(center, 1.00));
+    ColorSwatch::setColor(child<QPushButton>("btnColorPlain"), scaleRgb(center, 1.15));
+    ColorSwatch::setColor(child<QPushButton>("btnColorBeach"), scaleRgb(center, 1.30));
+}
+
+void SettingsPanel::applyWaterFromAverage(const QColor &center)
+{
+    ColorSwatch::setColor(child<QPushButton>("btnColorShallow"), scaleRgb(center, 1.18));
+    ColorSwatch::setColor(child<QPushButton>("btnColorOcean"), scaleRgb(center, 0.82));
 }

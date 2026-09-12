@@ -5,6 +5,22 @@ QLabel, QGroupBox, QRadioButton, QCheckBox {
     color: rgb(110, 170, 200);
     background-color: transparent;
 }
+QLabel:disabled, QGroupBox:disabled, QGroupBox::title:disabled, QRadioButton:disabled, QCheckBox:disabled {
+    color: rgb(55, 75, 85);
+}
+QGroupBox:disabled {
+    background-color: rgb(10, 10, 10);
+}
+QLineEdit:disabled {
+    color: rgb(70, 95, 85);
+    background-color: rgb(16, 16, 16);
+    border-color: rgb(45, 65, 75);
+}
+QPushButton:disabled {
+    color: rgb(55, 75, 85);
+    background-color: rgb(12, 12, 12);
+    border-color: rgb(45, 65, 75);
+}
 QSlider::groove:horizontal {
     height: 6px;
     background: rgb(50, 50, 50);

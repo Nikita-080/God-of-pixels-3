@@ -1,13 +1,15 @@
 #include "windowsettings.h"
 #include "ui_windowsettings.h"
 #include <QFile>
-#include <QTextStream>
 #include <QCheckBox>
 #include <QFormLayout>
-#include <QGroupBox>
 #include <QFileDialog>
 #include <QMessageBox>
-#include <QRadioButton>
+#include <QLineEdit>
+#include <QPushButton>
+#include <QLabel>
+#include <QFont>
+#include <QRegExp>
 #include "appsettings.h"
 
 windowsettings::windowsettings(const QString &language, QWidget *parent)
@@ -16,31 +18,87 @@ windowsettings::windowsettings(const QString &language, QWidget *parent)
 {
     ui->setupUi(this);
     setWindowTitle(tr("Autogen"));
+    setStyleSheet(QStringLiteral(
+        "#groupBox:disabled, #groupBox_2:disabled {"
+        "  background-color: rgb(10, 10, 10);"
+        "}"
+        "#groupBox QLabel, #groupBox_2 QLabel, QLabel#label_4 {"
+        "  color: rgb(110, 170, 200);"
+        "}"
+        "#groupBox:disabled QLabel, #groupBox_2:disabled QLabel,"
+        "#groupBox QLabel:disabled, #groupBox_2 QLabel:disabled {"
+        "  color: rgb(55, 75, 85);"
+        "}"
+        "QLineEdit {"
+        "  color: rgb(0, 255, 127);"
+        "  background-color: rgb(0, 0, 0);"
+        "  border-width: 3px;"
+        "  border-style: solid;"
+        "  border-color: rgb(110, 170, 200);"
+        "}"
+        "QLineEdit:disabled {"
+        "  color: rgb(80, 100, 90);"
+        "  background-color: rgb(16, 16, 16);"
+        "  border-color: rgb(45, 65, 75);"
+        "}"
+        "QPushButton {"
+        "  color: rgb(110, 170, 200);"
+        "  background-color: rgb(0, 0, 0);"
+        "  border-width: 3px;"
+        "  border-style: solid;"
+        "  border-color: rgb(110, 170, 200);"
+        "}"
+        "QPushButton:disabled {"
+        "  color: rgb(55, 75, 85);"
+        "  background-color: rgb(12, 12, 12);"
+        "  border-color: rgb(45, 65, 75);"
+        "}"
+        "QRadioButton { color: rgb(110, 170, 200); }"
+        "QCheckBox { color: rgb(110, 170, 200); }"));
+
+    for (QLineEdit *edit : findChildren<QLineEdit *>())
+        edit->setStyleSheet(QString());
+    for (QPushButton *btn : findChildren<QPushButton *>())
+        btn->setStyleSheet(QString());
 
     QFormLayout *formLayout = new QFormLayout();
-    QGroupBox *groupBox = new QGroupBox();
+    QWidget *flagsHost = new QWidget;
 
     const QString path = (language == "ru")
                              ? QString(":/txt_files/res/txt_files/randomsettings_ru.txt")
                              : QString(":/txt_files/res/txt_files/randomsettings_en.txt");
     QFile file(path);
     file.open(QIODevice::ReadOnly);
-    QTextStream dat(&file);
+    QByteArray bytes = file.readAll();
+    file.close();
+    if (bytes.startsWith("\xEF\xBB\xBF"))
+        bytes = bytes.mid(3);
+    const QStringList labels = QString::fromUtf8(bytes).split(QRegExp("\\r?\\n"), Qt::SkipEmptyParts);
+    const QColor accent(110, 170, 200);
     QPalette palette;
-    palette.setColor(QPalette::WindowText, QColor(110, 170, 200));
+    palette.setColor(QPalette::WindowText, accent);
+    palette.setColor(QPalette::ButtonText, accent);
+    palette.setColor(QPalette::Text, accent);
+    const QFont checkFont(QStringLiteral("Consolas"), 12);
+    const QString checkQss = QStringLiteral(
+        "QCheckBox { color: rgb(110, 170, 200); background-color: transparent; }");
+    flagsHost->setStyleSheet(checkQss);
 
-    while (!dat.atEnd())
+    for (QString line : labels)
     {
-        QString line = dat.readLine();
+        line = line.trimmed();
+        if (line.isEmpty())
+            continue;
         QCheckBox *box = new QCheckBox(line);
+        box->setFont(checkFont);
         box->setPalette(palette);
+        box->setStyleSheet(checkQss);
         formLayout->addRow(box);
         rndarr.append(box);
     }
-    file.close();
 
-    groupBox->setLayout(formLayout);
-    ui->scrollArea->setWidget(groupBox);
+    flagsHost->setLayout(formLayout);
+    ui->scrollArea->setWidget(flagsHost);
     ui->scrollArea->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
     ui->radioButton->setChecked(true);
     ui->groupBox_2->setEnabled(false);
@@ -53,6 +111,7 @@ windowsettings::windowsettings(const QString &language, QWidget *parent)
     connect(ui->pushButton_2, &QPushButton::clicked, this, &windowsettings::AskDir);
     connect(ui->pushButton_5, &QPushButton::clicked, this, &windowsettings::ButtonCancel);
     connect(ui->pushButton_6, &QPushButton::clicked, this, &windowsettings::EndWindow);
+    ChangeType();
 }
 
 AutoGenSettings windowsettings::settings() const
@@ -142,6 +201,12 @@ void windowsettings::ChangeType()
     const bool collage = ui->radioButton->isChecked();
     ui->groupBox->setEnabled(collage);
     ui->groupBox_2->setEnabled(!collage);
+    const QString on = QStringLiteral("color: rgb(110, 170, 200);");
+    const QString off = QStringLiteral("color: rgb(55, 75, 85);");
+    for (QLabel *lab : ui->groupBox->findChildren<QLabel *>())
+        lab->setStyleSheet(collage ? on : off);
+    for (QLabel *lab : ui->groupBox_2->findChildren<QLabel *>())
+        lab->setStyleSheet(collage ? off : on);
 }
 
 windowsettings::~windowsettings()
