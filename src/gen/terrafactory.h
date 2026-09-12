@@ -3,6 +3,7 @@
 
 #include <QVector>
 #include <QRandomGenerator>
+#include "spheremath.h"
 
 class TerraFactory
 {
@@ -16,6 +17,7 @@ private:
     int h;
     int seed;
     QRandomGenerator rnd;
+    QVector<SphereVec3> xyz;
     QVector<QVector<double>> makeZero() const;
 };
 

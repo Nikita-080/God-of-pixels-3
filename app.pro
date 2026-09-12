@@ -5,47 +5,65 @@ CONFIG += c++11
 TARGET = GodOfPixels3
 TEMPLATE = app
 
+INCLUDEPATH += \
+    $$PWD/src \
+    $$PWD/src/app \
+    $$PWD/src/ui \
+    $$PWD/src/planet \
+    $$PWD/src/gen \
+    $$PWD/src/render
+
 SOURCES += \
-    autogensettings.cpp \
-    cloudfactory.cpp \
-    colorswatch.cpp \
-    facts.cpp \
-    main.cpp \
-    mainwindow.cpp \
-    multislider.cpp \
-    noise3d.cpp \
-    planet.cpp \
-    planetglwidget.cpp \
-    planetsettings.cpp \
-    previewpanel.cpp \
-    settingspanel.cpp \
-    terrafactory.cpp \
-    windowsettings.cpp
+    src/app/main.cpp \
+    src/app/mainwindow.cpp \
+    src/ui/autogensettings.cpp \
+    src/ui/colorswatch.cpp \
+    src/ui/multislider.cpp \
+    src/ui/previewpanel.cpp \
+    src/ui/settingspanel.cpp \
+    src/ui/windowsettings.cpp \
+    src/planet/planet.cpp \
+    src/planet/planet_assets.cpp \
+    src/planet/planet_cards.cpp \
+    src/planet/planet_climate.cpp \
+    src/planet/planet_clouds.cpp \
+    src/planet/planet_life.cpp \
+    src/planet/planet_name.cpp \
+    src/planet/planet_rings.cpp \
+    src/planet/planet_surface.cpp \
+    src/planet/planet_terrain.cpp \
+    src/gen/cloudfactory.cpp \
+    src/gen/facts.cpp \
+    src/gen/noise3d.cpp \
+    src/gen/planetsettings.cpp \
+    src/gen/terrafactory.cpp \
+    src/render/planetglwidget.cpp
 
 HEADERS += \
-    appsettings.h \
-    autogensettings.h \
-    cloudfactory.h \
-    colorswatch.h \
-    facts.h \
-    global.h \
-    mainwindow.h \
-    multislider.h \
-    noise3d.h \
-    planet.h \
-    planetglwidget.h \
-    planetsettings.h \
-    previewpanel.h \
-    settingspanel.h \
-    spheremath.h \
-    terrafactory.h \
-    windowsettings.h
+    src/app/appsettings.h \
+    src/app/global.h \
+    src/app/mainwindow.h \
+    src/ui/autogensettings.h \
+    src/ui/colorswatch.h \
+    src/ui/multislider.h \
+    src/ui/previewpanel.h \
+    src/ui/settingspanel.h \
+    src/ui/windowsettings.h \
+    src/planet/planet.h \
+    src/planet/planet_p.h \
+    src/gen/cloudfactory.h \
+    src/gen/facts.h \
+    src/gen/noise3d.h \
+    src/gen/planetsettings.h \
+    src/gen/spheremath.h \
+    src/gen/terrafactory.h \
+    src/render/planetglwidget.h
 
-TRANSLATIONS += QtLanguage_ru.ts
+TRANSLATIONS += translations/QtLanguage_ru.ts
 
 FORMS += \
-    mainwindow.ui \
-    windowsettings.ui
+    src/app/mainwindow.ui \
+    src/ui/windowsettings.ui
 
 RESOURCES += \
     resources.qrc

@@ -1,7 +1,6 @@
 #include "noise3d.h"
 #include <QtMath>
 #include <QRandomGenerator>
-#include <QtMath>
 
 Noise3D::Noise3D(int seed)
 {

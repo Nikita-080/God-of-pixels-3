@@ -106,7 +106,7 @@ public:
     void FinalImage();
     void ImagesScale();
     void Generate();
-    QImage ImageReport(QVector<QVector<double>> data, QColor lowcolor, QColor highcolor);
+    QImage ImageReport(const QVector<QVector<double>> &data, QColor lowcolor, QColor highcolor);
     void SetSeed(int value = 0);
     SphereVec3 TexelXYZ(int x, int y) const;
     double ArcPolarDistance(int x, int y) const;
@@ -115,7 +115,7 @@ public:
     Planet();
 
 private:
-    QChar char2char(QChar, QVector<QVector<int>>);
+    QChar char2char(QChar, const QVector<QVector<int>> &);
     QString Name_gop2();
     QString Name_readable();
     QString Name_random();
@@ -124,7 +124,7 @@ private:
     QColor LowerColor(QColor color, double koef);
     int RAND(int a, int b);
     QString Resources();
-    bool Collis(int, int, QVector<QVector<int>>);
+    bool Collis(int, int, const QVector<QVector<int>> &);
     void SystemMap_0star();
     void SystemMap_1star();
     void SystemMap_2star();

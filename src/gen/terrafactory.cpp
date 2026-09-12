@@ -1,6 +1,5 @@
 #include "terrafactory.h"
 #include "noise3d.h"
-#include "spheremath.h"
 #include <QtMath>
 
 TerraFactory::TerraFactory(int width, int height, int seed)
@@ -9,6 +8,12 @@ TerraFactory::TerraFactory(int width, int height, int seed)
     , seed(seed)
 {
     rnd.seed(static_cast<quint32>(seed));
+    xyz.resize(w * h);
+    for (int x = 0; x < w; ++x)
+    {
+        for (int y = 0; y < h; ++y)
+            xyz[x * h + y] = equirectToSphere(x, y, w, h);
+    }
 }
 
 QVector<QVector<double>> TerraFactory::makeZero() const
@@ -30,7 +35,7 @@ QVector<QVector<double>> TerraFactory::sphericalNoise(double amplitude)
     {
         for (int y = 0; y < h; ++y)
         {
-            const SphereVec3 p = equirectToSphere(x, y, w, h);
+            const SphereVec3 &p = xyz[x * h + y];
             m[x][y] = n.fbm(p.x * freq, p.y * freq, p.z * freq, octaves);
         }
     }
@@ -51,7 +56,7 @@ QVector<QVector<double>> TerraFactory::sphericalFault(int iterations)
         {
             for (int y = 0; y < h; ++y)
             {
-                const SphereVec3 p = equirectToSphere(x, y, w, h);
+                const SphereVec3 &p = xyz[x * h + y];
                 m[x][y] += (sphereDot(n, p) > 0.0) ? 1.0 : -1.0;
             }
         }
