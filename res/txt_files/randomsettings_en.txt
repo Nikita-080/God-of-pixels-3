@@ -14,8 +14,8 @@ ocean color
 noise
 gradient
 is plant
-lighting
-light point
+star size
+star position
 name algorithm
 is clouds
 cloud size
@@ -37,3 +37,6 @@ ring intensity
 intelligence
 civilization color
 seismicity
+has star
+stars
+spectrum

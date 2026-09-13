@@ -20,5 +20,6 @@ struct MineralSalt
 };
 
 const QVector<MineralSalt> &planetMinerals();
+void planetPaintTagCard(class Planet &planet);
 
 #endif

@@ -78,6 +78,8 @@ void Planet::Plant()
     if (!s.is_plant or !(water_level > 0) or !s.is_atmo)
         return;
     plant_pixel_count = 0;
+    const double keep = s.parLight() * (1.0 - s.hazardLight());
+    rnd.seed(static_cast<quint32>(seed) ^ 0x51A2u);
     const QImage &diagram = planetCachedImage(s.is_gradient
         ? QStringLiteral(":/images/res/images/plantmatrixblur.png")
         : QStringLiteral(":/images/res/images/plantmatrix.png"));
@@ -105,6 +107,8 @@ void Planet::Plant()
                         if (min < 11)
                             color = TransparentColor(QColor::fromRgb(line[i]), color, min / 10);
                     }
+                    if (rnd.generateDouble() > keep)
+                        continue;
                     line[i] = color.rgb();
                     plant_pixel_count++;
                 }

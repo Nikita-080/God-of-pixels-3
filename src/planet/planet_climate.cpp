@@ -70,7 +70,7 @@ void Planet::TMapCreating()
             r_w *= 31.6;
             double T = 56 * angle_sin - 28;
             T -= 0.6 * (r_w) / 100;
-            T += s.temperature - 15;
+            T += s.effectiveTemperature() - 15;
             t_map[i][k] = T;
         }
     }

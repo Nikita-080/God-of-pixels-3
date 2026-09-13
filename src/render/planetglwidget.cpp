@@ -1,6 +1,8 @@
 #include "planetglwidget.h"
 #include "planet.h"
+#include "starspectrum.h"
 #include <QMouseEvent>
+#include <QRandomGenerator>
 #include <QTimer>
 #include <QWheelEvent>
 #include <QQuaternion>
@@ -37,7 +39,8 @@ static const char *kPlanetFrag =
     "uniform sampler2D uAlbedo;\n"
     "uniform vec3 uLight;\n"
     "uniform vec3 uCam;\n"
-    "uniform float uShine;\n"
+    "uniform float uLightI;\n"
+    "uniform vec3 uLightColor;\n"
     "uniform float uFillLight;\n"
     "varying vec3 vWorld;\n"
     "varying vec3 vNormal;\n"
@@ -46,13 +49,13 @@ static const char *kPlanetFrag =
     "  vec3 n = normalize(vNormal);\n"
     "  vec3 l = normalize(uLight);\n"
     "  vec3 viewDir = normalize(uCam - vWorld);\n"
-    "  float mainI = uShine * 0.1 + 0.5;\n"
     "  float fillI = 0.3 * 0.5;\n"
-    "  float lit = max(dot(n, l), 0.0) * mainI;\n"
+    "  vec3 tint = uLightI > 0.001 ? uLightColor : vec3(1.0);\n"
+    "  float lit = max(dot(n, l), 0.0) * uLightI;\n"
     "  if (uFillLight > 0.5)\n"
     "    lit += max(dot(n, viewDir), 0.0) * fillI;\n"
     "  vec3 albedo = texture2D(uAlbedo, vUv).rgb;\n"
-    "  vec3 col = albedo * lit;\n"
+    "  vec3 col = albedo * lit * tint;\n"
     "  gl_FragColor = vec4(col, 1.0);\n"
     "}\n";
 
@@ -79,7 +82,8 @@ static const char *kCloudFrag =
     "uniform sampler2D uClouds;\n"
     "uniform vec3 uLight;\n"
     "uniform vec3 uCam;\n"
-    "uniform float uShine;\n"
+    "uniform float uLightI;\n"
+    "uniform vec3 uLightColor;\n"
     "uniform float uFillLight;\n"
     "uniform float uCloudAlpha;\n"
     "varying vec3 vWorld;\n"
@@ -92,11 +96,12 @@ static const char *kCloudFrag =
     "  vec3 n = normalize(vNormal);\n"
     "  vec3 l = normalize(uLight);\n"
     "  vec3 viewDir = normalize(uCam - vWorld);\n"
+    "  vec3 tint = uLightI > 0.001 ? uLightColor : vec3(1.0);\n"
     "  float wrap = max(dot(n, l) * 0.5 + 0.5, 0.0);\n"
-    "  float lit = wrap * (uShine * 0.08 + 0.55);\n"
+    "  float lit = wrap * uLightI;\n"
     "  if (uFillLight > 0.5)\n"
     "    lit += max(dot(n, viewDir), 0.0) * 0.2;\n"
-    "  gl_FragColor = vec4(c.rgb * lit, a);\n"
+    "  gl_FragColor = vec4(c.rgb * lit * tint, a);\n"
     "}\n";
 
 static const char *kAtmoVert =
@@ -119,7 +124,8 @@ static const char *kAtmoFrag =
     "uniform vec3 uLight;\n"
     "uniform vec3 uCam;\n"
     "uniform vec3 uAtmoColor;\n"
-    "uniform float uShine;\n"
+    "uniform float uLightI;\n"
+    "uniform vec3 uLightColor;\n"
     "uniform float uFillLight;\n"
     "uniform float uAtmo;\n"
     "uniform float uAtmoSize;\n"
@@ -132,11 +138,11 @@ static const char *kAtmoFrag =
     "  float ndv = max(dot(n, viewDir), 0.0);\n"
     "  float limb = pow(1.0 - ndv, mix(4.8, 0.35, uAtmoSize));\n"
     "  float haze = mix(limb, 1.0, uAtmo) * uAtmo;\n"
-    "  float mainI = uShine * 0.1 + 0.5;\n"
-    "  float lit = max(dot(n, l), 0.0) * mainI;\n"
+    "  vec3 tint = uLightI > 0.001 ? uLightColor : vec3(1.0);\n"
+    "  float lit = max(dot(n, l), 0.0) * uLightI;\n"
     "  if (uFillLight > 0.5)\n"
     "    lit += max(dot(n, viewDir), 0.0) * 0.15;\n"
-    "  vec3 col = uAtmoColor * (0.4 + 0.6 * lit);\n"
+    "  vec3 col = uAtmoColor * (0.4 + 0.6 * lit) * tint;\n"
     "  gl_FragColor = vec4(col, haze);\n"
     "}\n";
 
@@ -214,6 +220,39 @@ static const char *kCityFrag =
     "  gl_FragColor = vec4(uColor, a);\n"
     "}\n";
 
+static const char *kStarVert =
+    "#version 120\n"
+    "attribute vec3 aPos;\n"
+    "uniform mat4 uMvp;\n"
+    "void main() {\n"
+    "  gl_Position = uMvp * vec4(aPos, 1.0);\n"
+    "}\n";
+
+static const char *kStarFrag =
+    "#version 120\n"
+    "uniform vec3 uColor;\n"
+    "uniform float uAlpha;\n"
+    "void main() {\n"
+    "  gl_FragColor = vec4(uColor, uAlpha);\n"
+    "}\n";
+
+static const char *kStarfieldVert =
+    "#version 120\n"
+    "attribute vec3 aPos;\n"
+    "uniform mat4 uMvp;\n"
+    "void main() {\n"
+    "  gl_Position = uMvp * vec4(aPos, 1.0);\n"
+    "  gl_PointSize = 1.8;\n"
+    "}\n";
+
+static const char *kStarfieldFrag =
+    "#version 120\n"
+    "void main() {\n"
+    "  vec2 d = gl_PointCoord - vec2(0.5);\n"
+    "  float a = exp(-dot(d, d) * 18.0);\n"
+    "  gl_FragColor = vec4(0.9, 0.92, 1.0, a);\n"
+    "}\n";
+
 PlanetGLWidget::PlanetGLWidget(QWidget *parent)
     : QOpenGLWidget(parent)
     , planet(nullptr)
@@ -222,10 +261,12 @@ PlanetGLWidget::PlanetGLWidget(QWidget *parent)
     , rockVbo(QOpenGLBuffer::VertexBuffer)
     , blitVbo(QOpenGLBuffer::VertexBuffer)
     , cityVbo(QOpenGLBuffer::VertexBuffer)
+    , starfieldVbo(QOpenGLBuffer::VertexBuffer)
     , sphereVertexCount(0)
     , ringVertexCount(0)
     , rockVertexCount(0)
     , cityVertexCount(0)
+    , starfieldCount(0)
     , azimuth(kDefaultAzimuth)
     , elevation(kDefaultElevation)
     , cameraDistance(defaultCameraDistance())
@@ -252,6 +293,7 @@ PlanetGLWidget::~PlanetGLWidget()
     rockVbo.destroy();
     blitVbo.destroy();
     cityVbo.destroy();
+    starfieldVbo.destroy();
     albedo.reset();
     clouds.reset();
     doneCurrent();
@@ -265,6 +307,7 @@ void PlanetGLWidget::setPlanet(const Planet *p)
         refreshTextures();
         rebuildRings();
         rebuildCities();
+        rebuildStarfield();
         refreshAppearance();
         update();
     }
@@ -385,10 +428,21 @@ void PlanetGLWidget::initializeGL()
     cityProg.bindAttributeLocation("aPos", 0);
     cityProg.link();
 
+    starProg.addShaderFromSourceCode(QOpenGLShader::Vertex, kStarVert);
+    starProg.addShaderFromSourceCode(QOpenGLShader::Fragment, kStarFrag);
+    starProg.bindAttributeLocation("aPos", 0);
+    starProg.link();
+
+    starfieldProg.addShaderFromSourceCode(QOpenGLShader::Vertex, kStarfieldVert);
+    starfieldProg.addShaderFromSourceCode(QOpenGLShader::Fragment, kStarfieldFrag);
+    starfieldProg.bindAttributeLocation("aPos", 0);
+    starfieldProg.link();
+
     buildSphere(96, 64);
     rebuildRings();
     buildBlitQuad();
     ready = true;
+    rebuildStarfield();
     if (planet)
         refreshTextures();
 }
@@ -634,13 +688,18 @@ void PlanetGLWidget::drawScene(const QMatrix4x4 &proj, const QMatrix4x4 &view, c
     QVector3D light(float(planet->x_shine), float(planet->y_shine), float(planet->z_shine));
     if (light.lengthSquared() < 1e-8f)
         light = QVector3D(0.3f, 0.2f, 1.0f);
+    const float lightI = float(planet->s.visibleLight());
+    const QVector3D lightCol = starLightRgb(planet->s.star_spectrum);
+
+    drawStarAndSky(proj, view, light);
 
     planetProg.bind();
     planetProg.setUniformValue("uMvp", mvp);
     planetProg.setUniformValue("uModel", model);
     planetProg.setUniformValue("uLight", light);
     planetProg.setUniformValue("uCam", cameraPos());
-    planetProg.setUniformValue("uShine", float(planet->s.shine));
+    planetProg.setUniformValue("uLightI", lightI);
+    planetProg.setUniformValue("uLightColor", lightCol);
     planetProg.setUniformValue("uFillLight", planet->s.is_fill_light ? 1.0f : 0.0f);
     if (albedo)
     {
@@ -701,7 +760,8 @@ void PlanetGLWidget::drawScene(const QMatrix4x4 &proj, const QMatrix4x4 &view, c
         cloudProg.setUniformValue("uModel", cloudModel);
         cloudProg.setUniformValue("uLight", light);
         cloudProg.setUniformValue("uCam", cameraPos());
-        cloudProg.setUniformValue("uShine", float(planet->s.shine));
+        cloudProg.setUniformValue("uLightI", lightI);
+        cloudProg.setUniformValue("uLightColor", lightCol);
         cloudProg.setUniformValue("uFillLight", planet->s.is_fill_light ? 1.0f : 0.0f);
         cloudProg.setUniformValue("uCloudAlpha", float(qBound(0.0, 1.0 - 0.1 * planet->s.cloud_transparent, 1.0)));
         clouds->bind(0);
@@ -738,7 +798,8 @@ void PlanetGLWidget::drawScene(const QMatrix4x4 &proj, const QMatrix4x4 &view, c
         atmoProg.setUniformValue("uAtmoColor", QVector3D(planet->s.atmo_color.redF(),
                                                          planet->s.atmo_color.greenF(),
                                                          planet->s.atmo_color.blueF()));
-        atmoProg.setUniformValue("uShine", float(planet->s.shine));
+        atmoProg.setUniformValue("uLightI", lightI);
+        atmoProg.setUniformValue("uLightColor", lightCol);
         atmoProg.setUniformValue("uFillLight", planet->s.is_fill_light ? 1.0f : 0.0f);
         atmoProg.setUniformValue("uAtmo", cover);
         atmoProg.setUniformValue("uAtmoSize", sizeK);
@@ -795,6 +856,96 @@ void PlanetGLWidget::drawScene(const QMatrix4x4 &proj, const QMatrix4x4 &view, c
         glDisable(GL_BLEND);
         glEnable(GL_CULL_FACE);
     }
+
+    if (planet->s.has_star && sphereVertexCount > 0 && sphereVbo.isCreated())
+    {
+        QVector3D dir = light.normalized();
+        const float radius = 0.04f + 0.38f * (qBound(0, planet->s.star_size, 5) / 5.0f);
+        QMatrix4x4 starModel;
+        starModel.translate(dir * 6.0f);
+        starModel.scale(radius);
+        QMatrix4x4 haloModel = starModel;
+        haloModel.scale(1.85f);
+#ifndef GL_POINT_SPRITE
+#define GL_POINT_SPRITE 0x8861
+#endif
+        glEnable(GL_BLEND);
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+        glDepthMask(GL_FALSE);
+        starProg.bind();
+        starProg.setUniformValue("uMvp", proj * view * haloModel);
+        starProg.setUniformValue("uColor", lightCol);
+        starProg.setUniformValue("uAlpha", 0.35f);
+        sphereVbo.bind();
+        starProg.enableAttributeArray(0);
+        starProg.setAttributeBuffer(0, GL_FLOAT, 0, 3, 8 * sizeof(float));
+        glDrawArrays(GL_TRIANGLES, 0, sphereVertexCount);
+        glDepthMask(GL_TRUE);
+        glDisable(GL_BLEND);
+        starProg.setUniformValue("uMvp", proj * view * starModel);
+        starProg.setUniformValue("uAlpha", 1.0f);
+        glDrawArrays(GL_TRIANGLES, 0, sphereVertexCount);
+        sphereVbo.release();
+        starProg.release();
+    }
+}
+
+void PlanetGLWidget::rebuildStarfield()
+{
+    starfieldCount = 0;
+    if (!ready)
+        return;
+    makeCurrent();
+    const quint32 seed = planet ? quint32(planet->seed) : 1u;
+    QRandomGenerator rng(seed ^ 0x5A14u);
+    const int n = 900;
+    QVector<float> data;
+    data.reserve(n * 3);
+    for (int i = 0; i < n; ++i)
+    {
+        QVector3D p(float(rng.generateDouble() * 2.0 - 1.0),
+                    float(rng.generateDouble() * 2.0 - 1.0),
+                    float(rng.generateDouble() * 2.0 - 1.0));
+        if (p.lengthSquared() < 1e-6f)
+            p = QVector3D(0, 1, 0);
+        p.normalize();
+        p *= 16.0f;
+        data << p.x() << p.y() << p.z();
+    }
+    starfieldCount = n;
+    if (starfieldVbo.isCreated())
+        starfieldVbo.destroy();
+    starfieldVbo.create();
+    starfieldVbo.bind();
+    starfieldVbo.allocate(data.constData(), data.size() * int(sizeof(float)));
+    starfieldVbo.release();
+}
+
+void PlanetGLWidget::drawStarAndSky(const QMatrix4x4 &proj, const QMatrix4x4 &view, const QVector3D &)
+{
+    if (!planet || !planet->s.is_starfield || starfieldCount <= 0 || !starfieldVbo.isCreated())
+        return;
+#ifndef GL_POINT_SPRITE
+#define GL_POINT_SPRITE 0x8861
+#endif
+#ifndef GL_PROGRAM_POINT_SIZE
+#define GL_PROGRAM_POINT_SIZE 0x8642
+#endif
+    glDisable(GL_DEPTH_TEST);
+    glEnable(GL_PROGRAM_POINT_SIZE);
+    glEnable(GL_POINT_SPRITE);
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+    starfieldProg.bind();
+    starfieldProg.setUniformValue("uMvp", proj * view);
+    starfieldVbo.bind();
+    starfieldProg.enableAttributeArray(0);
+    starfieldProg.setAttributeBuffer(0, GL_FLOAT, 0, 3, 3 * sizeof(float));
+    glDrawArrays(GL_POINTS, 0, starfieldCount);
+    starfieldVbo.release();
+    starfieldProg.release();
+    glDisable(GL_BLEND);
+    glEnable(GL_DEPTH_TEST);
 }
 
 void PlanetGLWidget::paintGL()

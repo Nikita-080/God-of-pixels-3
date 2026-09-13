@@ -62,14 +62,15 @@ void Planet::Civilization()
         return a.score > b.score;
     });
 
-    const int maxCities = qBound(6, map_w / 6, 70);
+    const double lifeMul = 1.0 - s.hazardLight();
+    const int maxCities = qBound(0, qRound((qBound(6, map_w / 6, 70)) * lifeMul), 70);
     const int minDist2 = qMax(16, (map_w / 28) * (map_w / 28));
     QVector<QPoint> placed;
     for (const Cand &c : cand)
     {
         if (cities.size() >= maxCities)
             break;
-        if (rnd.generateDouble() > 0.28 * double(c.score) + 0.04)
+        if (rnd.generateDouble() > (0.28 * double(c.score) + 0.04) * lifeMul)
             continue;
         bool far = true;
         for (const QPoint &p : placed)
