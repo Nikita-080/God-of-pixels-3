@@ -9,8 +9,11 @@
 #include <QOpenGLTexture>
 #include <QMatrix4x4>
 #include <QVector3D>
+#include <QElapsedTimer>
 #include <QWheelEvent>
 #include <memory>
+
+class QTimer;
 
 class Planet;
 
@@ -48,6 +51,8 @@ private:
     QVector3D cameraPos() const;
     int currentViewRes() const;
     static float defaultCameraDistance();
+    void stopCameraReset();
+    void tickCameraReset();
 
     const Planet *planet;
     QOpenGLShaderProgram planetProg;
@@ -71,6 +76,12 @@ private:
     float azimuth;
     float elevation;
     float cameraDistance;
+    QTimer *camResetTimer;
+    QElapsedTimer camResetClock;
+    float camFromAz;
+    float camFromEl;
+    float camFromDist;
+    float camDeltaAz;
     bool dragging;
     QPoint lastPos;
     bool ready;

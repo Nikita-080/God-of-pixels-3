@@ -1,6 +1,7 @@
 #include "planetglwidget.h"
 #include "planet.h"
 #include <QMouseEvent>
+#include <QTimer>
 #include <QWheelEvent>
 #include <QQuaternion>
 #include <QtMath>
@@ -10,6 +11,7 @@ const float kFovDeg = 42.0f;
 const float kDefaultFill = 0.6f;
 const float kDefaultAzimuth = 0.0f;
 const float kDefaultElevation = 18.0f;
+const int kCameraResetMs = 1300;
 }
 
 static const char *kPlanetVert =
@@ -227,11 +229,18 @@ PlanetGLWidget::PlanetGLWidget(QWidget *parent)
     , azimuth(kDefaultAzimuth)
     , elevation(kDefaultElevation)
     , cameraDistance(defaultCameraDistance())
+    , camResetTimer(new QTimer(this))
+    , camFromAz(kDefaultAzimuth)
+    , camFromEl(kDefaultElevation)
+    , camFromDist(defaultCameraDistance())
+    , camDeltaAz(0.0f)
     , dragging(false)
     , ready(false)
 {
     setMinimumSize(257, 257);
     setFocusPolicy(Qt::WheelFocus);
+    camResetTimer->setInterval(16);
+    connect(camResetTimer, &QTimer::timeout, this, &PlanetGLWidget::tickCameraReset);
 }
 
 PlanetGLWidget::~PlanetGLWidget()
@@ -274,12 +283,52 @@ float PlanetGLWidget::defaultCameraDistance()
     return 1.0f / qSin(half);
 }
 
+void PlanetGLWidget::stopCameraReset()
+{
+    camResetTimer->stop();
+}
+
+void PlanetGLWidget::tickCameraReset()
+{
+    const float t = qBound(0.0f, float(camResetClock.elapsed()) / float(kCameraResetMs), 1.0f);
+    const float e = t * t * (3.0f - 2.0f * t);
+    azimuth = camFromAz + camDeltaAz * e;
+    elevation = camFromEl + (kDefaultElevation - camFromEl) * e;
+    cameraDistance = camFromDist + (defaultCameraDistance() - camFromDist) * e;
+    update();
+    if (t >= 1.0f)
+    {
+        azimuth = kDefaultAzimuth;
+        elevation = kDefaultElevation;
+        cameraDistance = defaultCameraDistance();
+        stopCameraReset();
+    }
+}
+
 void PlanetGLWidget::resetCamera()
 {
-    azimuth = kDefaultAzimuth;
-    elevation = kDefaultElevation;
-    cameraDistance = defaultCameraDistance();
-    update();
+    stopCameraReset();
+    camFromAz = azimuth;
+    camFromEl = elevation;
+    camFromDist = cameraDistance;
+    camDeltaAz = kDefaultAzimuth - camFromAz;
+    while (camDeltaAz > 180.0f)
+        camDeltaAz -= 360.0f;
+    while (camDeltaAz < -180.0f)
+        camDeltaAz += 360.0f;
+    if (qAbs(camDeltaAz) < 0.05f
+        && qAbs(camFromEl - kDefaultElevation) < 0.05f
+        && qAbs(camFromDist - defaultCameraDistance()) < 0.002f)
+    {
+        azimuth = kDefaultAzimuth;
+        elevation = kDefaultElevation;
+        cameraDistance = defaultCameraDistance();
+        update();
+        return;
+    }
+    camResetClock.start();
+    tickCameraReset();
+    camResetTimer->start();
 }
 
 QVector3D PlanetGLWidget::cameraPos() const
@@ -811,6 +860,7 @@ QImage PlanetGLWidget::captureView()
 
 void PlanetGLWidget::mousePressEvent(QMouseEvent *event)
 {
+    stopCameraReset();
     dragging = true;
     lastPos = event->pos();
 }
@@ -837,6 +887,7 @@ void PlanetGLWidget::wheelEvent(QWheelEvent *event)
     const float steps = float(event->angleDelta().y()) / 120.0f;
     if (qFuzzyIsNull(steps))
         return;
+    stopCameraReset();
     cameraDistance *= qPow(0.9f, steps);
     cameraDistance = qBound(1.25f, cameraDistance, 12.0f);
     update();
