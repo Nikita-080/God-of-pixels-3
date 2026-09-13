@@ -12,6 +12,7 @@ class QComboBox;
 class QCheckBox;
 class QRadioButton;
 class QPushButton;
+class SpectrumWidget;
 
 class SettingsPanel : public QWidget
 {
@@ -34,6 +35,7 @@ private:
     void refreshAverageSwatches();
     void applyLandFromAverage(const QColor &center);
     void applyWaterFromAverage(const QColor &center);
+    void updateStarDependentUi();
     template <typename T>
     T *child(const char *name) const;
 
@@ -43,7 +45,11 @@ private:
     QSlider *sliderShineLon;
     QSlider *sliderPolarLat;
     QSlider *sliderPolarLon;
+    QCheckBox *checkHasStar;
     QCheckBox *checkFillLight;
+    QCheckBox *checkStarfield;
+    SpectrumWidget *spectrumPreview;
+    QPushButton *btnSpectrum;
     QCheckBox *checkCiv;
     QPushButton *btnColorCiv;
     QRadioButton *radioRingGas;
@@ -53,6 +59,7 @@ private:
     QLabel *labelRingIntensity;
     QLabel *labelShineLatTitle;
     QLabel *labelShineLonTitle;
+    QLabel *labelStarSize;
     QLabel *labelPolarLatTitle;
     QLabel *labelPolarLonTitle;
     QLabel *labelAvgColor;

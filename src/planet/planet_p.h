@@ -20,6 +20,15 @@ struct MineralSalt
 };
 
 const QVector<MineralSalt> &planetMinerals();
+
+struct PlanetOre
+{
+    QString symbol;
+    qint64 area;
+    bool radioactive;
+};
+
+QVector<PlanetOre> planetOreInventory(const class Planet &planet);
 void planetPaintTagCard(class Planet &planet);
 
 #endif

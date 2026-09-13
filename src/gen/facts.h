@@ -7,9 +7,6 @@ class Facts
 public:
     Facts();
 public:
-    QString day;
-    QString year;
-    QString gravitation;
     int life;
     int water;
     int ice;
@@ -19,4 +16,4 @@ public:
     QString resources;
 };
 
-#endif // FACTS_H
+#endif

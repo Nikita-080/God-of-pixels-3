@@ -1,6 +1,7 @@
 #include <QtTest>
 #include "planet.h"
 #include "planetsettings.h"
+#include "starspectrum.h"
 #include "spheremath.h"
 #include "terrafactory.h"
 #include <QJsonObject>
@@ -26,10 +27,13 @@ static PlanetSettings testSettings()
     s.is_plant = false;
     s.is_civ = false;
     s.civ_color = QColor("#ffcc66");
-    s.shine = 5;
+    s.has_star = true;
+    s.star_size = 3;
     s.shine_lat = 25;
     s.shine_lon = 90;
     s.is_fill_light = true;
+    s.is_starfield = false;
+    s.star_spectrum = defaultStarSpectrum();
     s.polar_lat = 90;
     s.polar_lon = 0;
     s.name_algorithm = 3;
@@ -63,6 +67,7 @@ private slots:
     void sameSeedSameHeight();
     void noiseHasNoMeridianSeam();
     void sphericalFaultFinite();
+    void sameSeedSameTags();
 };
 
 void TestPlanet::transparentColorLerp()
@@ -82,6 +87,10 @@ void TestPlanet::jsonRoundTrip()
     QCOMPARE(b.structure, a.structure);
     QCOMPARE(b.true_structure.size(), a.true_structure.size());
     QCOMPARE(b.ice_color, a.ice_color);
+    QCOMPARE(b.has_star, a.has_star);
+    QCOMPARE(b.star_size, a.star_size);
+    QCOMPARE(b.star_spectrum, a.star_spectrum);
+    QCOMPARE(b.is_starfield, a.is_starfield);
     QCOMPARE(b.shine_lat, a.shine_lat);
     QCOMPARE(b.shine_lon, a.shine_lon);
     QCOMPARE(b.is_fill_light, a.is_fill_light);
@@ -138,6 +147,25 @@ void TestPlanet::sphericalFaultFinite()
     QVERIFY(!m.isEmpty());
     QVERIFY(!qIsNaN(m[0][0]));
     QVERIFY(!qIsInf(m[16][8]));
+}
+
+void TestPlanet::sameSeedSameTags()
+{
+    Planet a;
+    Planet b;
+    a.s = testSettings();
+    b.s = testSettings();
+    a.s.is_plant = true;
+    a.s.is_atmo = true;
+    b.s.is_plant = true;
+    b.s.is_atmo = true;
+    a.SetSeed(9090);
+    b.SetSeed(9090);
+    a.Generate();
+    b.Generate();
+    QCOMPARE(a.img_sys.size(), b.img_sys.size());
+    QCOMPARE(a.img_sys, b.img_sys);
+    QVERIFY(!a.img_sys.isNull());
 }
 
 QTEST_MAIN(TestPlanet)

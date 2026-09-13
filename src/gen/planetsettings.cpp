@@ -13,9 +13,13 @@ PlanetSettings::PlanetSettings()
 {
     QTime midnight(0,0,0);
     rnd.seed(midnight.secsTo(QTime::currentTime()));
+    has_star = true;
+    star_size = 3;
     shine_lat = 25;
     shine_lon = 90;
     is_fill_light = true;
+    is_starfield = false;
+    star_spectrum = defaultStarSpectrum();
     polar_lat = 90;
     polar_lon = 0;
     ring_material = 0;
@@ -64,10 +68,13 @@ QJsonObject PlanetSettings::JSON_serialize()
     jobject["is_plant"] = is_plant;
     jobject["is_civ"] = is_civ;
     jobject["civ_color"] = civ_color.name();
-    jobject["shine"] = shine;
+    jobject["has_star"] = has_star;
+    jobject["star_size"] = star_size;
     jobject["shine_lat"] = shine_lat;
     jobject["shine_lon"] = shine_lon;
     jobject["is_fill_light"] = is_fill_light;
+    jobject["is_starfield"] = is_starfield;
+    jobject["star_spectrum"] = VecToJson(star_spectrum);
     jobject["name_algorithm"] = name_algorithm;
     jobject["is_cloud"] = is_cloud;
     jobject["cloud_size"] = cloud_size;
@@ -127,10 +134,14 @@ bool PlanetSettings::JSON_deserialize(QJsonObject jobject)
             is_plant = jobject["is_plant"].toBool();
             is_civ = jobject.contains("is_civ") ? jobject["is_civ"].toBool() : false;
             civ_color = jobject.contains("civ_color") ? QColor(jobject["civ_color"].toString()) : QColor(QStringLiteral("#ffcc66"));
-            shine = jobject["shine"].toInt();
+            has_star = jobject["has_star"].toBool();
+            star_size = jobject["star_size"].toInt();
             shine_lat = jobject["shine_lat"].toInt();
             shine_lon = jobject["shine_lon"].toInt();
-            is_fill_light = jobject.contains("is_fill_light") ? jobject["is_fill_light"].toBool() : true;
+            is_fill_light = jobject["is_fill_light"].toBool();
+            is_starfield = jobject["is_starfield"].toBool();
+            star_spectrum = JsonToVec(jobject["star_spectrum"].toArray());
+            clampStarSpectrum(star_spectrum);
             name_algorithm = jobject["name_algorithm"].toInt();
             is_cloud = jobject["is_cloud"].toBool();
             cloud_size = jobject["cloud_size"].toInt();
@@ -215,7 +226,7 @@ void PlanetSettings::Random(const QVector<bool> &isRnd)
     if (on(13)) noise=RAND(1,100);
     if (on(14)) is_gradient=RAND(0,1);
     if (on(15)) is_plant=RAND(0,1);
-    if (on(16)) shine=RAND(0,5);
+    if (on(16)) star_size=RAND(0,5);
     if (on(17)) { shine_lat=RAND(-90,90); shine_lon=RAND(-180,180); }
     if (on(18)) name_algorithm=RAND(1,3);
     if (on(19)) is_cloud=RAND(0,1);
@@ -238,4 +249,32 @@ void PlanetSettings::Random(const QVector<bool> &isRnd)
     if (on(36)) is_civ=RAND(0,1);
     if (on(37)) civ_color=QColor(RAND(0,255),RAND(0,255),RAND(0,255));
     if (on(38)) seismicity=RAND(0,12);
+    if (on(39)) has_star=RAND(0,1);
+    if (on(40)) is_starfield=RAND(0,1);
+    if (on(41))
+    {
+        star_spectrum.resize(StarBandCount);
+        for (int i = 0; i < StarBandCount; ++i)
+            star_spectrum[i] = RAND(0, kStarBandMax);
+    }
+}
+
+int PlanetSettings::effectiveTemperature() const
+{
+    return has_star ? temperature : kStarTempMin;
+}
+
+double PlanetSettings::visibleLight() const
+{
+    return has_star ? starVisible(star_spectrum) : 0.0;
+}
+
+double PlanetSettings::parLight() const
+{
+    return has_star ? starPar(star_spectrum) : 0.0;
+}
+
+double PlanetSettings::hazardLight() const
+{
+    return has_star ? starHazard(star_spectrum) : 0.0;
 }

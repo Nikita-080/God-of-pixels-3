@@ -75,9 +75,9 @@ void Planet::ImageCreating()
 
 void Planet::Plant()
 {
+    plant_pixel_count = 0;
     if (!s.is_plant or !(water_level > 0) or !s.is_atmo)
         return;
-    plant_pixel_count = 0;
     const double keep = s.parLight() * (1.0 - s.hazardLight());
     rnd.seed(static_cast<quint32>(seed) ^ 0x51A2u);
     const QImage &diagram = planetCachedImage(s.is_gradient

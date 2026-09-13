@@ -166,6 +166,22 @@
         <translation>Заполняющий свет</translation>
     </message>
     <message>
+        <source>Star</source>
+        <translation>Звезда</translation>
+    </message>
+    <message>
+        <source>Size</source>
+        <translation>Размер</translation>
+    </message>
+    <message>
+        <source>Stars</source>
+        <translation>Звёзды</translation>
+    </message>
+    <message>
+        <source>Spectrum</source>
+        <translation>Спектр</translation>
+    </message>
+    <message>
         <source>Latitude</source>
         <translation>Широта</translation>
     </message>
@@ -610,6 +626,10 @@
         <translation>ресурсы    - </translation>
     </message>
     <message>
+        <source>spectrum   - </source>
+        <translation>спектр     - </translation>
+    </message>
+    <message>
         <location filename="planet.cpp" line="820"/>
         <source>life         </source>
         <translation>жизнь        </translation>
@@ -772,5 +792,234 @@
         <source>Number of images must be at least 1.</source>
         <translation>Количество изображений должно быть не меньше 1.</translation>
     </message>
+</context>
+<context>
+    <name>Spectrum</name>
+    <message>
+        <source>Spectrum</source>
+        <translation>Спектр</translation>
+    </message>
+    <message>
+        <source>Gamma</source>
+        <translation>Гамма</translation>
+    </message>
+    <message>
+        <source>X-ray</source>
+        <translation>Рентген</translation>
+    </message>
+    <message>
+        <source>UV</source>
+        <translation>УФ</translation>
+    </message>
+    <message>
+        <source>Red</source>
+        <translation>Красный</translation>
+    </message>
+    <message>
+        <source>Green</source>
+        <translation>Зелёный</translation>
+    </message>
+    <message>
+        <source>Blue</source>
+        <translation>Синий</translation>
+    </message>
+    <message>
+        <source>IR</source>
+        <translation>ИК</translation>
+    </message>
+    <message>
+        <source>Radio</source>
+        <translation>Радио</translation>
+    </message>
+</context>
+<context>
+    <name>PlanetTags</name>
+    <message><source>low radiation</source><translation>низкая радиация</translation></message>
+    <message><source>almost no radiation</source><translation>почти без радиации</translation></message>
+    <message><source>weak background</source><translation>слабый фон</translation></message>
+    <message><source>radiation</source><translation>радиация</translation></message>
+    <message><source>mild radiation</source><translation>слабая радиация</translation></message>
+    <message><source>trace radiation</source><translation>следы радиации</translation></message>
+    <message><source>raised radiation</source><translation>повышенная радиация</translation></message>
+    <message><source>hot isotopes</source><translation>горячие изотопы</translation></message>
+    <message><source>elevated background</source><translation>высокий фон</translation></message>
+    <message><source>dangerous radiation</source><translation>опасная радиация</translation></message>
+    <message><source>hard radiation</source><translation>жёсткая радиация</translation></message>
+    <message><source>lethal radiation</source><translation>смертельная радиация</translation></message>
+    <message><source>critical radiation</source><translation>критическая радиация</translation></message>
+    <message><source>unlivable radiation</source><translation>невыносимая радиация</translation></message>
+    <message><source>nuclear dusk</source><translation>ядерные сумерки</translation></message>
+    <message><source>arid</source><translation>засуха</translation></message>
+    <message><source>no seas</source><translation>нет морей</translation></message>
+    <message><source>desert world</source><translation>мир-пустыня</translation></message>
+    <message><source>dry crust</source><translation>сухая кора</translation></message>
+    <message><source>scarce water</source><translation>мало воды</translation></message>
+    <message><source>few lakes</source><translation>редкие озёра</translation></message>
+    <message><source>rare rain</source><translation>редкий дождь</translation></message>
+    <message><source>has water</source><translation>есть вода</translation></message>
+    <message><source>lakes and seas</source><translation>озёра и моря</translation></message>
+    <message><source>wet lowlands</source><translation>сырые низины</translation></message>
+    <message><source>much water</source><translation>много воды</translation></message>
+    <message><source>wide oceans</source><translation>широкие океаны</translation></message>
+    <message><source>water world</source><translation>водный мир</translation></message>
+    <message><source>global ocean</source><translation>глобальный океан</translation></message>
+    <message><source>almost no land</source><translation>почти нет суши</translation></message>
+    <message><source>ocean planet</source><translation>планета-океан</translation></message>
+    <message><source>ice-free</source><translation>без льда</translation></message>
+    <message><source>no glaciers</source><translation>нет ледников</translation></message>
+    <message><source>no ice</source><translation>нет льда</translation></message>
+    <message><source>some ice</source><translation>немного льда</translation></message>
+    <message><source>polar caps</source><translation>полярные шапки</translation></message>
+    <message><source>thin frost</source><translation>тонкий иней</translation></message>
+    <message><source>icy</source><translation>ледяная</translation></message>
+    <message><source>glaciers</source><translation>ледники</translation></message>
+    <message><source>ice belts</source><translation>ледяные пояса</translation></message>
+    <message><source>heavy ice</source><translation>много льда</translation></message>
+    <message><source>frozen world</source><translation>ледяной мир</translation></message>
+    <message><source>glacial planet</source><translation>ледниковая планета</translation></message>
+    <message><source>iceball</source><translation>ледяной шар</translation></message>
+    <message><source>snowball world</source><translation>снежный ком</translation></message>
+    <message><source>total freeze</source><translation>сплошная мерзлота</translation></message>
+    <message><source>barren</source><translation>бесплодная</translation></message>
+    <message><source>no flora</source><translation>нет флоры</translation></message>
+    <message><source>lifeless</source><translation>безжизненная</translation></message>
+    <message><source>sparse life</source><translation>редкая жизнь</translation></message>
+    <message><source>rare plants</source><translation>редкие растения</translation></message>
+    <message><source>thin green</source><translation>редкая зелень</translation></message>
+    <message><source>living</source><translation>живая</translation></message>
+    <message><source>green belts</source><translation>зелёные пояса</translation></message>
+    <message><source>plant cover</source><translation>растительный покров</translation></message>
+    <message><source>lush</source><translation>пышная</translation></message>
+    <message><source>dense flora</source><translation>густая флора</translation></message>
+    <message><source>jungle</source><translation>джунгли</translation></message>
+    <message><source>garden planet</source><translation>планета-сад</translation></message>
+    <message><source>overgrown</source><translation>заросшая</translation></message>
+    <message><source>full of life</source><translation>полная жизни</translation></message>
+    <message><source>inhabited</source><translation>обитаемая</translation></message>
+    <message><source>cities</source><translation>города</translation></message>
+    <message><source>civilization</source><translation>цивилизация</translation></message>
+    <message><source>night lights</source><translation>ночные огни</translation></message>
+    <message><source>toxic flora</source><translation>токсичная флора</translation></message>
+    <message><source>poisonous plants</source><translation>ядовитые растения</translation></message>
+    <message><source>unsafe plants</source><translation>опасные растения</translation></message>
+    <message><source>lava</source><translation>лава</translation></message>
+    <message><source>lava rifts</source><translation>лавовые трещины</translation></message>
+    <message><source>volcanic</source><translation>вулканическая</translation></message>
+    <message><source>volcanoes</source><translation>вулканы</translation></message>
+    <message><source>lava seas</source><translation>моря лавы</translation></message>
+    <message><source>molten crust</source><translation>расплавленная кора</translation></message>
+    <message><source>lava world</source><translation>мир лавы</translation></message>
+    <message><source>magma ocean</source><translation>океан магмы</translation></message>
+    <message><source>sea of fire</source><translation>море огня</translation></message>
+    <message><source>rifts</source><translation>рифты</translation></message>
+    <message><source>canyons</source><translation>каньоны</translation></message>
+    <message><source>crust cracks</source><translation>трещины коры</translation></message>
+    <message><source>mountains</source><translation>горы</translation></message>
+    <message><source>rugged</source><translation>пересечённая</translation></message>
+    <message><source>high relief</source><translation>высокий рельеф</translation></message>
+    <message><source>habitable</source><translation>пригодна для жизни</translation></message>
+    <message><source>livable</source><translation>можно жить</translation></message>
+    <message><source>mild and wet</source><translation>тепло и влажно</translation></message>
+    <message><source>ice ocean</source><translation>ледяной океан</translation></message>
+    <message><source>frozen seas</source><translation>замёрзшие моря</translation></message>
+    <message><source>icy ocean</source><translation>ледяные моря</translation></message>
+    <message><source>life without sun</source><translation>жизнь без солнца</translation></message>
+    <message><source>dark flora</source><translation>тёмная флора</translation></message>
+    <message><source>plants in the dark</source><translation>растения во тьме</translation></message>
+    <message><source>danger</source><translation>опасность</translation></message>
+    <message><source>hazard</source><translation>угроза</translation></message>
+    <message><source>hostile world</source><translation>враждебный мир</translation></message>
+    <message><source>anomaly</source><translation>аномалия</translation></message>
+    <message><source>strange</source><translation>странная</translation></message>
+    <message><source>unnatural</source><translation>неприродная</translation></message>
+    <message><source>x-rays</source><translation>рентген</translation></message>
+    <message><source>hard x-rays</source><translation>жёсткий рентген</translation></message>
+    <message><source>x-ray star</source><translation>рентгеновская звезда</translation></message>
+    <message><source>radio loud</source><translation>радиошум</translation></message>
+    <message><source>radio noise</source><translation>радиопомехи</translation></message>
+    <message><source>radio star</source><translation>радиозвезда</translation></message>
+    <message><source>dim star</source><translation>тусклая звезда</translation></message>
+    <message><source>faint sun</source><translation>слабое солнце</translation></message>
+    <message><source>weak daylight</source><translation>слабый свет</translation></message>
+    <message><source>blue star</source><translation>голубая звезда</translation></message>
+    <message><source>hot star</source><translation>горячая звезда</translation></message>
+    <message><source>yellow star</source><translation>жёлтая звезда</translation></message>
+    <message><source>sunlike</source><translation>солнцеподобная</translation></message>
+    <message><source>red star</source><translation>красная звезда</translation></message>
+    <message><source>red dwarf</source><translation>красный карлик</translation></message>
+    <message><source>brown dwarf</source><translation>коричневый карлик</translation></message>
+    <message><source>infrared star</source><translation>инфракрасная звезда</translation></message>
+    <message><source>thin clouds</source><translation>редкие облака</translation></message>
+    <message><source>haze</source><translation>дымка</translation></message>
+    <message><source>light cloud</source><translation>лёгкая облачность</translation></message>
+    <message><source>clouds</source><translation>облака</translation></message>
+    <message><source>broken cloud</source><translation>рваная облачность</translation></message>
+    <message><source>cloudy</source><translation>облачная</translation></message>
+    <message><source>overcast</source><translation>сплошная облачность</translation></message>
+    <message><source>dense clouds</source><translation>густые облака</translation></message>
+    <message><source>thick cloud</source><translation>плотная облачность</translation></message>
+    <message><source>deep freeze</source><translation>глубокая стужа</translation></message>
+    <message><source>bitter cold</source><translation>лютый холод</translation></message>
+    <message><source>frozen air</source><translation>мёрзлый воздух</translation></message>
+    <message><source>cold</source><translation>холодная</translation></message>
+    <message><source>winter world</source><translation>зимний мир</translation></message>
+    <message><source>chill climate</source><translation>холодный климат</translation></message>
+    <message><source>temperate</source><translation>умеренная</translation></message>
+    <message><source>mild climate</source><translation>мягкий климат</translation></message>
+    <message><source>hot</source><translation>жаркая</translation></message>
+    <message><source>torrid</source><translation>знойная</translation></message>
+    <message><source>high heat</source><translation>сильный жар</translation></message>
+    <message><source>scorching</source><translation>палящая</translation></message>
+    <message><source>extreme heat</source><translation>адский жар</translation></message>
+    <message><source>quiet crust</source><translation>спокойная кора</translation></message>
+    <message><source>no quakes</source><translation>нет толчков</translation></message>
+    <message><source>mild quakes</source><translation>слабые толчки</translation></message>
+    <message><source>active crust</source><translation>активная кора</translation></message>
+    <message><source>faults</source><translation>разломы</translation></message>
+    <message><source>violent quakes</source><translation>сильные толчки</translation></message>
+    <message><source>cataclysm</source><translation>катаклизм</translation></message>
+    <message><source>shattered world</source><translation>расколотый мир</translation></message>
+    <message><source>rings</source><translation>кольца</translation></message>
+    <message><source>ringed</source><translation>с кольцами</translation></message>
+    <message><source>atmosphere</source><translation>атмосфера</translation></message>
+    <message><source>has air</source><translation>есть воздух</translation></message>
+    <message><source>airless</source><translation>без воздуха</translation></message>
+    <message><source>no atmosphere</source><translation>нет атмосферы</translation></message>
+    <message><source>vacuum</source><translation>вакуум</translation></message>
+    <message><source>thick air</source><translation>густой воздух</translation></message>
+    <message><source>dense atmosphere</source><translation>плотная атмосфера</translation></message>
+    <message><source>thin air</source><translation>разреженный воздух</translation></message>
+    <message><source>thin atmosphere</source><translation>тонкая атмосфера</translation></message>
+    <message><source>has a star</source><translation>есть звезда</translation></message>
+    <message><source>sunlit</source><translation>освещена солнцем</translation></message>
+    <message><source>no star</source><translation>нет звезды</translation></message>
+    <message><source>rogue planet</source><translation>планета-сирота</translation></message>
+    <message><source>dark sky</source><translation>тёмное небо</translation></message>
+    <message><source>[error]</source><translation>[ошибка]</translation></message>
+    <message><source>[undefined]</source><translation>[не задано]</translation></message>
+    <message><source>[null]</source><translation>[null]</translation></message>
+    <message><source>synthetic world</source><translation>синтетический мир</translation></message>
+    <message><source>useless</source><translation>бесполезная</translation></message>
+    <message><source>no ores</source><translation>нет руд</translation></message>
+    <message><source>nothing to mine</source><translation>нечего добывать</translation></message>
+    <message><source>barren of ore</source><translation>без руды</translation></message>
+    <message><source>poor in ore</source><translation>бедная рудами</translation></message>
+    <message><source>little ore</source><translation>мало руды</translation></message>
+    <message><source>scarce metals</source><translation>мало металлов</translation></message>
+    <message><source>some ores</source><translation>есть руды</translation></message>
+    <message><source>modest ores</source><translation>скромные руды</translation></message>
+    <message><source>mixed metals</source><translation>смешанные металлы</translation></message>
+    <message><source>rich in resources</source><translation>богата ресурсами</translation></message>
+    <message><source>ore-rich</source><translation>богата рудой</translation></message>
+    <message><source>metal-rich</source><translation>богата металлами</translation></message>
+    <message><source>vast deposits</source><translation>огромные залежи</translation></message>
+    <message><source>overflowing ore</source><translation>руды в избытке</translation></message>
+    <message><source>treasure world</source><translation>кладовая</translation></message>
+    <message><source>%1 ores</source><translation>%1 руды</translation></message>
+    <message><source>much %1</source><translation>много %1</translation></message>
+    <message><source>%1 deposits</source><translation>залежи %1</translation></message>
+    <message><source>%1 veins</source><translation>жилы %1</translation></message>
+    <message><source>traces of %1</source><translation>следы %1</translation></message>
+    <message><source>a little %1</source><translation>немного %1</translation></message>
 </context>
 </TS>

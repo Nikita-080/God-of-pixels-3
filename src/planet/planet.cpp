@@ -1,5 +1,6 @@
 #include "planet.h"
 #include "terrafactory.h"
+#include "starspectrum.h"
 #include <QRandomGenerator>
 #include <QtMath>
 
@@ -85,13 +86,8 @@ void Planet::Calculator()
 
     rnd.seed(static_cast<quint32>(seed));
     starclass.clear();
-    int numstars;
-    if (s.temperature == -90)
-        numstars = RAND(0, 2);
-    else
-        numstars = RAND(1, 2);
-    for (int i = 0; i < numstars; i++)
-        starclass.append(RAND(0, 11));
+    if (s.has_star)
+        starclass.append(inferStarClass(s.star_spectrum));
 
     R_planet = 1.0;
     if (s.is_atmo)

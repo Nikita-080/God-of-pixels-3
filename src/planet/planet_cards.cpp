@@ -1,5 +1,6 @@
 #include "planet.h"
 #include "planet_p.h"
+#include "starspectrum.h"
 #include <QCoreApplication>
 #include <QPainter>
 #include <QtMath>
@@ -46,15 +47,81 @@ QVector<QString> nearestMinerals(const QColor &layerColor, bool soluble)
         names.append(hits[i].symbol);
     return names;
 }
+
+QVector<PlanetOre> collectOres(const Planet &p)
+{
+    QVector<PlanetOre> out;
+    if (p.map_w <= 0 || p.map_h <= 0 || p.s.true_structure.size() < 8)
+        return out;
+
+    const QColor layerColor[7] = {
+        p.s.ice_color, p.s.rock_color, p.s.mountain_color, p.s.plain_color,
+        p.s.beach_color, p.s.shallow_color, p.s.ocean_color
+    };
+    const bool solubleLayer[7] = {false, false, false, false, false, true, true};
+    qint64 area[7] = {0, 0, 0, 0, 0, 0, 0};
+    for (int x = 0; x < p.map_w; ++x)
+    {
+        for (int y = 0; y < p.map_h; ++y)
+        {
+            const double h = p.matrix[x][y];
+            for (int i = 0; i < 7; ++i)
+            {
+                if (p.s.true_structure[i] == p.s.true_structure[i + 1])
+                    continue;
+                if (h <= p.s.true_structure[i] && h >= p.s.true_structure[i + 1])
+                {
+                    ++area[i];
+                    break;
+                }
+            }
+        }
+    }
+
+    QHash<QString, qint64> score;
+    for (int i = 0; i < 7; ++i)
+    {
+        if (area[i] <= 0 || !layerColor[i].isValid())
+            continue;
+        const QVector<QString> hits = nearestMinerals(layerColor[i], solubleLayer[i]);
+        for (const QString &symbol : hits)
+            score[symbol] += area[i];
+    }
+    if (score.isEmpty())
+        return out;
+
+    QHash<QString, bool> radioactive;
+    for (const MineralSalt &m : planetMinerals())
+        radioactive.insert(m.symbol, m.radioactive);
+
+    out.reserve(score.size());
+    for (auto it = score.begin(); it != score.end(); ++it)
+        out.append({it.key(), it.value(), radioactive.value(it.key())});
+    std::sort(out.begin(), out.end(), [](const PlanetOre &a, const PlanetOre &b) {
+        if (a.area != b.area)
+            return a.area > b.area;
+        return a.symbol < b.symbol;
+    });
+    return out;
+}
+}
+
+QVector<PlanetOre> planetOreInventory(const Planet &planet)
+{
+    return collectOres(planet);
 }
 
 void Planet::GenerateDescription()
 {
-    facts.day = QString::number(RAND(5, 100));
-    facts.year = QString::number(RAND(1, 50));
-    facts.gravitation = QString::number(RAND(0, 2)) + "." + QString::number(RAND(0, 9));
     facts.resources = Resources();
     facts.seismicity = qBound(0, s.seismicity, 12);
+    if (s.has_star)
+    {
+        const double hi = (starBand(s.star_spectrum, StarGamma)
+                           + starBand(s.star_spectrum, StarXray)
+                           + starBand(s.star_spectrum, StarUv)) / 36.0;
+        facts.radiation = qBound(0, facts.radiation + qRound(hi * 12.0), 12);
+    }
 }
 
 void Planet::CalculateDescription()
@@ -65,7 +132,7 @@ void Planet::CalculateDescription()
     facts.life = qRound(plant_pixel_count * 12.0 / qMax(1, pixel_count - water_pixel_count));
     facts.ice = qRound(ice_pixel_count * 12.0 / pixel_count);
     facts.water = qRound(water_pixel_count * 12.0 / pixel_count);
-    facts.temperature = qRound((s.temperature + 90) * 12.0 / 230);
+    facts.temperature = qRound((s.effectiveTemperature() + 90) * 12.0 / 230);
 }
 
 void Planet::Level(QString start, int string, int lvl, QString type, QPainter &p)
@@ -114,49 +181,40 @@ void Planet::Level(QString start, int string, int lvl, QString type, QPainter &p
 void Planet::DrawDescription()
 {
     img_dsc = planetCachedImage(QStringLiteral(":/images/res/images/window.png"));
-    QString classes = "OBAFGKMCSLTY";
-    QString s = "";
+    const QString classes = QStringLiteral("OBAFGKMCSLTY");
 
     QPainter p;
     p.begin(&img_dsc);
     p.setPen(QPen(QColor(110, 170, 200)));
     p.setFont(QFont("Consolas", 8));
 
-    s += QCoreApplication::translate("Planet", "name       - ") + name + "\n";
-
+    QString head;
+    head += QCoreApplication::translate("Planet", "name       - ") + name + "\n";
+    head += QCoreApplication::translate("Planet", "resources  - ") + facts.resources;
     if (starclass.isEmpty())
-        s += QCoreApplication::translate("Planet", "day        - [not found]") + "\n";
-    else
-        s += QCoreApplication::translate("Planet", "day        - ") + facts.day + QCoreApplication::translate("Planet", "h") + "\n";
-
-    if (starclass.isEmpty())
-        s += QCoreApplication::translate("Planet", "year       - [not found]") + "\n";
-    else
-        s += QCoreApplication::translate("Planet", "year       - ") + facts.year + QCoreApplication::translate("Planet", "y") + "\n";
-
-    s += QCoreApplication::translate("Planet", "gravity    - ") + facts.gravitation + "g\n";
-
-    if (starclass.isEmpty())
-        s += QCoreApplication::translate("Planet", "star       - [not found]") + "\n";
+        head += QCoreApplication::translate("Planet", "star       - [not found]");
     else
     {
-        s += QCoreApplication::translate("Planet", "star       - ");
+        head += QCoreApplication::translate("Planet", "star       - ");
         for (int i = 0; i < starclass.length(); i++)
         {
-            s += classes[starclass[i]];
-            s += ' ';
+            head += classes[starclass[i]];
+            head += QLatin1Char(' ');
         }
-        s += '\n';
     }
+    head += QLatin1Char('\n');
+    head += QCoreApplication::translate("Planet", "spectrum   - ") + QLatin1Char('\n');
+    p.drawText(QRect(40, 27, 400, 400), head);
+    const int specY = 27 + p.fontMetrics().lineSpacing() * 4;
+    paintStarSpectrum(p, QRect(40, specY, 220, 36),
+                      this->s.has_star ? this->s.star_spectrum : QVector<int>(StarBandCount, 0));
 
-    s += QCoreApplication::translate("Planet", "resources  - ") + facts.resources;
-    p.drawText(QRect(40, 27, 400, 400), s);
-    Level(QCoreApplication::translate("Planet", "life         "), 8, facts.life, "good", p);
-    Level(QCoreApplication::translate("Planet", "water        ", nullptr), 9, facts.water, "neutral", p);
-    Level(QCoreApplication::translate("Planet", "ice          "), 10, facts.ice, "bad", p);
-    Level(QCoreApplication::translate("Planet", "radiation    "), 11, facts.radiation, "bad", p);
-    Level(QCoreApplication::translate("Planet", "temperature  "), 12, facts.temperature, "neutral", p);
-    Level(QCoreApplication::translate("Planet", "seismicity   "), 13, facts.seismicity, "bad", p);
+    Level(QCoreApplication::translate("Planet", "life         "), 9, facts.life, "good", p);
+    Level(QCoreApplication::translate("Planet", "water        ", nullptr), 10, facts.water, "neutral", p);
+    Level(QCoreApplication::translate("Planet", "ice          "), 11, facts.ice, "bad", p);
+    Level(QCoreApplication::translate("Planet", "radiation    "), 12, facts.radiation, "bad", p);
+    Level(QCoreApplication::translate("Planet", "temperature  "), 13, facts.temperature, "neutral", p);
+    Level(QCoreApplication::translate("Planet", "seismicity   "), 14, facts.seismicity, "bad", p);
     p.end();
 }
 
@@ -164,78 +222,25 @@ QString Planet::Resources()
 {
     const QString notFound = QCoreApplication::translate("Planet", "[not found]\n");
     facts.radiation = 0;
-    if (map_w <= 0 || map_h <= 0 || s.true_structure.size() < 8)
+    const QVector<PlanetOre> ranked = planetOreInventory(*this);
+    if (ranked.isEmpty())
         return notFound;
 
-    const QColor layerColor[7] = {
-        s.ice_color, s.rock_color, s.mountain_color, s.plain_color,
-        s.beach_color, s.shallow_color, s.ocean_color
-    };
-    const bool solubleLayer[7] = {false, false, false, false, false, true, true};
-    qint64 area[7] = {0, 0, 0, 0, 0, 0, 0};
-    for (int x = 0; x < map_w; ++x)
-    {
-        for (int y = 0; y < map_h; ++y)
-        {
-            const double h = matrix[x][y];
-            for (int i = 0; i < 7; ++i)
-            {
-                if (s.true_structure[i] == s.true_structure[i + 1])
-                    continue;
-                if (h <= s.true_structure[i] && h >= s.true_structure[i + 1])
-                {
-                    ++area[i];
-                    break;
-                }
-            }
-        }
-    }
-
-    QHash<QString, qint64> score;
-    for (int i = 0; i < 7; ++i)
-    {
-        if (area[i] <= 0 || !layerColor[i].isValid())
-            continue;
-        const QVector<QString> hits = nearestMinerals(layerColor[i], solubleLayer[i]);
-        for (const QString &symbol : hits)
-            score[symbol] += area[i];
-    }
-    if (score.isEmpty())
-        return notFound;
-
-    QHash<QString, bool> radioactive;
-    for (const MineralSalt &m : planetMinerals())
-        radioactive.insert(m.symbol, m.radioactive);
     qint64 radioScore = 0;
     qint64 totalScore = 0;
-    for (auto it = score.begin(); it != score.end(); ++it)
+    for (const PlanetOre &ore : ranked)
     {
-        totalScore += it.value();
-        if (radioactive.value(it.key()))
-            radioScore += it.value();
+        totalScore += ore.area;
+        if (ore.radioactive)
+            radioScore += ore.area;
     }
     if (totalScore > 0)
         facts.radiation = qBound(0, qRound(12.0 * double(radioScore) / double(totalScore)), 12);
 
-    struct Rank
-    {
-        QString symbol;
-        qint64 area;
-    };
-    QVector<Rank> ranked;
-    ranked.reserve(score.size());
-    for (auto it = score.begin(); it != score.end(); ++it)
-        ranked.append({it.key(), it.value()});
-    std::sort(ranked.begin(), ranked.end(), [](const Rank &a, const Rank &b) {
-        if (a.area != b.area)
-            return a.area > b.area;
-        return a.symbol < b.symbol;
-    });
-
     const QString prefix = QCoreApplication::translate("Planet", "resources  - ");
     const int budget = qMax(1, kCardLineWidth - prefix.size());
     QString res;
-    for (const Rank &item : ranked)
+    for (const PlanetOre &item : ranked)
     {
         const QString next = res.isEmpty() ? item.symbol : (res + QLatin1Char(' ') + item.symbol);
         if (next.size() > budget)
@@ -247,160 +252,9 @@ QString Planet::Resources()
     return res + QLatin1Char('\n');
 }
 
-bool Planet::Collis(int r_o, int r, const QVector<QVector<int>> &planets)
-{
-    for (int i = 0; i < planets.length(); i++)
-    {
-        bool f1 = planets[i][0] <= r_o - r and r_o - r <= planets[i][1];
-        bool f2 = planets[i][0] <= r_o + r and r_o + r <= planets[i][1];
-        bool f3 = r_o - r <= planets[i][0] and planets[i][0] <= r_o + r;
-        bool f4 = r_o - r <= planets[i][1] and planets[i][1] <= r_o + r;
-        if (f1 or f2 or f3 or f4)
-            return false;
-    }
-    return true;
-}
-
 void Planet::SystemMap()
 {
-    if (starclass.length() == 0)
-        SystemMap_0star();
-    else if (starclass.length() == 1)
-        SystemMap_1star();
-    else
-        SystemMap_2star();
-}
-
-void Planet::SystemMap_0star()
-{
-    img_sys = planetCachedImage(QStringLiteral(":/images/res/images/window.png"));
-    QPainter p;
-    p.begin(&img_sys);
-    int r;
-    r = RAND(4, 8);
-    p.setPen(Qt::PenStyle::NoPen);
-    p.setBrush(QBrush(QColor("#ff0000")));
-    p.drawEllipse(165 - r, 165 - r, 2 * r, 2 * r);
-    p.end();
-}
-
-void Planet::SystemMap_1star()
-{
-    img_sys = planetCachedImage(QStringLiteral(":/images/res/images/window.png"));
-    QVector<QString> color_star = {"#E7ECFE", "#F5F7FF", "#FEFEFE", "#FFFBE5",
-                                   "#FFF3BD", "#FFD48A", "#FFA38A", "#F7805F",
-                                   "#EE4F3A", "#DF3C26", "#C53320", "#AF3627"};
-    QPainter p;
-    p.begin(&img_sys);
-
-    int r_star = RAND(8, 25);
-
-    p.setPen(Qt::PenStyle::NoPen);
-    p.setBrush(QBrush(QColor(color_star[starclass[0]])));
-    p.drawEllipse(165 - r_star, 165 - r_star, r_star * 2, r_star * 2);
-
-    int r = RAND(4, 8);
-    int r_o = qRound((140 - s.temperature) * (125 - r - r - r_star) * 1.0 / 230 + r + r_star);
-    DrawPlanets(&p, 165, 165, r_star, 125, 4, 8, r_o, r);
-
-    p.end();
-}
-
-void Planet::SystemMap_2star()
-{
-    img_sys = planetCachedImage(QStringLiteral(":/images/res/images/window.png"));
-    QVector<QString> color_star = {"#E7ECFE", "#F5F7FF", "#FEFEFE", "#FFFBE5",
-                                   "#FFF3BD", "#FFD48A", "#FFA38A", "#F7805F",
-                                   "#EE4F3A", "#DF3C26", "#C53320", "#AF3627"};
-    QPainter p;
-    p.begin(&img_sys);
-
-    double angle = rnd.bounded(6.283);
-    int r_o_s = 27;
-    int r_star = 8;
-    int x_s1 = qRound(r_o_s * cos(angle)) + 165;
-    int y_s1 = 165 - qRound(r_o_s * sin(angle));
-    p.setPen(Qt::PenStyle::NoPen);
-    p.setBrush(QBrush(QColor(color_star[starclass[0]])));
-    p.drawEllipse(x_s1 - r_star, y_s1 - r_star, r_star * 2, r_star * 2);
-
-    angle += 3.1415;
-    int x_s2 = qRound(r_o_s * cos(angle)) + 165;
-    int y_s2 = 165 - qRound(r_o_s * sin(angle));
-    p.setBrush(QBrush(QColor(color_star[starclass[1]])));
-    p.drawEllipse(x_s2 - r_star, y_s2 - r_star, r_star * 2, r_star * 2);
-
-    int r_o = -1;
-    int r_p = 4;
-    int r_o_max = 27;
-    if (s.temperature == -90)
-        r_o = RAND(55 + r_p, 111 - r_p);
-    DrawPlanets(&p, 165, 165, 55, 111, 4, 4, r_o, r_p);
-    if (s.temperature == -90)
-        r_o = -1;
-    else
-        r_o = qRound((140 - s.temperature) * (r_o_max - r_p - r_p - r_star) * 1.0 / 230 + r_p + r_star);
-    DrawPlanets(&p, x_s1, y_s1, r_star, r_o_max, 4, 4, r_o, r_p);
-    r_o = -1;
-    DrawPlanets(&p, x_s2, y_s2, r_star, r_o_max, 4, 4, r_o, r_p);
-
-    p.end();
-}
-
-void Planet::DrawPlanets(QPainter *p, int x, int y, int r_o_min, int r_o_max, int r_p_min, int r_p_max, int r_o, int r_p)
-{
-    int x_p, y_p;
-    double angle;
-    QVector<QVector<int>> planets;
-    QVector<int> vec;
-    if (r_o != -1)
-    {
-        double angle = rnd.bounded(6.283);
-        int x_p = qRound(r_o * cos(angle)) + x;
-        int y_p = y - qRound(r_o * sin(angle));
-        vec = {r_o - r_p, r_o + r_p};
-        planets.append(vec);
-        p->setPen(QPen(QColor("#f2e8c9"), 2));
-        p->setBrush(Qt::BrushStyle::NoBrush);
-        p->drawEllipse(x - r_o, y - r_o, 2 * r_o, 2 * r_o);
-
-        p->setPen(Qt::PenStyle::NoPen);
-        p->setBrush(QBrush(QColor("#ff0000")));
-        p->drawEllipse(x_p - r_p, y_p - r_p, 2 * r_p, 2 * r_p);
-    }
-
-    int num_planet = RAND(0, 9);
-    for (int i = 0; i < num_planet; i++)
-    {
-        x_p = 0;
-        y_p = 0;
-        r_p = 0;
-        r_o = 0;
-        int count = 0;
-        while (r_o + r_p > r_o_max or r_o - r_p < r_o_min or !Collis(r_o, r_p, planets))
-        {
-            r_p = RAND(r_p_min, r_p_max);
-            r_o = RAND(r_o_min, r_o_max);
-            count++;
-            if (count > 15)
-                break;
-        }
-        if (count > 15)
-            break;
-        angle = rnd.bounded(6.283);
-        x_p = qRound(r_o * cos(angle)) + x;
-        y_p = y - qRound(r_o * sin(angle));
-        vec = {r_o - r_p, r_o + r_p};
-        planets.append(vec);
-
-        p->setPen(QPen(QColor("#f2e8c9"), 2));
-        p->setBrush(Qt::BrushStyle::NoBrush);
-        p->drawEllipse(x - r_o, y - r_o, 2 * r_o, 2 * r_o);
-
-        p->setPen(Qt::PenStyle::NoPen);
-        p->setBrush(QBrush(QColor("#808080")));
-        p->drawEllipse(x_p - r_p, y_p - r_p, 2 * r_p, 2 * r_p);
-    }
+    planetPaintTagCard(*this);
 }
 
 void Planet::GalaxyMap()

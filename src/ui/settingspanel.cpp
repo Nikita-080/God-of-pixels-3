@@ -2,11 +2,14 @@
 #include "settingspanel.h"
 #include "multislider.h"
 #include "colorswatch.h"
+#include "spectrumdialog.h"
+#include "starspectrum.h"
 #include <QTabWidget>
 #include <QSlider>
 #include <QLabel>
 #include <QComboBox>
 #include <QCheckBox>
+#include <QDialog>
 #include <QRadioButton>
 #include <QButtonGroup>
 #include <QPushButton>
@@ -95,7 +98,7 @@ SettingsPanel::SettingsPanel(QTabWidget *tabs, QWidget *parent)
     ms->raise();
 
     auto addLatLon = [this](QWidget *parent, QSlider *&latSlider, QSlider *&lonSlider,
-                            QLabel *&latTitle, QLabel *&lonTitle) {
+                            QLabel *&latTitle, QLabel *&lonTitle, int startY) {
         auto makeTitle = [parent](int y) {
             QLabel *label = new QLabel(parent);
             label->setGeometry(20, y, 200, 24);
@@ -116,28 +119,79 @@ SettingsPanel::SettingsPanel(QTabWidget *tabs, QWidget *parent)
             slider->setValue(value);
             return slider;
         };
-        latTitle = makeTitle(110);
-        latSlider = makeSlider(140, -90, 90, 0);
-        QLabel *latValue = makeValue(135);
-        lonTitle = makeTitle(180);
-        lonSlider = makeSlider(210, -180, 180, 0);
-        QLabel *lonValue = makeValue(205);
+        latTitle = makeTitle(startY);
+        latSlider = makeSlider(startY + 30, -90, 90, 0);
+        QLabel *latValue = makeValue(startY + 25);
+        lonTitle = makeTitle(startY + 70);
+        lonSlider = makeSlider(startY + 100, -180, 180, 0);
+        QLabel *lonValue = makeValue(startY + 95);
         latValue->setText(QString::number(latSlider->value()));
         lonValue->setText(QString::number(lonSlider->value()));
         connect(latSlider, &QSlider::valueChanged, latValue, QOverload<int>::of(&QLabel::setNum));
         connect(lonSlider, &QSlider::valueChanged, lonValue, QOverload<int>::of(&QLabel::setNum));
     };
 
-    addLatLon(child<QWidget>("tab_5"), sliderShineLat, sliderShineLon,
-              labelShineLatTitle, labelShineLonTitle);
-    addLatLon(child<QWidget>("tab_10"), sliderPolarLat, sliderPolarLon,
-              labelPolarLatTitle, labelPolarLonTitle);
+    auto *lightTab = child<QWidget>("tab_5");
+    checkHasStar = new QCheckBox(lightTab);
+    checkHasStar->setObjectName(QStringLiteral("checkHasStar"));
+    checkHasStar->setGeometry(10, 42, 260, 24);
+    checkHasStar->setFont(QFont(QStringLiteral("Consolas"), 10));
+    checkHasStar->setChecked(true);
+    if (auto *sizeTitle = child<QLabel>("label_13"))
+    {
+        labelStarSize = sizeTitle;
+        sizeTitle->setGeometry(10, 70, 171, 24);
+    }
+    else
+        labelStarSize = nullptr;
+    if (auto *sizeSlider = child<QSlider>("sliderShine"))
+        sizeSlider->setGeometry(10, 98, 221, 16);
+    if (auto *sizeValue = child<QLabel>("label_22"))
+        sizeValue->setGeometry(230, 90, 41, 21);
 
-    checkFillLight = new QCheckBox(child<QWidget>("tab_5"));
+    addLatLon(lightTab, sliderShineLat, sliderShineLon,
+              labelShineLatTitle, labelShineLonTitle, 128);
+    addLatLon(child<QWidget>("tab_10"), sliderPolarLat, sliderPolarLon,
+              labelPolarLatTitle, labelPolarLonTitle, 110);
+
+    checkFillLight = new QCheckBox(lightTab);
     checkFillLight->setObjectName(QStringLiteral("checkFillLight"));
-    checkFillLight->setGeometry(10, 250, 260, 31);
+    checkFillLight->setGeometry(10, 268, 260, 24);
     checkFillLight->setFont(QFont(QStringLiteral("Consolas"), 10));
     checkFillLight->setChecked(true);
+
+    checkStarfield = new QCheckBox(lightTab);
+    checkStarfield->setObjectName(QStringLiteral("checkStarfield"));
+    checkStarfield->setGeometry(10, 296, 260, 24);
+    checkStarfield->setFont(QFont(QStringLiteral("Consolas"), 10));
+
+    spectrumPreview = new SpectrumWidget(lightTab);
+    spectrumPreview->setGeometry(10, 328, 160, 52);
+    spectrumPreview->setBands(defaultStarSpectrum());
+    btnSpectrum = new QPushButton(lightTab);
+    btnSpectrum->setObjectName(QStringLiteral("btnSpectrum"));
+    btnSpectrum->setGeometry(178, 328, 92, 52);
+    btnSpectrum->setFont(QFont(QStringLiteral("Consolas"), 10));
+    btnSpectrum->setStyleSheet(QStringLiteral(
+        "QPushButton {"
+        "  color: rgb(110, 170, 200);"
+        "  background-color: rgb(0, 0, 0);"
+        "  border-width: 2px;"
+        "  border-style: solid;"
+        "  border-color: rgb(110, 170, 200);"
+        "}"
+        "QPushButton:disabled {"
+        "  color: rgb(55, 75, 85);"
+        "  border-color: rgb(45, 65, 75);"
+        "}"));
+    btnSpectrum->raise();
+    btnSpectrum->show();
+    if (lightTab)
+    {
+        const QRect bounds = lightTab->childrenRect();
+        lightTab->setMinimumSize(qMax(bounds.right() + 12, 380),
+                                 qMax(bounds.bottom() + 12, 500));
+    }
 
     auto *lifeTab = child<QWidget>("tab_4");
     checkCiv = new QCheckBox(lifeTab);
@@ -310,6 +364,7 @@ SettingsPanel::SettingsPanel(QTabWidget *tabs, QWidget *parent)
 
     wireLiveUpdates();
     updateAlgoEnabled();
+    updateStarDependentUi();
     retranslate();
 }
 
@@ -352,6 +407,18 @@ void SettingsPanel::wireLiveUpdates()
     connect(sliderShineLat, &QSlider::valueChanged, this, requestAppearance);
     connect(sliderShineLon, &QSlider::valueChanged, this, requestAppearance);
     connect(checkFillLight, &QCheckBox::toggled, this, requestAppearance);
+    connect(checkStarfield, &QCheckBox::toggled, this, requestAppearance);
+    connect(checkHasStar, &QCheckBox::toggled, this, [this, requestFull](bool) {
+        updateStarDependentUi();
+        requestFull();
+    });
+    connect(btnSpectrum, &QPushButton::clicked, this, [this]() {
+        SpectrumDialog dlg(spectrumPreview->bands(), this);
+        if (dlg.exec() != QDialog::Accepted)
+            return;
+        spectrumPreview->setBands(dlg.bands());
+        notify(false);
+    });
     connect(radioRingGas, &QRadioButton::toggled, this, requestAppearance);
     connect(sliderRingIntensity, &QSlider::valueChanged, this, requestAppearance);
     connect(sliderPolarLat, &QSlider::valueChanged, this, requestFull);
@@ -376,6 +443,23 @@ void SettingsPanel::wireLiveUpdates()
         connect(r, &QRadioButton::toggled, this, requestFull);
     if (auto *r = child<QRadioButton>("radioName3"))
         connect(r, &QRadioButton::toggled, this, requestFull);
+}
+
+void SettingsPanel::updateStarDependentUi()
+{
+    const bool on = checkHasStar && checkHasStar->isChecked();
+    if (auto *v = child<QSlider>("sliderShine"))
+        v->setEnabled(on);
+    if (sliderShineLat)
+        sliderShineLat->setEnabled(on);
+    if (sliderShineLon)
+        sliderShineLon->setEnabled(on);
+    if (spectrumPreview)
+        spectrumPreview->setEnabled(on);
+    if (btnSpectrum)
+        btnSpectrum->setEnabled(on);
+    if (auto *t = child<QSlider>("sliderTemperature"))
+        t->setEnabled(on);
 }
 
 void SettingsPanel::updateAlgoEnabled()
@@ -419,11 +503,16 @@ void SettingsPanel::collect(PlanetSettings &s) const
         s.is_plant = v->isChecked();
     s.is_civ = checkCiv && checkCiv->isChecked();
     s.civ_color = ColorSwatch::color(btnColorCiv);
+    s.has_star = checkHasStar && checkHasStar->isChecked();
     if (auto *v = child<QSlider>("sliderShine"))
-        s.shine = v->value();
+        s.star_size = v->value();
     s.shine_lat = sliderShineLat->value();
     s.shine_lon = sliderShineLon->value();
     s.is_fill_light = checkFillLight->isChecked();
+    s.is_starfield = checkStarfield && checkStarfield->isChecked();
+    if (spectrumPreview)
+        s.star_spectrum = spectrumPreview->bands();
+    clampStarSpectrum(s.star_spectrum);
     if (child<QRadioButton>("radioName1") && child<QRadioButton>("radioName1")->isChecked())
         s.name_algorithm = 1;
     else if (child<QRadioButton>("radioName2") && child<QRadioButton>("radioName2")->isChecked())
@@ -500,11 +589,17 @@ void SettingsPanel::push(const PlanetSettings &s)
     if (checkCiv)
         checkCiv->setChecked(s.is_civ);
     ColorSwatch::setColor(btnColorCiv, s.civ_color);
+    if (checkHasStar)
+        checkHasStar->setChecked(s.has_star);
     if (auto *v = child<QSlider>("sliderShine"))
-        v->setValue(s.shine);
+        v->setValue(s.star_size);
     sliderShineLat->setValue(s.shine_lat);
     sliderShineLon->setValue(s.shine_lon);
     checkFillLight->setChecked(s.is_fill_light);
+    if (checkStarfield)
+        checkStarfield->setChecked(s.is_starfield);
+    if (spectrumPreview)
+        spectrumPreview->setBands(s.star_spectrum);
     if (s.name_algorithm == 1)
         child<QRadioButton>("radioName1")->setChecked(true);
     else if (s.name_algorithm == 2)
@@ -543,12 +638,21 @@ void SettingsPanel::push(const PlanetSettings &s)
     sliderPolarLon->setValue(s.polar_lon);
     refreshAverageSwatches();
     updateAlgoEnabled();
+    updateStarDependentUi();
     updating = false;
 }
 
 void SettingsPanel::retranslate()
 {
     ms->ReloadText();
+    if (labelStarSize)
+        labelStarSize->setText(QCoreApplication::translate("MainWindow", "Size"));
+    if (checkHasStar)
+        checkHasStar->setText(QCoreApplication::translate("MainWindow", "Star"));
+    if (checkStarfield)
+        checkStarfield->setText(QCoreApplication::translate("MainWindow", "Stars"));
+    if (btnSpectrum)
+        btnSpectrum->setText(QCoreApplication::translate("MainWindow", "Spectrum"));
     labelShineLatTitle->setText(QCoreApplication::translate("MainWindow", "Latitude"));
     labelShineLonTitle->setText(QCoreApplication::translate("MainWindow", "Longitude"));
     checkFillLight->setText(QCoreApplication::translate("MainWindow", "Fill light"));

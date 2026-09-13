@@ -5,6 +5,7 @@
 #include <QRandomGenerator>
 #include <QJsonArray>
 #include <QJsonObject>
+#include "starspectrum.h"
 
 class PlanetSettings
 {
@@ -30,10 +31,13 @@ public:
     bool is_plant;
     bool is_civ;
     QColor civ_color;
-    int shine;
+    bool has_star;
+    int star_size;
     int shine_lat;
     int shine_lon;
     bool is_fill_light;
+    bool is_starfield;
+    QVector<int> star_spectrum;
     int name_algorithm;
     bool is_cloud;
     int cloud_size;
@@ -62,6 +66,10 @@ public:
     bool JSON_deserialize(QJsonObject);
     void rebuildDerived();
     void Random(const QVector<bool> &isRnd);
+    int effectiveTemperature() const;
+    double visibleLight() const;
+    double parLight() const;
+    double hazardLight() const;
 private:
     int RAND(int x, int y);
     QJsonArray VecToJson(QVector<int>);

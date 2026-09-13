@@ -25,11 +25,13 @@ SOURCES += \
     ../src/planet/planet_name.cpp \
     ../src/planet/planet_rings.cpp \
     ../src/planet/planet_surface.cpp \
+    ../src/planet/planet_tags.cpp \
     ../src/planet/planet_terrain.cpp \
     ../src/gen/terrafactory.cpp \
     ../src/gen/noise3d.cpp \
     ../src/gen/cloudfactory.cpp \
     ../src/gen/planetsettings.cpp \
+    ../src/gen/starspectrum.cpp \
     ../src/gen/facts.cpp \
     ../src/ui/autogensettings.cpp
 
@@ -40,6 +42,7 @@ HEADERS += \
     ../src/gen/noise3d.h \
     ../src/gen/cloudfactory.h \
     ../src/gen/planetsettings.h \
+    ../src/gen/starspectrum.h \
     ../src/gen/facts.h \
     ../src/gen/spheremath.h \
     ../src/app/global.h \

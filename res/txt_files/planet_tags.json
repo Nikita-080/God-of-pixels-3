@@ -1,0 +1,468 @@
+{
+  "tags": [
+    {
+      "id": "rad_0",
+      "family": "radiation",
+      "priority": 12,
+      "tone": "good",
+      "labels": ["low radiation", "almost no radiation", "weak background"]
+    },
+    {
+      "id": "rad_1",
+      "family": "radiation",
+      "priority": 12,
+      "tone": "caution",
+      "labels": ["radiation", "mild radiation", "trace radiation"]
+    },
+    {
+      "id": "rad_2",
+      "family": "radiation",
+      "priority": 11,
+      "tone": "caution",
+      "labels": ["raised radiation", "hot isotopes", "elevated background"]
+    },
+    {
+      "id": "rad_3",
+      "family": "radiation",
+      "priority": 10,
+      "tone": "bad",
+      "labels": ["dangerous radiation", "hard radiation", "lethal radiation"]
+    },
+    {
+      "id": "rad_4",
+      "family": "radiation",
+      "priority": 10,
+      "tone": "bad",
+      "labels": ["critical radiation", "unlivable radiation", "nuclear dusk"]
+    },
+    {
+      "id": "wat_0",
+      "family": "water",
+      "priority": 18,
+      "tone": "caution",
+      "labels": ["arid", "no seas", "desert world", "dry crust"]
+    },
+    {
+      "id": "wat_1",
+      "family": "water",
+      "priority": 18,
+      "tone": "caution",
+      "labels": ["scarce water", "few lakes", "rare rain"]
+    },
+    {
+      "id": "wat_2",
+      "family": "water",
+      "priority": 16,
+      "tone": "good",
+      "labels": ["has water", "lakes and seas", "wet lowlands"]
+    },
+    {
+      "id": "wat_3",
+      "family": "water",
+      "priority": 14,
+      "tone": "good",
+      "labels": ["much water", "wide oceans", "water world"]
+    },
+    {
+      "id": "wat_4",
+      "family": "water",
+      "priority": 14,
+      "tone": "good",
+      "labels": ["global ocean", "almost no land", "ocean planet"]
+    },
+    {
+      "id": "ice_0",
+      "family": "ice",
+      "priority": 40,
+      "tone": "info",
+      "labels": ["ice-free", "no glaciers", "no ice"]
+    },
+    {
+      "id": "ice_1",
+      "family": "ice",
+      "priority": 28,
+      "tone": "info",
+      "labels": ["some ice", "polar caps", "thin frost"]
+    },
+    {
+      "id": "ice_2",
+      "family": "ice",
+      "priority": 22,
+      "tone": "caution",
+      "labels": ["icy", "glaciers", "ice belts"]
+    },
+    {
+      "id": "ice_3",
+      "family": "ice",
+      "priority": 20,
+      "tone": "bad",
+      "labels": ["heavy ice", "frozen world", "glacial planet"]
+    },
+    {
+      "id": "ice_4",
+      "family": "ice",
+      "priority": 20,
+      "tone": "bad",
+      "labels": ["iceball", "snowball world", "total freeze"]
+    },
+    {
+      "id": "life_0",
+      "family": "life",
+      "priority": 24,
+      "tone": "caution",
+      "labels": ["barren", "no flora", "lifeless"]
+    },
+    {
+      "id": "life_1",
+      "family": "life",
+      "priority": 22,
+      "tone": "caution",
+      "labels": ["sparse life", "rare plants", "thin green"]
+    },
+    {
+      "id": "life_2",
+      "family": "life",
+      "priority": 18,
+      "tone": "good",
+      "labels": ["living", "green belts", "plant cover"]
+    },
+    {
+      "id": "life_3",
+      "family": "life",
+      "priority": 16,
+      "tone": "good",
+      "labels": ["lush", "dense flora", "jungle"]
+    },
+    {
+      "id": "life_4",
+      "family": "life",
+      "priority": 16,
+      "tone": "good",
+      "labels": ["garden planet", "overgrown", "full of life"]
+    },
+    {
+      "id": "civ_yes",
+      "family": "",
+      "priority": 8,
+      "tone": "good",
+      "labels": ["inhabited", "cities", "civilization", "night lights"]
+    },
+    {
+      "id": "toxic_flora",
+      "family": "",
+      "priority": 9,
+      "tone": "bad",
+      "labels": ["toxic flora", "poisonous plants", "unsafe plants"]
+    },
+    {
+      "id": "res_0",
+      "family": "ore_wealth",
+      "priority": 14,
+      "tone": "caution",
+      "labels": ["useless", "no ores", "nothing to mine", "barren of ore"]
+    },
+    {
+      "id": "res_1",
+      "family": "ore_wealth",
+      "priority": 14,
+      "tone": "caution",
+      "labels": ["poor in ore", "little ore", "scarce metals"]
+    },
+    {
+      "id": "res_2",
+      "family": "ore_wealth",
+      "priority": 15,
+      "tone": "info",
+      "labels": ["some ores", "modest ores", "mixed metals"]
+    },
+    {
+      "id": "res_3",
+      "family": "ore_wealth",
+      "priority": 13,
+      "tone": "good",
+      "labels": ["rich in resources", "ore-rich", "metal-rich"]
+    },
+    {
+      "id": "res_4",
+      "family": "ore_wealth",
+      "priority": 12,
+      "tone": "good",
+      "labels": ["vast deposits", "overflowing ore", "treasure world"]
+    },
+    {
+      "id": "lava_1",
+      "family": "lava",
+      "priority": 11,
+      "tone": "caution",
+      "labels": ["lava", "lava rifts", "volcanic"]
+    },
+    {
+      "id": "lava_2",
+      "family": "lava",
+      "priority": 9,
+      "tone": "bad",
+      "labels": ["volcanoes", "lava seas", "molten crust"]
+    },
+    {
+      "id": "lava_3",
+      "family": "lava",
+      "priority": 7,
+      "tone": "bad",
+      "labels": ["lava world", "magma ocean", "sea of fire"]
+    },
+    {
+      "id": "rifts",
+      "family": "",
+      "priority": 21,
+      "tone": "info",
+      "labels": ["rifts", "canyons", "crust cracks"]
+    },
+    {
+      "id": "rugged",
+      "family": "",
+      "priority": 34,
+      "tone": "info",
+      "labels": ["mountains", "rugged", "high relief"]
+    },
+    {
+      "id": "habitable",
+      "family": "",
+      "priority": 6,
+      "tone": "good",
+      "labels": ["habitable", "livable", "mild and wet"]
+    },
+    {
+      "id": "ice_ocean",
+      "family": "",
+      "priority": 12,
+      "tone": "caution",
+      "labels": ["ice ocean", "frozen seas", "icy ocean"]
+    },
+    {
+      "id": "dark_flora",
+      "family": "",
+      "priority": 8,
+      "tone": "anomaly",
+      "labels": ["life without sun", "dark flora", "plants in the dark"]
+    },
+    {
+      "id": "danger",
+      "family": "",
+      "priority": 13,
+      "tone": "anomaly",
+      "labels": ["danger", "hazard", "hostile world"]
+    },
+    {
+      "id": "anomaly",
+      "family": "",
+      "priority": 15,
+      "tone": "anomaly",
+      "labels": ["anomaly", "strange", "unnatural"]
+    },
+    {
+      "id": "xrays",
+      "family": "",
+      "priority": 19,
+      "tone": "bad",
+      "labels": ["x-rays", "hard x-rays", "x-ray star"]
+    },
+    {
+      "id": "radio_loud",
+      "family": "",
+      "priority": 27,
+      "tone": "info",
+      "labels": ["radio loud", "radio noise", "radio star"]
+    },
+    {
+      "id": "dim_star",
+      "family": "",
+      "priority": 32,
+      "tone": "caution",
+      "labels": ["dim star", "faint sun", "weak daylight"]
+    },
+    {
+      "id": "star_blue",
+      "family": "star",
+      "priority": 33,
+      "tone": "info",
+      "labels": ["blue star", "hot star"]
+    },
+    {
+      "id": "star_yellow",
+      "family": "star",
+      "priority": 33,
+      "tone": "info",
+      "labels": ["yellow star", "sunlike"]
+    },
+    {
+      "id": "star_red",
+      "family": "star",
+      "priority": 33,
+      "tone": "info",
+      "labels": ["red star", "red dwarf"]
+    },
+    {
+      "id": "star_brown",
+      "family": "star",
+      "priority": 33,
+      "tone": "info",
+      "labels": ["brown dwarf", "infrared star"]
+    },
+    {
+      "id": "cloud_1",
+      "family": "clouds",
+      "priority": 38,
+      "tone": "info",
+      "labels": ["thin clouds", "haze", "light cloud"]
+    },
+    {
+      "id": "cloud_2",
+      "family": "clouds",
+      "priority": 37,
+      "tone": "info",
+      "labels": ["clouds", "broken cloud", "cloudy"]
+    },
+    {
+      "id": "cloud_3",
+      "family": "clouds",
+      "priority": 36,
+      "tone": "info",
+      "labels": ["overcast", "dense clouds", "thick cloud"]
+    },
+    {
+      "id": "tmp_0",
+      "family": "temperature",
+      "priority": 900,
+      "tone": "bad",
+      "labels": ["deep freeze", "bitter cold", "frozen air"]
+    },
+    {
+      "id": "tmp_1",
+      "family": "temperature",
+      "priority": 900,
+      "tone": "caution",
+      "labels": ["cold", "winter world", "chill climate"]
+    },
+    {
+      "id": "tmp_2",
+      "family": "temperature",
+      "priority": 900,
+      "tone": "good",
+      "labels": ["temperate", "mild climate"]
+    },
+    {
+      "id": "tmp_3",
+      "family": "temperature",
+      "priority": 900,
+      "tone": "caution",
+      "labels": ["hot", "torrid", "high heat"]
+    },
+    {
+      "id": "tmp_4",
+      "family": "temperature",
+      "priority": 900,
+      "tone": "bad",
+      "labels": ["scorching", "extreme heat"]
+    },
+    {
+      "id": "sei_0",
+      "family": "seismicity",
+      "priority": 910,
+      "tone": "good",
+      "labels": ["quiet crust", "no quakes"]
+    },
+    {
+      "id": "sei_1",
+      "family": "seismicity",
+      "priority": 910,
+      "tone": "info",
+      "labels": ["mild quakes"]
+    },
+    {
+      "id": "sei_2",
+      "family": "seismicity",
+      "priority": 910,
+      "tone": "caution",
+      "labels": ["active crust", "faults"]
+    },
+    {
+      "id": "sei_3",
+      "family": "seismicity",
+      "priority": 910,
+      "tone": "bad",
+      "labels": ["violent quakes"]
+    },
+    {
+      "id": "sei_4",
+      "family": "seismicity",
+      "priority": 910,
+      "tone": "bad",
+      "labels": ["cataclysm", "shattered world"]
+    },
+    {
+      "id": "rings",
+      "family": "",
+      "priority": 950,
+      "tone": "info",
+      "labels": ["rings", "ringed"]
+    },
+    {
+      "id": "atmo",
+      "family": "atmosphere",
+      "priority": 952,
+      "tone": "info",
+      "labels": ["atmosphere", "has air"]
+    },
+    {
+      "id": "airless",
+      "family": "atmosphere",
+      "priority": 952,
+      "tone": "caution",
+      "labels": ["airless", "no atmosphere", "vacuum"]
+    },
+    {
+      "id": "thick_atmo",
+      "family": "atmosphere",
+      "priority": 940,
+      "tone": "info",
+      "labels": ["thick air", "dense atmosphere"]
+    },
+    {
+      "id": "thin_atmo",
+      "family": "atmosphere",
+      "priority": 941,
+      "tone": "caution",
+      "labels": ["thin air", "thin atmosphere"]
+    },
+    {
+      "id": "has_star",
+      "family": "star",
+      "priority": 960,
+      "tone": "info",
+      "labels": ["has a star", "sunlit"]
+    },
+    {
+      "id": "no_star",
+      "family": "star",
+      "priority": 960,
+      "tone": "anomaly",
+      "labels": ["no star", "rogue planet", "dark sky"]
+    },
+    {
+      "id": "easter_err",
+      "family": "easter",
+      "priority": 800,
+      "tone": "easter",
+      "easter": true,
+      "labels": ["[error]", "[undefined]", "[null]"]
+    },
+    {
+      "id": "easter_sim",
+      "family": "easter",
+      "priority": 800,
+      "tone": "easter",
+      "easter": true,
+      "labels": ["synthetic world"]
+    }
+  ]
+}
