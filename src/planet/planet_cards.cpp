@@ -3,6 +3,50 @@
 #include <QCoreApplication>
 #include <QPainter>
 #include <QtMath>
+#include <QHash>
+#include <algorithm>
+
+namespace {
+const double kMineralColorMaxDist = 88.0;
+const int kCardLineWidth = 28;
+const int kNearestPerLayer = 5;
+
+double colorDist(const QColor &a, const QColor &b)
+{
+    const double dr = a.red() - b.red();
+    const double dg = a.green() - b.green();
+    const double db = a.blue() - b.blue();
+    return sqrt(dr * dr + dg * dg + db * db);
+}
+
+QVector<QString> nearestMinerals(const QColor &layerColor, bool soluble)
+{
+    struct Hit
+    {
+        QString symbol;
+        double dist;
+    };
+    QVector<Hit> hits;
+    for (const MineralSalt &m : planetMinerals())
+    {
+        const QColor salt = soluble ? m.soluble : m.insoluble;
+        const double d = colorDist(layerColor, salt);
+        if (d <= kMineralColorMaxDist)
+            hits.append({m.symbol, d});
+    }
+    std::sort(hits.begin(), hits.end(), [](const Hit &a, const Hit &b) {
+        if (a.dist != b.dist)
+            return a.dist < b.dist;
+        return a.symbol < b.symbol;
+    });
+    QVector<QString> names;
+    const int n = qMin(kNearestPerLayer, hits.size());
+    names.reserve(n);
+    for (int i = 0; i < n; ++i)
+        names.append(hits[i].symbol);
+    return names;
+}
+}
 
 void Planet::GenerateDescription()
 {
@@ -10,7 +54,6 @@ void Planet::GenerateDescription()
     facts.year = QString::number(RAND(1, 50));
     facts.gravitation = QString::number(RAND(0, 2)) + "." + QString::number(RAND(0, 9));
     facts.resources = Resources();
-    facts.radiation = RAND(0, 12);
     facts.seismicity = qBound(0, s.seismicity, 12);
 }
 
@@ -119,27 +162,89 @@ void Planet::DrawDescription()
 
 QString Planet::Resources()
 {
-    QVector<QString> mas = {"He", "Li", "Mg", "Al", "Si", "Cl", "Ar",
-                            "Ca", "Ti", "Cr", "Fe", "Co", "Ni", "Cu",
-                            "Zn", "As", "Ag", "Cd", "Sn", "Xe", "Cs",
-                            "Nd", "Pt", "Au", "Hg", "Pb", "Rn", "Pu"};
-    QString res = "";
-    QVector<int> indexes = {-1};
-    int x = RAND(0, 5);
-    if (x == 0)
-        return QCoreApplication::translate("Planet", "[not found]\n");
-    for (int i = 0; i < x; i++)
+    const QString notFound = QCoreApplication::translate("Planet", "[not found]\n");
+    facts.radiation = 0;
+    if (map_w <= 0 || map_h <= 0 || s.true_structure.size() < 8)
+        return notFound;
+
+    const QColor layerColor[7] = {
+        s.ice_color, s.rock_color, s.mountain_color, s.plain_color,
+        s.beach_color, s.shallow_color, s.ocean_color
+    };
+    const bool solubleLayer[7] = {false, false, false, false, false, true, true};
+    qint64 area[7] = {0, 0, 0, 0, 0, 0, 0};
+    for (int x = 0; x < map_w; ++x)
     {
-        int index = RAND(0, 14);
-        while (indexes.contains(index))
-            index = RAND(0, 14);
-        indexes.append(index);
-        if (i == x - 1)
-            res += mas[index] + "\n";
-        else
-            res += mas[index] + " ";
+        for (int y = 0; y < map_h; ++y)
+        {
+            const double h = matrix[x][y];
+            for (int i = 0; i < 7; ++i)
+            {
+                if (s.true_structure[i] == s.true_structure[i + 1])
+                    continue;
+                if (h <= s.true_structure[i] && h >= s.true_structure[i + 1])
+                {
+                    ++area[i];
+                    break;
+                }
+            }
+        }
     }
-    return res;
+
+    QHash<QString, qint64> score;
+    for (int i = 0; i < 7; ++i)
+    {
+        if (area[i] <= 0 || !layerColor[i].isValid())
+            continue;
+        const QVector<QString> hits = nearestMinerals(layerColor[i], solubleLayer[i]);
+        for (const QString &symbol : hits)
+            score[symbol] += area[i];
+    }
+    if (score.isEmpty())
+        return notFound;
+
+    QHash<QString, bool> radioactive;
+    for (const MineralSalt &m : planetMinerals())
+        radioactive.insert(m.symbol, m.radioactive);
+    qint64 radioScore = 0;
+    qint64 totalScore = 0;
+    for (auto it = score.begin(); it != score.end(); ++it)
+    {
+        totalScore += it.value();
+        if (radioactive.value(it.key()))
+            radioScore += it.value();
+    }
+    if (totalScore > 0)
+        facts.radiation = qBound(0, qRound(12.0 * double(radioScore) / double(totalScore)), 12);
+
+    struct Rank
+    {
+        QString symbol;
+        qint64 area;
+    };
+    QVector<Rank> ranked;
+    ranked.reserve(score.size());
+    for (auto it = score.begin(); it != score.end(); ++it)
+        ranked.append({it.key(), it.value()});
+    std::sort(ranked.begin(), ranked.end(), [](const Rank &a, const Rank &b) {
+        if (a.area != b.area)
+            return a.area > b.area;
+        return a.symbol < b.symbol;
+    });
+
+    const QString prefix = QCoreApplication::translate("Planet", "resources  - ");
+    const int budget = qMax(1, kCardLineWidth - prefix.size());
+    QString res;
+    for (const Rank &item : ranked)
+    {
+        const QString next = res.isEmpty() ? item.symbol : (res + QLatin1Char(' ') + item.symbol);
+        if (next.size() > budget)
+            break;
+        res = next;
+    }
+    if (res.isEmpty())
+        return notFound;
+    return res + QLatin1Char('\n');
 }
 
 bool Planet::Collis(int r_o, int r, const QVector<QVector<int>> &planets)

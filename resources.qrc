@@ -47,6 +47,7 @@
         <file>res/txt_files/settingsbase.json</file>
         <file>res/txt_files/randomsettings_en.txt</file>
         <file>res/txt_files/randomsettings_ru.txt</file>
+        <file>res/txt_files/minerals.json</file>
     </qresource>
     <qresource prefix="/translations">
         <file alias="QtLanguage_ru.qm">translations/QtLanguage_ru.qm</file>

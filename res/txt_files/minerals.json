@@ -1,0 +1,375 @@
+{
+  "_comment": {
+    "solubleSaltColor": "Примерный RGB-цвет наиболее распространённой растворимой соли элемента.",
+    "inSolubleSaltColor": "Примерный RGB-цвет характерной нерастворимой или малорастворимой соли элемента.",
+    "prevalence": "Примерная космическая распространённость элемента, выраженная как число атомов на 1 000 000 атомов Si.",
+    "radioactivity": "true, если наиболее распространённый природный изотоп элемента радиоактивен; false, если он стабилен."
+  },
+
+  "Li": {
+    "solubleSaltColor": [255, 255, 255],
+    "inSolubleSaltColor": [255, 255, 255],
+    "prevalence": 55.6,
+    "radioactivity": false
+  },
+  "Be": {
+    "solubleSaltColor": [255, 255, 255],
+    "inSolubleSaltColor": [255, 255, 255],
+    "prevalence": 0.612,
+    "radioactivity": false
+  },
+  "Na": {
+    "solubleSaltColor": [255, 255, 255],
+    "inSolubleSaltColor": [255, 255, 255],
+    "prevalence": 57700,
+    "radioactivity": false
+  },
+  "Mg": {
+    "solubleSaltColor": [255, 255, 255],
+    "inSolubleSaltColor": [255, 255, 255],
+    "prevalence": 1030000,
+    "radioactivity": false
+  },
+  "Al": {
+    "solubleSaltColor": [255, 255, 255],
+    "inSolubleSaltColor": [255, 255, 255],
+    "prevalence": 84600,
+    "radioactivity": false
+  },
+  "K": {
+    "solubleSaltColor": [255, 255, 255],
+    "inSolubleSaltColor": [255, 255, 255],
+    "prevalence": 3760,
+    "radioactivity": false
+  },
+  "Ca": {
+    "solubleSaltColor": [255, 255, 255],
+    "inSolubleSaltColor": [255, 255, 255],
+    "prevalence": 60400,
+    "radioactivity": false
+  },
+  "Sc": {
+    "solubleSaltColor": [255, 255, 255],
+    "inSolubleSaltColor": [255, 255, 255],
+    "prevalence": 34.4,
+    "radioactivity": false
+  },
+  "Ti": {
+    "solubleSaltColor": [255, 255, 255],
+    "inSolubleSaltColor": [255, 255, 255],
+    "prevalence": 2470,
+    "radioactivity": false
+  },
+  "V": {
+    "solubleSaltColor": [67, 104, 170],
+    "inSolubleSaltColor": [255, 255, 255],
+    "prevalence": 286,
+    "radioactivity": false
+  },
+  "Cr": {
+    "solubleSaltColor": [20, 140, 70],
+    "inSolubleSaltColor": [255, 255, 255],
+    "prevalence": 13100,
+    "radioactivity": false
+  },
+  "Mn": {
+    "solubleSaltColor": [245, 180, 220],
+    "inSolubleSaltColor": [235, 235, 235],
+    "prevalence": 9220,
+    "radioactivity": false
+  },
+  "Fe": {
+    "solubleSaltColor": [255, 220, 170],
+    "inSolubleSaltColor": [190, 100, 70],
+    "prevalence": 848000,
+    "radioactivity": false
+  },
+  "Co": {
+    "solubleSaltColor": [220, 70, 120],
+    "inSolubleSaltColor": [220, 70, 120],
+    "prevalence": 2350,
+    "radioactivity": false
+  },
+  "Ni": {
+    "solubleSaltColor": [40, 180, 120],
+    "inSolubleSaltColor": [80, 150, 100],
+    "prevalence": 49000,
+    "radioactivity": false
+  },
+  "Cu": {
+    "solubleSaltColor": [40, 130, 210],
+    "inSolubleSaltColor": [80, 150, 160],
+    "prevalence": 541,
+    "radioactivity": false
+  },
+  "Zn": {
+    "solubleSaltColor": [255, 255, 255],
+    "inSolubleSaltColor": [255, 255, 255],
+    "prevalence": 1300,
+    "radioactivity": false
+  },
+  "Ga": {
+    "solubleSaltColor": [255, 255, 255],
+    "inSolubleSaltColor": [255, 255, 255],
+    "prevalence": 0.079,
+    "radioactivity": false
+  },
+  "Rb": {
+    "solubleSaltColor": [255, 255, 255],
+    "inSolubleSaltColor": [255, 255, 255],
+    "prevalence": 7.1,
+    "radioactivity": false
+  },
+  "Sr": {
+    "solubleSaltColor": [255, 255, 255],
+    "inSolubleSaltColor": [255, 255, 255],
+    "prevalence": 23.4,
+    "radioactivity": false
+  },
+  "Y": {
+    "solubleSaltColor": [255, 255, 255],
+    "inSolubleSaltColor": [255, 255, 255],
+    "prevalence": 4.63,
+    "radioactivity": false
+  },
+  "Zr": {
+    "solubleSaltColor": [255, 255, 255],
+    "inSolubleSaltColor": [255, 255, 255],
+    "prevalence": 10.8,
+    "radioactivity": false
+  },
+  "Nb": {
+    "solubleSaltColor": [255, 255, 255],
+    "inSolubleSaltColor": [255, 255, 255],
+    "prevalence": 0.78,
+    "radioactivity": false
+  },
+  "Mo": {
+    "solubleSaltColor": [255, 255, 255],
+    "inSolubleSaltColor": [255, 255, 255],
+    "prevalence": 2.55,
+    "radioactivity": false
+  },
+  "Ru": {
+    "solubleSaltColor": [255, 255, 255],
+    "inSolubleSaltColor": [70, 70, 70],
+    "prevalence": 1.78,
+    "radioactivity": false
+  },
+  "Rh": {
+    "solubleSaltColor": [255, 180, 180],
+    "inSolubleSaltColor": [255, 180, 180],
+    "prevalence": 0.37,
+    "radioactivity": false
+  },
+  "Pd": {
+    "solubleSaltColor": [255, 200, 50],
+    "inSolubleSaltColor": [255, 200, 50],
+    "prevalence": 1.36,
+    "radioactivity": false
+  },
+  "Ag": {
+    "solubleSaltColor": [255, 255, 255],
+    "inSolubleSaltColor": [230, 230, 240],
+    "prevalence": 0.489,
+    "radioactivity": false
+  },
+  "Cd": {
+    "solubleSaltColor": [255, 255, 255],
+    "inSolubleSaltColor": [255, 230, 150],
+    "prevalence": 1.57,
+    "radioactivity": false
+  },
+  "In": {
+    "solubleSaltColor": [255, 255, 255],
+    "inSolubleSaltColor": [255, 255, 255],
+    "prevalence": 0.014,
+    "radioactivity": false
+  },
+  "Sn": {
+    "solubleSaltColor": [255, 255, 255],
+    "inSolubleSaltColor": [255, 255, 255],
+    "prevalence": 0.33,
+    "radioactivity": false
+  },
+  "Cs": {
+    "solubleSaltColor": [255, 255, 255],
+    "inSolubleSaltColor": [255, 255, 255],
+    "prevalence": 0.371,
+    "radioactivity": false
+  },
+  "Ba": {
+    "solubleSaltColor": [255, 255, 255],
+    "inSolubleSaltColor": [255, 255, 255],
+    "prevalence": 4.47,
+    "radioactivity": false
+  },
+  "La": {
+    "solubleSaltColor": [255, 255, 255],
+    "inSolubleSaltColor": [255, 255, 255],
+    "prevalence": 0.457,
+    "radioactivity": false
+  },
+  "Ce": {
+    "solubleSaltColor": [255, 255, 255, 255],
+    "inSolubleSaltColor": [255, 255, 255],
+    "prevalence": 1.18,
+    "radioactivity": false
+  },
+  "Pr": {
+    "solubleSaltColor": [140, 255, 120],
+    "inSolubleSaltColor": [140, 255, 120],
+    "prevalence": 0.172,
+    "radioactivity": false
+  },
+  "Nd": {
+    "solubleSaltColor": [220, 120, 220],
+    "inSolubleSaltColor": [220, 120, 220],
+    "prevalence": 0.857,
+    "radioactivity": false
+  },
+  "Sm": {
+    "solubleSaltColor": [255, 220, 120],
+    "inSolubleSaltColor": [255, 220, 120],
+    "prevalence": 0.265,
+    "radioactivity": false
+  },
+  "Eu": {
+    "solubleSaltColor": [255, 240, 180],
+    "inSolubleSaltColor": [255, 240, 180],
+    "prevalence": 0.0984,
+    "radioactivity": false
+  },
+  "Gd": {
+    "solubleSaltColor": [255, 255, 255],
+    "inSolubleSaltColor": [255, 255, 255],
+    "prevalence": 0.36,
+    "radioactivity": false
+  },
+  "Tb": {
+    "solubleSaltColor": [255, 255, 255],
+    "inSolubleSaltColor": [255, 255, 255],
+    "prevalence": 0.0634,
+    "radioactivity": false
+  },
+  "Dy": {
+    "solubleSaltColor": [255, 255, 255],
+    "inSolubleSaltColor": [255, 255, 255],
+    "prevalence": 0.404,
+    "radioactivity": false
+  },
+  "Ho": {
+    "solubleSaltColor": [255, 255, 255],
+    "inSolubleSaltColor": [255, 255, 255],
+    "prevalence": 0.091,
+    "radioactivity": false
+  },
+  "Er": {
+    "solubleSaltColor": [255, 255, 255],
+    "inSolubleSaltColor": [255, 255, 255],
+    "prevalence": 0.262,
+    "radioactivity": false
+  },
+  "Tm": {
+    "solubleSaltColor": [255, 255, 255],
+    "inSolubleSaltColor": [255, 255, 255],
+    "prevalence": 0.0406,
+    "radioactivity": false
+  },
+  "Yb": {
+    "solubleSaltColor": [255, 255, 255],
+    "inSolubleSaltColor": [255, 255, 255],
+    "prevalence": 0.256,
+    "radioactivity": false
+  },
+  "Lu": {
+    "solubleSaltColor": [255, 255, 255],
+    "inSolubleSaltColor": [255, 255, 255],
+    "prevalence": 0.038,
+    "radioactivity": false
+  },
+  "Hf": {
+    "solubleSaltColor": [255, 255, 255],
+    "inSolubleSaltColor": [255, 255, 255],
+    "prevalence": 0.156,
+    "radioactivity": false
+  },
+  "Ta": {
+    "solubleSaltColor": [255, 255, 255],
+    "inSolubleSaltColor": [255, 255, 255],
+    "prevalence": 0.021,
+    "radioactivity": false
+  },
+  "W": {
+    "solubleSaltColor": [255, 255, 255],
+    "inSolubleSaltColor": [255, 255, 255],
+    "prevalence": 0.137,
+    "radioactivity": false
+  },
+  "Re": {
+    "solubleSaltColor": [255, 255, 255],
+    "inSolubleSaltColor": [255, 255, 255],
+    "prevalence": 0.0554,
+    "radioactivity": true
+  },
+  "Os": {
+    "solubleSaltColor": [255, 220, 150],
+    "inSolubleSaltColor": [255, 220, 150],
+    "prevalence": 0.68,
+    "radioactivity": false
+  },
+  "Ir": {
+    "solubleSaltColor": [255, 255, 255],
+    "inSolubleSaltColor": [255, 255, 255],
+    "prevalence": 0.672,
+    "radioactivity": false
+  },
+  "Pt": {
+    "solubleSaltColor": [255, 180, 120],
+    "inSolubleSaltColor": [255, 180, 120],
+    "prevalence": 1.27,
+    "radioactivity": false
+  },
+  "Au": {
+    "solubleSaltColor": [255, 240, 150],
+    "inSolubleSaltColor": [255, 240, 150],
+    "prevalence": 0.195,
+    "radioactivity": false
+  },
+  "Hg": {
+    "solubleSaltColor": [255, 255, 255],
+    "inSolubleSaltColor": [255, 120, 120],
+    "prevalence": 0.458,
+    "radioactivity": false
+  },
+  "Tl": {
+    "solubleSaltColor": [255, 255, 255],
+    "inSolubleSaltColor": [255, 255, 255],
+    "prevalence": 0.182,
+    "radioactivity": false
+  },
+  "Pb": {
+    "solubleSaltColor": [255, 255, 255],
+    "inSolubleSaltColor": [255, 255, 255],
+    "prevalence": 3.33,
+    "radioactivity": false
+  },
+  "Bi": {
+    "solubleSaltColor": [255, 255, 255],
+    "inSolubleSaltColor": [255, 240, 180],
+    "prevalence": 0.009,
+    "radioactivity": true
+  },
+  "Th": {
+    "solubleSaltColor": [255, 255, 255],
+    "inSolubleSaltColor": [255, 255, 255],
+    "prevalence": 0.0035,
+    "radioactivity": true
+  },
+  "U": {
+    "solubleSaltColor": [255, 230, 100],
+    "inSolubleSaltColor": [255, 230, 100],
+    "prevalence": 0.0033,
+    "radioactivity": true
+  }
+}
