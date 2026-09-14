@@ -464,101 +464,52 @@
     },
     {
       "id": "emo_anger",
-      "family": "emotion_land",
+      "family": "emotion",
       "priority": 45,
       "tone": "anomaly",
-      "labels": []
+      "labels": ["sense of danger", "sense of hostility"]
     },
     {
       "id": "emo_disgust",
-      "family": "emotion_land",
+      "family": "emotion",
       "priority": 45,
       "tone": "anomaly",
-      "labels": []
+      "labels": ["disgusting world", "corrupted world"]
     },
     {
       "id": "emo_fear",
-      "family": "emotion_land",
+      "family": "emotion",
       "priority": 45,
       "tone": "anomaly",
-      "labels": []
+      "labels": ["feeling of fear", "terror", "primal horror", "frightening world"]
     },
     {
       "id": "emo_joy",
-      "family": "emotion_land",
+      "family": "emotion",
       "priority": 45,
       "tone": "anomaly",
-      "labels": []
+      "labels": ["happy world"]
     },
     {
       "id": "emo_sadness",
-      "family": "emotion_land",
+      "family": "emotion",
       "priority": 45,
       "tone": "anomaly",
-      "labels": []
+      "labels": ["feeling of sadness", "sad world"]
     },
     {
       "id": "emo_calm",
-      "family": "emotion_land",
+      "family": "emotion",
       "priority": 45,
       "tone": "anomaly",
-      "labels": []
+      "labels": ["calm world", "tranquility", "peace", "serenity"]
     },
     {
       "id": "emo_surprise",
-      "family": "emotion_land",
+      "family": "emotion",
       "priority": 45,
       "tone": "anomaly",
-      "labels": []
-    },
-    {
-      "id": "sky_anger",
-      "family": "emotion_sky",
-      "priority": 46,
-      "tone": "anomaly",
-      "labels": []
-    },
-    {
-      "id": "sky_disgust",
-      "family": "emotion_sky",
-      "priority": 46,
-      "tone": "anomaly",
-      "labels": []
-    },
-    {
-      "id": "sky_fear",
-      "family": "emotion_sky",
-      "priority": 46,
-      "tone": "anomaly",
-      "labels": []
-    },
-    {
-      "id": "sky_joy",
-      "family": "emotion_sky",
-      "priority": 46,
-      "tone": "anomaly",
-      "labels": []
-    },
-    {
-      "id": "sky_sadness",
-      "family": "emotion_sky",
-      "priority": 46,
-      "tone": "anomaly",
-      "labels": []
-    },
-    {
-      "id": "sky_calm",
-      "family": "emotion_sky",
-      "priority": 46,
-      "tone": "anomaly",
-      "labels": []
-    },
-    {
-      "id": "sky_surprise",
-      "family": "emotion_sky",
-      "priority": 46,
-      "tone": "anomaly",
-      "labels": []
+      "labels": ["amazing world", "incredible world"]
     },
     {
       "id": "easter_err",
@@ -566,7 +517,7 @@
       "priority": 800,
       "tone": "easter",
       "easter": true,
-      "labels": ["[error]", "[undefined]", "[null]", "[forbidden]", "[?????]"]
+      "labels": ["[error]", "[undefined]", "[null]", "[forbidden]", "[?????]", "kzzzkt"]
     },
     {
       "id": "easter_sim",
@@ -574,7 +525,21 @@
       "priority": 800,
       "tone": "easter",
       "easter": true,
-      "labels": ["synthetic world", "failed experiment", "**wh*o#*ar*&e y*&ou*?"]
+      "labels": ["synthetic world", "failed experiment"]
+    },
+    {
+      "id": "easter_civ",
+      "family": "easter",
+      "priority": 800,
+      "tone": "easter",
+      "easter": true,
+      "civ": true,
+      "labels": ["**wh*o#*ar*&e y*&ou*?", 
+                 "#yo*u _a%re no&t g#od",
+                 "%we% a&re *se*e yo#u@",
+                 "$st#up-i-d @g##o&d",
+                 "#no% n-o **no &n&o",
+                 "##he:lp& u$s@"]
     }
   ]
 }

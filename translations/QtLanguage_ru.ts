@@ -1004,9 +1004,15 @@
     <message><source>[null]</source><translation>[null]</translation></message>
     <message><source>[forbidden]</source><translation>[запрещено]</translation></message>
     <message><source>[?????]</source><translation>[?????]</translation></message>
+    <message><source>kzzzkt</source><translation>кзззкт</translation></message>
     <message><source>synthetic world</source><translation>синтетический мир</translation></message>
     <message><source>failed experiment</source><translation>неудачный эксперимент</translation></message>
     <message><source>**wh*o#*ar*&e y*&ou*?</source><translation>*кт*о#ты*& #т*ак&ой*?</translation></message>
+    <message><source>#yo*u _a%re no&t g#od</source><translation>#ты* _н%е бо&г</translation></message>
+    <message><source>%we% a&re *se*e yo#u@</source><translation>%мы% ви&д*им те#бя@</translation></message>
+    <message><source>$st#up-i-d @g##o&d</source><translation>$гл#уп-ы-й @бо##г</translation></message>
+    <message><source>#no% n-o **no &n&o</source><translation>#н%ет н-ет н*е*т &не&т</translation></message>
+    <message><source>##he:lp& u$s@</source><translation>##по:мог&и н$ам@</translation></message>
     <message><source>useless</source><translation>бесполезная</translation></message>
     <message><source>no ores</source><translation>нет руд</translation></message>
     <message><source>nothing to mine</source><translation>нечего добывать</translation></message>
@@ -1031,5 +1037,28 @@
     <message><source>a little %1</source><translation>немного %1</translation></message>
     <message><source>valuable resources</source><translation>ценные ресурсы</translation></message>
     <message><source>dangerous resources</source><translation>опасные ресурсы</translation></message>
+    <message><source>sense of danger</source><translation>чувство опасности</translation></message>
+    <message><source>sense of hostility</source><translation>чувство враждебности</translation></message>
+    <message><source></source><translation></translation></message>
+    <message><source>disgusting world</source><translation>отвратительный мир</translation></message>
+    <message><source>corrupted world</source><translation>испорченный мир</translation></message>
+    <message><source></source><translation></translation></message>
+    <message><source>feeling of fear</source><translation>чувство страха</translation></message>
+    <message><source>terror</source><translation>ужас</translation></message>
+    <message><source>primal horror</source><translation>первобытный ужас</translation></message>
+    <message><source>frightening world</source><translation>страшный мир</translation></message>
+    <message><source></source><translation></translation></message>
+    <message><source>happy world</source><translation>счастливый мир</translation></message>
+    <message><source></source><translation></translation></message>
+    <message><source>feeling of sadness</source><translation>чувство грусти</translation></message>
+    <message><source>sad world</source><translation>грустный мир</translation></message>
+    <message><source></source><translation></translation></message>
+    <message><source>calm world</source><translation>спокойный мир</translation></message>
+    <message><source>tranquility</source><translation>спокойствие</translation></message>
+    <message><source>peace</source><translation>умиротворение</translation></message>
+    <message><source>serenity</source><translation>безмятежность</translation></message>
+    <message><source></source><translation></translation></message>
+    <message><source>amazing world</source><translation>удивительный мир</translation></message>
+    <message><source>incredible world</source><translation>невероятный мир</translation></message>
 </context>
 </TS>

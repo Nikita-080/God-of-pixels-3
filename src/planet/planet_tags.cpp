@@ -32,6 +32,7 @@ struct PlanetTagDef
     int priority;
     QString tone;
     bool easter;
+    bool civ;
     QVector<QString> labels;
 };
 
@@ -63,8 +64,7 @@ struct TagWorld
     bool rugged = false;
     bool valuable = false;
     bool hazard = false;
-    QString landEmotion;
-    QString skyEmotion;
+    QString emotion;
 };
 
 SurfaceScan scanSurface(const Planet &p)
@@ -277,21 +277,19 @@ QString landEmotionId(const Planet &p, const SurfaceScan &scan)
     return dominantEmotion(acc);
 }
 
-QString skyEmotionId(const Planet &p, const SurfaceScan &scan)
+QString skyEmotionId(const Planet &p)
 {
-    const double wCloud = double(scan.cloud) / double(scan.pixels);
-    const double wAtmo = p.s.is_atmo ? (qBound(0, p.s.atmo_size, 12) / 12.0) : 0.0;
     EmotionVector acc;
     double total = 0.0;
-    if (wCloud > 0.0 && p.s.cloud_color.isValid())
+    if (p.s.is_cloud && p.s.cloud_color.isValid())
     {
-        addEmotion(acc, ColorEmotion::analyze(p.s.cloud_color), wCloud);
-        total += wCloud;
+        addEmotion(acc, ColorEmotion::analyze(p.s.cloud_color), 1.0);
+        total += 1.0;
     }
-    if (wAtmo > 0.0 && p.s.atmo_color.isValid())
+    if (p.s.is_atmo && p.s.atmo_color.isValid())
     {
-        addEmotion(acc, ColorEmotion::analyze(p.s.atmo_color), wAtmo);
-        total += wAtmo;
+        addEmotion(acc, ColorEmotion::analyze(p.s.atmo_color), 1.0);
+        total += 1.0;
     }
     if (total <= 0.0)
         return QString();
@@ -304,6 +302,19 @@ QString skyEmotionId(const Planet &p, const SurfaceScan &scan)
     acc.calm *= inv;
     acc.surprise *= inv;
     return dominantEmotion(acc);
+}
+
+QString planetEmotionId(const Planet &p, const SurfaceScan &scan)
+{
+    const bool useSky = (p.s.is_atmo && p.s.atmo_transparent > 5)
+        || (p.s.is_cloud && p.s.cloud_transparent > 5);
+    if (useSky)
+    {
+        const QString sky = skyEmotionId(p);
+        if (!sky.isEmpty())
+            return sky;
+    }
+    return landEmotionId(p, scan);
 }
 
 struct MetalLex
@@ -414,6 +425,7 @@ const QVector<PlanetTagDef> &tagCatalog()
                 d.priority = o.value(QStringLiteral("priority")).toInt(100);
                 d.tone = o.value(QStringLiteral("tone")).toString(QStringLiteral("info"));
                 d.easter = o.value(QStringLiteral("easter")).toBool();
+                d.civ = o.value(QStringLiteral("civ")).toBool();
                 const QJsonArray labs = o.value(QStringLiteral("labels")).toArray();
                 for (const QJsonValue &lab : labs)
                 {
@@ -519,9 +531,7 @@ bool tagApplies(const Planet &p, const PlanetTagDef &d, const TagWorld &w)
     if (id == QLatin1String("hazard_ores"))
         return w.hazard;
     if (id.startsWith(QLatin1String("emo_")))
-        return !w.landEmotion.isEmpty() && w.landEmotion == id.mid(4);
-    if (id.startsWith(QLatin1String("sky_")))
-        return !w.skyEmotion.isEmpty() && w.skyEmotion == id.mid(4);
+        return !w.emotion.isEmpty() && w.emotion == id.mid(4);
     return false;
 }
 
@@ -575,16 +585,18 @@ void planetPaintTagCard(Planet &planet)
     const int land = qMax(1, world.scan.pixels - planet.water_pixel_count);
     world.rugged = double(world.scan.mountain) / double(land) >= kRuggedLandShare;
     markOreQuality(ores, world.valuable, world.hazard);
-    world.landEmotion = landEmotionId(planet, world.scan);
-    world.skyEmotion = skyEmotionId(planet, world.scan);
+    world.emotion = planetEmotionId(planet, world.scan);
     QVector<PlanetTagDef> chosen;
     QSet<QString> families;
     const QVector<PlanetTagDef> &all = tagCatalog();
     QVector<PlanetTagDef> regular;
     QVector<PlanetTagDef> easter;
+    QVector<PlanetTagDef> easterCiv;
     for (const PlanetTagDef &d : all)
     {
-        if (d.easter)
+        if (d.easter && d.civ)
+            easterCiv.append(d);
+        else if (d.easter)
             easter.append(d);
         else
             regular.append(d);
@@ -637,6 +649,11 @@ void planetPaintTagCard(Planet &planet)
     if (!easter.isEmpty() && planet.rnd.bounded(100) < 2)
     {
         const PlanetTagDef &egg = easter[planet.rnd.bounded(easter.size())];
+        chosen.append(egg);
+    }
+    if (!planet.cities.isEmpty() && !easterCiv.isEmpty() && planet.rnd.bounded(100) < 2)
+    {
+        const PlanetTagDef &egg = easterCiv[planet.rnd.bounded(easterCiv.size())];
         chosen.append(egg);
     }
     std::sort(chosen.begin(), chosen.end(), [](const PlanetTagDef &a, const PlanetTagDef &b) {
