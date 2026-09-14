@@ -7,6 +7,7 @@
 #include <QMovie>
 #include <QPushButton>
 #include <QGridLayout>
+#include <QHBoxLayout>
 #include <QStackedWidget>
 #include <QVBoxLayout>
 #include <QSizePolicy>
@@ -91,8 +92,20 @@ PreviewPanel::PreviewPanel(QWidget *parent)
 
     live = new QCheckBox;
     live->setObjectName(QStringLiteral("checkLivePreview"));
-    live->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed);
+    live->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
     live->setMinimumHeight(32);
+
+    spin = new QCheckBox;
+    spin->setObjectName(QStringLiteral("checkGlobeSpin"));
+    spin->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+    spin->setMinimumHeight(32);
+
+    auto *toggles = new QWidget;
+    auto *togglesLayout = new QHBoxLayout(toggles);
+    togglesLayout->setContentsMargins(0, 0, 0, 0);
+    togglesLayout->setSpacing(8);
+    togglesLayout->addWidget(live, 1);
+    togglesLayout->addWidget(spin, 1);
 
     btnResetCamera = new QPushButton;
     btnResetCamera->setObjectName(QStringLiteral("btnResetCamera"));
@@ -103,7 +116,7 @@ PreviewPanel::PreviewPanel(QWidget *parent)
     layout->setSpacing(10);
     layout->addWidget(nameLabel);
     layout->addWidget(previewBox, 1);
-    layout->addWidget(live);
+    layout->addWidget(toggles);
     layout->addWidget(btnResetCamera);
 
     retranslate();
@@ -118,6 +131,11 @@ PlanetGLWidget *PreviewPanel::glWidget() const
 QCheckBox *PreviewPanel::liveCheck() const
 {
     return live;
+}
+
+QCheckBox *PreviewPanel::spinCheck() const
+{
+    return spin;
 }
 
 void PreviewPanel::setPlanetName(const QString &name)
@@ -172,6 +190,7 @@ void PreviewPanel::setLoading(bool loading)
 void PreviewPanel::retranslate()
 {
     emptyLabel->setText(QCoreApplication::translate("MainWindow", "Create a planet to see the preview"));
-    live->setText(QCoreApplication::translate("MainWindow", "Live preview"));
+    live->setText(QCoreApplication::translate("MainWindow", "Quick update"));
+    spin->setText(QCoreApplication::translate("MainWindow", "Rotation"));
     btnResetCamera->setText(QCoreApplication::translate("MainWindow", "Reset camera"));
 }

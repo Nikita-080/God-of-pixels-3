@@ -231,7 +231,8 @@ QLabel#labelEmptyPreview {
 QLabel#labelPlanetName {
     color: rgb(110, 170, 200);
 }
-QCheckBox#checkLivePreview {
+QCheckBox#checkLivePreview,
+QCheckBox#checkGlobeSpin {
     color: rgb(110, 170, 200);
     font-family: Consolas;
     font-size: 11pt;
@@ -239,12 +240,14 @@ QCheckBox#checkLivePreview {
     padding: 6px 8px 10px 4px;
     border: 2px solid rgb(110, 170, 200);
 }
-QCheckBox#checkLivePreview:hover {
+QCheckBox#checkLivePreview:hover,
+QCheckBox#checkGlobeSpin:hover {
     border-color: rgb(145, 200, 228);
     color: rgb(160, 210, 230);
     background-color: rgb(9, 24, 31);
 }
-QCheckBox#checkLivePreview:pressed {
+QCheckBox#checkLivePreview:pressed,
+QCheckBox#checkGlobeSpin:pressed {
     border-color: rgb(85, 135, 155);
     color: rgb(90, 145, 170);
 }

@@ -18,6 +18,7 @@ public:
 
     PlanetGLWidget *glWidget() const;
     QCheckBox *liveCheck() const;
+    QCheckBox *spinCheck() const;
     void setPlanetName(const QString &name);
     void setHasPlanet(bool hasPlanet);
     void showGlobe();
@@ -36,6 +37,7 @@ private:
     class QMovie *loadingMovie;
     PlanetGLWidget *gl;
     QCheckBox *live;
+    QCheckBox *spin;
     QPushButton *btnResetCamera;
 };
 

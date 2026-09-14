@@ -9,6 +9,7 @@
 namespace AppKeys {
 const char language[] = "ui/language";
 const char livePreview[] = "ui/livePreview";
+const char globeSpin[] = "ui/globeSpin";
 const char dirImage[] = "paths/image";
 const char dirPlanet[] = "paths/planet";
 const char dirSettings[] = "paths/settings";

@@ -7,6 +7,7 @@
 #include <QWheelEvent>
 #include <QQuaternion>
 #include <QtMath>
+#include <cmath>
 
 namespace {
 const float kFovDeg = 42.0f;
@@ -14,6 +15,17 @@ const float kDefaultFill = 0.6f;
 const float kDefaultAzimuth = 0.0f;
 const float kDefaultElevation = 18.0f;
 const int kCameraResetMs = 1300;
+const float kPlanetSpinDps = 15.0f;
+const float kCloudSpinDps = 6.0f;
+const float kRingSpinDps = 4.0f;
+
+float wrapDeg(float a)
+{
+    a = std::fmod(a, 360.0f);
+    if (a < 0.0f)
+        a += 360.0f;
+    return a;
+}
 }
 
 static const char *kPlanetVert =
@@ -271,10 +283,15 @@ PlanetGLWidget::PlanetGLWidget(QWidget *parent)
     , elevation(kDefaultElevation)
     , cameraDistance(defaultCameraDistance())
     , camResetTimer(new QTimer(this))
+    , spinTimer(new QTimer(this))
     , camFromAz(kDefaultAzimuth)
     , camFromEl(kDefaultElevation)
     , camFromDist(defaultCameraDistance())
     , camDeltaAz(0.0f)
+    , planetSpinDeg(0.0f)
+    , cloudSpinDeg(0.0f)
+    , ringSpinDeg(0.0f)
+    , spinning(false)
     , dragging(false)
     , ready(false)
 {
@@ -282,6 +299,8 @@ PlanetGLWidget::PlanetGLWidget(QWidget *parent)
     setFocusPolicy(Qt::WheelFocus);
     camResetTimer->setInterval(16);
     connect(camResetTimer, &QTimer::timeout, this, &PlanetGLWidget::tickCameraReset);
+    spinTimer->setInterval(16);
+    connect(spinTimer, &QTimer::timeout, this, &PlanetGLWidget::tickSpin);
 }
 
 PlanetGLWidget::~PlanetGLWidget()
@@ -372,6 +391,33 @@ void PlanetGLWidget::resetCamera()
     camResetClock.start();
     tickCameraReset();
     camResetTimer->start();
+}
+
+void PlanetGLWidget::setSpinning(bool on)
+{
+    if (spinning == on)
+        return;
+    spinning = on;
+    if (spinning)
+    {
+        spinClock.restart();
+        spinTimer->start();
+    }
+    else
+    {
+        spinTimer->stop();
+    }
+}
+
+void PlanetGLWidget::tickSpin()
+{
+    if (!spinning)
+        return;
+    const float dt = float(spinClock.restart()) * 0.001f;
+    planetSpinDeg = wrapDeg(planetSpinDeg + kPlanetSpinDps * dt);
+    cloudSpinDeg = wrapDeg(cloudSpinDeg + kCloudSpinDps * dt);
+    ringSpinDeg = wrapDeg(ringSpinDeg + kRingSpinDps * dt);
+    update();
 }
 
 QVector3D PlanetGLWidget::cameraPos() const
@@ -662,19 +708,34 @@ void PlanetGLWidget::refreshAppearance()
     update();
 }
 
+QVector3D PlanetGLWidget::poleAxis() const
+{
+    QVector3D pole(0, 1, 0);
+    if (planet)
+    {
+        pole = QVector3D(float(planet->x_polar), float(planet->y_polar), float(planet->z_polar));
+        if (pole.lengthSquared() < 1e-8f)
+            pole = QVector3D(0, 1, 0);
+        else
+            pole.normalize();
+        // QOpenGLTexture mirrors QImage vertically, so map north lands on mesh -Y.
+        pole.setY(-pole.y());
+    }
+    return pole;
+}
+
+QMatrix4x4 PlanetGLWidget::spinAroundPole(float degrees) const
+{
+    QMatrix4x4 m;
+    if (!qFuzzyIsNull(degrees))
+        m.rotate(degrees, poleAxis());
+    return m;
+}
+
 QMatrix4x4 PlanetGLWidget::ringBasis() const
 {
     QMatrix4x4 m;
-    if (!planet)
-        return m;
-    QVector3D pole(float(planet->x_polar), float(planet->y_polar), float(planet->z_polar));
-    if (pole.lengthSquared() < 1e-8f)
-        pole = QVector3D(0, 1, 0);
-    else
-        pole.normalize();
-    // QOpenGLTexture mirrors QImage vertically, so map north lands on mesh -Y.
-    pole.setY(-pole.y());
-    m.rotate(QQuaternion::rotationTo(QVector3D(0, 1, 0), pole));
+    m.rotate(QQuaternion::rotationTo(QVector3D(0, 1, 0), poleAxis()));
     return m;
 }
 
@@ -682,9 +743,10 @@ void PlanetGLWidget::resizeGL(int, int)
 {
 }
 
-void PlanetGLWidget::drawScene(const QMatrix4x4 &proj, const QMatrix4x4 &view, const QMatrix4x4 &model)
+void PlanetGLWidget::drawScene(const QMatrix4x4 &proj, const QMatrix4x4 &view)
 {
-    const QMatrix4x4 mvp = proj * view * model;
+    const QMatrix4x4 planetModel = spinAroundPole(planetSpinDeg);
+    const QMatrix4x4 mvp = proj * view * planetModel;
     QVector3D light(float(planet->x_shine), float(planet->y_shine), float(planet->z_shine));
     if (light.lengthSquared() < 1e-8f)
         light = QVector3D(0.3f, 0.2f, 1.0f);
@@ -695,7 +757,7 @@ void PlanetGLWidget::drawScene(const QMatrix4x4 &proj, const QMatrix4x4 &view, c
 
     planetProg.bind();
     planetProg.setUniformValue("uMvp", mvp);
-    planetProg.setUniformValue("uModel", model);
+    planetProg.setUniformValue("uModel", planetModel);
     planetProg.setUniformValue("uLight", light);
     planetProg.setUniformValue("uCam", cameraPos());
     planetProg.setUniformValue("uLightI", lightI);
@@ -750,7 +812,7 @@ void PlanetGLWidget::drawScene(const QMatrix4x4 &proj, const QMatrix4x4 &view, c
 
     if (planet->s.is_cloud && clouds)
     {
-        QMatrix4x4 cloudModel = model;
+        QMatrix4x4 cloudModel = spinAroundPole(cloudSpinDeg);
         cloudModel.scale(1.02f);
         glEnable(GL_BLEND);
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -785,7 +847,7 @@ void PlanetGLWidget::drawScene(const QMatrix4x4 &proj, const QMatrix4x4 &view, c
         const float cover = float(qBound(0.0, 1.0 - 0.1 * planet->s.atmo_transparent, 1.0));
         const float sizeK = float(qBound(0.0, (planet->s.atmo_size - 1) / 9.0, 1.0));
         const float atmoScale = 1.0f + 0.03f * float(qBound(1, planet->s.atmo_size, 10));
-        QMatrix4x4 atmoModel = model;
+        QMatrix4x4 atmoModel = planetModel;
         atmoModel.scale(atmoScale);
         glEnable(GL_BLEND);
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -820,7 +882,7 @@ void PlanetGLWidget::drawScene(const QMatrix4x4 &proj, const QMatrix4x4 &view, c
         glDisable(GL_CULL_FACE);
         glEnable(GL_BLEND);
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-        QMatrix4x4 ringModel = model * ringBasis();
+        QMatrix4x4 ringModel = spinAroundPole(ringSpinDeg) * ringBasis();
         ringProg.bind();
         ringProg.setUniformValue("uMvp", proj * view * ringModel);
         ringProg.setUniformValue("uModel", ringModel);
@@ -963,14 +1025,13 @@ void PlanetGLWidget::paintGL()
     proj.perspective(kFovDeg, 1.0f, 0.1f, qMax(20.0f, cameraDistance + 8.0f));
     QMatrix4x4 view;
     view.lookAt(cameraPos(), QVector3D(0, 0, 0), QVector3D(0, 1, 0));
-    QMatrix4x4 model;
 
     sceneFbo->bind();
     glViewport(0, 0, res, res);
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_CULL_FACE);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    drawScene(proj, view, model);
+    drawScene(proj, view);
     sceneFbo->release();
 
     glBindFramebuffer(GL_FRAMEBUFFER, defaultFramebufferObject());

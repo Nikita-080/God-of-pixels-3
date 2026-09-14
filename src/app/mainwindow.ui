@@ -7699,7 +7699,7 @@ color: rgb(255, 255, 255);</string>
     <bool>false</bool>
    </property>
    <property name="text">
-    <string>Live preview</string>
+    <string>Quick update</string>
    </property>
   </action>
  </widget>

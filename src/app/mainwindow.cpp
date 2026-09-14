@@ -99,6 +99,8 @@ MainWindow::MainWindow(QWidget *parent)
 
     preview = new PreviewPanel;
     preview->liveCheck()->setChecked(ui->action_live->isChecked());
+    preview->spinCheck()->setChecked(st.value(AppKeys::globeSpin, false).toBool());
+    preview->glWidget()->setSpinning(preview->spinCheck()->isChecked());
     settingsPanel = new SettingsPanel(ui->tabWidget);
 
     liveTimer = new QTimer(this);
@@ -134,6 +136,10 @@ MainWindow::MainWindow(QWidget *parent)
     });
     connect(preview->liveCheck(), &QCheckBox::toggled, ui->action_live, &QAction::setChecked);
     connect(ui->action_live, &QAction::toggled, preview->liveCheck(), &QCheckBox::setChecked);
+    connect(preview->spinCheck(), &QCheckBox::toggled, this, [](bool on) {
+        QSettings().setValue(AppKeys::globeSpin, on);
+    });
+    connect(preview->spinCheck(), &QCheckBox::toggled, preview->glWidget(), &PlanetGLWidget::setSpinning);
     connect(settingsPanel, &SettingsPanel::settingsChanged, this, [this](bool appearanceOnly) {
         appearanceOnlyLive = appearanceOnly;
         scheduleLivePreview();

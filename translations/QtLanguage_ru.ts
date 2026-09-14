@@ -325,8 +325,12 @@
         <translation>Переключить язык</translation>
     </message>
     <message>
-        <source>Live preview</source>
-        <translation>Обновлять сразу</translation>
+        <source>Quick update</source>
+        <translation>Быстрое обновление</translation>
+    </message>
+    <message>
+        <source>Rotation</source>
+        <translation>Вращение</translation>
     </message>
     <message>
         <source>Create a planet to see the preview</source>

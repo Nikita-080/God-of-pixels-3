@@ -28,6 +28,7 @@ public:
     void refreshTextures();
     void refreshAppearance();
     void resetCamera();
+    void setSpinning(bool on);
     QImage captureView();
 
 protected:
@@ -46,8 +47,11 @@ private:
     void buildBlitQuad();
     void ensureSceneFbo(int res);
     void uploadTexture(std::unique_ptr<QOpenGLTexture> &tex, const QImage &img, bool repeatU);
-    void drawScene(const QMatrix4x4 &proj, const QMatrix4x4 &view, const QMatrix4x4 &model);
+    void drawScene(const QMatrix4x4 &proj, const QMatrix4x4 &view);
+    QVector3D poleAxis() const;
+    QMatrix4x4 spinAroundPole(float degrees) const;
     QMatrix4x4 ringBasis() const;
+    void tickSpin();
     QVector3D cameraPos() const;
     int currentViewRes() const;
     static float defaultCameraDistance();
@@ -83,11 +87,17 @@ private:
     float elevation;
     float cameraDistance;
     QTimer *camResetTimer;
+    QTimer *spinTimer;
     QElapsedTimer camResetClock;
+    QElapsedTimer spinClock;
     float camFromAz;
     float camFromEl;
     float camFromDist;
     float camDeltaAz;
+    float planetSpinDeg;
+    float cloudSpinDeg;
+    float ringSpinDeg;
+    bool spinning;
     bool dragging;
     QPoint lastPos;
     bool ready;
