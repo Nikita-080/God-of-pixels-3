@@ -1007,12 +1007,12 @@
     <message><source>kzzzkt</source><translation>кзззкт</translation></message>
     <message><source>synthetic world</source><translation>синтетический мир</translation></message>
     <message><source>failed experiment</source><translation>неудачный эксперимент</translation></message>
-    <message><source>**wh*o#*ar*&e y*&ou*?</source><translation>*кт*о#ты*& #т*ак&ой*?</translation></message>
-    <message><source>#yo*u _a%re no&t g#od</source><translation>#ты* _н%е бо&г</translation></message>
-    <message><source>%we% a&re *se*e yo#u@</source><translation>%мы% ви&д*им те#бя@</translation></message>
-    <message><source>$st#up-i-d @g##o&d</source><translation>$гл#уп-ы-й @бо##г</translation></message>
-    <message><source>#no% n-o **no &n&o</source><translation>#н%ет н-ет н*е*т &не&т</translation></message>
-    <message><source>##he:lp& u$s@</source><translation>##по:мог&и н$ам@</translation></message>
+    <message><source>**wh-o#-ar-&amp;e y-&amp;ou-?</source><translation>-кт-о#ты*&amp; #т-ак&amp;ой-?</translation></message>
+    <message><source>#yo-u _a%re no&amp;t g#od</source><translation>#ты- _н%е бо&amp;г</translation></message>
+    <message><source>%we% a&amp;re -se-e yo#u@</source><translation>%мы% ви&amp;д-им те#бя@</translation></message>
+    <message><source>$st#up-i-d @g##o&amp;d</source><translation>$гл#уп-ы-й @бо##г</translation></message>
+    <message><source>#no% n-o --no &amp;n&amp;o</source><translation>#н%ет н-ет н-е-т &amp;не&amp;т</translation></message>
+    <message><source>##he:lp&amp; u$s@</source><translation>##по:мог&amp;и н$ам@</translation></message>
     <message><source>useless</source><translation>бесполезная</translation></message>
     <message><source>no ores</source><translation>нет руд</translation></message>
     <message><source>nothing to mine</source><translation>нечего добывать</translation></message>
