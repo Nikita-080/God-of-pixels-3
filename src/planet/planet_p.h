@@ -17,6 +17,7 @@ struct MineralSalt
     QColor soluble;
     QColor insoluble;
     bool radioactive;
+    double prevalence;
 };
 
 const QVector<MineralSalt> &planetMinerals();
@@ -26,6 +27,7 @@ struct PlanetOre
     QString symbol;
     qint64 area;
     bool radioactive;
+    double prevalence;
 };
 
 QVector<PlanetOre> planetOreInventory(const class Planet &planet);

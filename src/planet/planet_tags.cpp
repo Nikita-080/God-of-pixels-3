@@ -1,10 +1,12 @@
 #include "planet_p.h"
 #include "planet.h"
 #include "starspectrum.h"
+#include "coloremotion.h"
 #include <QCoreApplication>
 #include <QFile>
 #include <QFont>
 #include <QFontMetrics>
+#include <QHash>
 #include <QJsonArray>
 #include <QJsonDocument>
 #include <QJsonObject>
@@ -19,6 +21,9 @@ namespace {
 
 const int kTagCols = 28;
 const int kTagRows = 13;
+const double kValuablePrevalence = 10.0;
+const double kOreShareCut = 0.12;
+const double kRuggedLandShare = 0.08;
 
 struct PlanetTagDef
 {
@@ -44,7 +49,22 @@ struct SurfaceScan
     int lava = 0;
     int rifts = 0;
     int cloud = 0;
-    double relief = 0.0;
+    int mountain = 0;
+    qint64 layerArea[7] = {0, 0, 0, 0, 0, 0, 0};
+};
+
+struct TagWorld
+{
+    SurfaceScan scan;
+    int wealth = 0;
+    int waterRank = 0;
+    int iceRank = 0;
+    int floraRank = 0;
+    bool rugged = false;
+    bool valuable = false;
+    bool hazard = false;
+    QString landEmotion;
+    QString skyEmotion;
 };
 
 SurfaceScan scanSurface(const Planet &p)
@@ -55,11 +75,10 @@ SurfaceScan scanSurface(const Planet &p)
     s.pixels = qMax(1, w * h);
     if (w <= 0 || h <= 0)
         return s;
-    double mn = 1e100;
-    double mx = -1e100;
     const bool hasLava = !p.lavaHeat.isEmpty() && p.lavaHeat.size() == w;
     const bool hasFault = !p.faultKind.isEmpty() && p.faultKind.size() == w;
     const bool hasCloud = p.s.is_cloud && !p.c_map.isEmpty() && p.c_map.size() == w;
+    const bool hasStruct = p.s.true_structure.size() >= 8;
     for (int x = 0; x < w; ++x)
     {
         for (int y = 0; y < h; ++y)
@@ -67,8 +86,21 @@ SurfaceScan scanSurface(const Planet &p)
             if (x < p.matrix.size() && y < p.matrix[x].size())
             {
                 const double z = p.matrix[x][y];
-                mn = qMin(mn, z);
-                mx = qMax(mx, z);
+                if (hasStruct)
+                {
+                    for (int i = 0; i < 7; ++i)
+                    {
+                        if (p.s.true_structure[i] == p.s.true_structure[i + 1])
+                            continue;
+                        if (z <= p.s.true_structure[i] && z >= p.s.true_structure[i + 1])
+                        {
+                            ++s.layerArea[i];
+                            if (i == 2)
+                                ++s.mountain;
+                            break;
+                        }
+                    }
+                }
             }
             if (hasLava && y < p.lavaHeat[x].size() && p.lavaHeat[x][y] > 0.2)
                 ++s.lava;
@@ -78,8 +110,6 @@ SurfaceScan scanSurface(const Planet &p)
                 ++s.cloud;
         }
     }
-    if (mx > mn)
-        s.relief = mx - mn;
     return s;
 }
 
@@ -107,17 +137,37 @@ int cloudRank(const Planet &p, const SurfaceScan &s)
     return 3;
 }
 
+int rank5(int v)
+{
+    v = qBound(0, v, 12);
+    if (v <= 1)
+        return 0;
+    if (v <= 4)
+        return 1;
+    if (v <= 7)
+        return 2;
+    if (v <= 10)
+        return 3;
+    return 4;
+}
+
+int fracToRank5(double frac)
+{
+    return rank5(qRound(qBound(0.0, frac, 1.0) * 12.0));
+}
+
 int floraRank(const Planet &p)
 {
     if (p.plant_pixel_count <= 0)
         return 0;
     const int pix = qMax(1, p.map_w * p.map_h);
-    const double ofMap = double(p.plant_pixel_count) / double(pix);
-    if (ofMap < 0.03)
+    const int land = qMax(1, pix - p.water_pixel_count);
+    const double ofLand = double(p.plant_pixel_count) / double(land);
+    if (ofLand < 0.03)
         return 1;
-    if (ofMap < 0.10)
+    if (ofLand < 0.10)
         return 2;
-    if (ofMap < 0.22)
+    if (ofLand < 0.22)
         return 3;
     return 4;
 }
@@ -136,86 +186,162 @@ int oreWealthRank(const QVector<PlanetOre> &ores)
     return 4;
 }
 
+void markOreQuality(const QVector<PlanetOre> &ores, bool &valuable, bool &hazard)
+{
+    valuable = false;
+    hazard = false;
+    qint64 total = 0;
+    for (const PlanetOre &ore : ores)
+        total += ore.area;
+    if (total <= 0)
+        return;
+    for (const PlanetOre &ore : ores)
+    {
+        const double share = double(ore.area) / double(total);
+        if (share < kOreShareCut)
+            continue;
+        if (ore.prevalence < kValuablePrevalence)
+            valuable = true;
+        if (ore.radioactive)
+            hazard = true;
+    }
+}
+
+void addEmotion(EmotionVector &acc, const EmotionVector &e, double w)
+{
+    acc.anger += e.anger * w;
+    acc.disgust += e.disgust * w;
+    acc.fear += e.fear * w;
+    acc.joy += e.joy * w;
+    acc.sadness += e.sadness * w;
+    acc.calm += e.calm * w;
+    acc.surprise += e.surprise * w;
+}
+
+QString dominantEmotion(const EmotionVector &e)
+{
+    const struct
+    {
+        const char *id;
+        double v;
+    } items[] = {
+        {"anger", e.anger},
+        {"disgust", e.disgust},
+        {"fear", e.fear},
+        {"joy", e.joy},
+        {"sadness", e.sadness},
+        {"calm", e.calm},
+        {"surprise", e.surprise}
+    };
+    int best = -1;
+    double mx = 0.0;
+    for (int i = 0; i < 7; ++i)
+    {
+        if (items[i].v > mx)
+        {
+            mx = items[i].v;
+            best = i;
+        }
+    }
+    if (best < 0 || mx <= 0.0)
+        return QString();
+    return QString::fromLatin1(items[best].id);
+}
+
+QString landEmotionId(const Planet &p, const SurfaceScan &scan)
+{
+    const QColor layerColor[7] = {
+        p.s.ice_color, p.s.rock_color, p.s.mountain_color, p.s.plain_color,
+        p.s.beach_color, p.s.shallow_color, p.s.ocean_color
+    };
+    EmotionVector acc;
+    double total = 0.0;
+    for (int i = 0; i < 7; ++i)
+    {
+        if (scan.layerArea[i] <= 0 || !layerColor[i].isValid())
+            continue;
+        const double w = double(scan.layerArea[i]);
+        addEmotion(acc, ColorEmotion::analyze(layerColor[i]), w);
+        total += w;
+    }
+    if (total <= 0.0)
+        return QString();
+    const double inv = 1.0 / total;
+    acc.anger *= inv;
+    acc.disgust *= inv;
+    acc.fear *= inv;
+    acc.joy *= inv;
+    acc.sadness *= inv;
+    acc.calm *= inv;
+    acc.surprise *= inv;
+    return dominantEmotion(acc);
+}
+
+QString skyEmotionId(const Planet &p, const SurfaceScan &scan)
+{
+    const double wCloud = double(scan.cloud) / double(scan.pixels);
+    const double wAtmo = p.s.is_atmo ? (qBound(0, p.s.atmo_size, 12) / 12.0) : 0.0;
+    EmotionVector acc;
+    double total = 0.0;
+    if (wCloud > 0.0 && p.s.cloud_color.isValid())
+    {
+        addEmotion(acc, ColorEmotion::analyze(p.s.cloud_color), wCloud);
+        total += wCloud;
+    }
+    if (wAtmo > 0.0 && p.s.atmo_color.isValid())
+    {
+        addEmotion(acc, ColorEmotion::analyze(p.s.atmo_color), wAtmo);
+        total += wAtmo;
+    }
+    if (total <= 0.0)
+        return QString();
+    const double inv = 1.0 / total;
+    acc.anger *= inv;
+    acc.disgust *= inv;
+    acc.fear *= inv;
+    acc.joy *= inv;
+    acc.sadness *= inv;
+    acc.calm *= inv;
+    acc.surprise *= inv;
+    return dominantEmotion(acc);
+}
+
 struct MetalLex
 {
-    const char *sym;
-    const char *en;
-    const char *ruGen;
-    const char *ruAdj;
+    QString en;
+    QString ruGen;
+    QString ruAdj;
 };
 
 const MetalLex *metalLex(const QString &symbol)
 {
-    static const MetalLex kTable[] = {
-        {"Li", "lithium", "лития", "литиевые"},
-        {"Be", "beryllium", "бериллия", "бериллиевые"},
-        {"Na", "sodium", "натрия", "натриевые"},
-        {"Mg", "magnesium", "магния", "магниевые"},
-        {"Al", "aluminium", "алюминия", "алюминиевые"},
-        {"K", "potassium", "калия", "калиевые"},
-        {"Ca", "calcium", "кальция", "кальциевые"},
-        {"Sc", "scandium", "скандия", "скандиевые"},
-        {"Ti", "titanium", "титана", "титановые"},
-        {"V", "vanadium", "ванадия", "ванадиевые"},
-        {"Cr", "chromium", "хрома", "хромовые"},
-        {"Mn", "manganese", "марганца", "марганцевые"},
-        {"Fe", "iron", "железа", "железные"},
-        {"Co", "cobalt", "кобальта", "кобальтовые"},
-        {"Ni", "nickel", "никеля", "никелевые"},
-        {"Cu", "copper", "меди", "медные"},
-        {"Zn", "zinc", "цинка", "цинковые"},
-        {"Ga", "gallium", "галлия", "галлиевые"},
-        {"Rb", "rubidium", "рубидия", "рубидиевые"},
-        {"Sr", "strontium", "стронция", "стронциевые"},
-        {"Y", "yttrium", "иттрия", "иттриевые"},
-        {"Zr", "zirconium", "циркония", "циркониевые"},
-        {"Nb", "niobium", "ниобия", "ниобиевые"},
-        {"Mo", "molybdenum", "молибдена", "молибденовые"},
-        {"Ru", "ruthenium", "рутения", "рутениевые"},
-        {"Rh", "rhodium", "родия", "родиевые"},
-        {"Pd", "palladium", "палладия", "палладиевые"},
-        {"Ag", "silver", "серебра", "серебряные"},
-        {"Cd", "cadmium", "кадмия", "кадмиевые"},
-        {"In", "indium", "индия", "индиевые"},
-        {"Sn", "tin", "олова", "оловянные"},
-        {"Cs", "caesium", "цезия", "цезиевые"},
-        {"Ba", "barium", "бария", "бариевые"},
-        {"La", "lanthanum", "лантана", "лантановые"},
-        {"Ce", "cerium", "церия", "цериевые"},
-        {"Pr", "praseodymium", "празеодима", "празеодимовые"},
-        {"Nd", "neodymium", "неодима", "неодимовые"},
-        {"Sm", "samarium", "самария", "самариевые"},
-        {"Eu", "europium", "европия", "европиевые"},
-        {"Gd", "gadolinium", "гадолиния", "гадолиниевые"},
-        {"Tb", "terbium", "тербия", "тербиевые"},
-        {"Dy", "dysprosium", "диспрозия", "диспрозиевые"},
-        {"Ho", "holmium", "гольмия", "гольмиевые"},
-        {"Er", "erbium", "эрбия", "эрбиевые"},
-        {"Tm", "thulium", "тулия", "тулиевые"},
-        {"Yb", "ytterbium", "иттербия", "иттербиевые"},
-        {"Lu", "lutetium", "лютеция", "лютециевые"},
-        {"Hf", "hafnium", "гафния", "гафниевые"},
-        {"Ta", "tantalum", "тантала", "танталовые"},
-        {"W", "tungsten", "вольфрама", "вольфрамовые"},
-        {"Re", "rhenium", "рения", "рениевые"},
-        {"Os", "osmium", "осмия", "осмиевые"},
-        {"Ir", "iridium", "иридия", "иридиевые"},
-        {"Pt", "platinum", "платины", "платиновые"},
-        {"Au", "gold", "золота", "золотые"},
-        {"Hg", "mercury", "ртути", "ртутные"},
-        {"Tl", "thallium", "таллия", "таллиевые"},
-        {"Pb", "lead", "свинца", "свинцовые"},
-        {"Bi", "bismuth", "висмута", "висмутовые"},
-        {"Th", "thorium", "тория", "ториевые"},
-        {"U", "uranium", "урана", "урановые"},
-        {nullptr, nullptr, nullptr, nullptr}
-    };
-    for (int i = 0; kTable[i].sym; ++i)
+    static QHash<QString, MetalLex> table;
+    static bool loaded = false;
+    if (!loaded)
     {
-        if (symbol == QLatin1String(kTable[i].sym))
-            return &kTable[i];
+        QFile file(QStringLiteral(":/txt_files/res/txt_files/metal_lex.json"));
+        if (file.open(QIODevice::ReadOnly))
+        {
+            const QJsonObject root = QJsonDocument::fromJson(file.readAll()).object();
+            for (auto it = root.begin(); it != root.end(); ++it)
+            {
+                if (!it.value().isObject())
+                    continue;
+                const QJsonObject o = it.value().toObject();
+                MetalLex m;
+                m.en = o.value(QStringLiteral("en")).toString();
+                m.ruGen = o.value(QStringLiteral("ruGen")).toString();
+                m.ruAdj = o.value(QStringLiteral("ruAdj")).toString();
+                if (!m.en.isEmpty())
+                    table.insert(it.key(), m);
+            }
+        }
+        loaded = true;
     }
-    return nullptr;
+    auto it = table.constFind(symbol);
+    if (it == table.cend())
+        return nullptr;
+    return &it.value();
 }
 
 QString orePhrase(const QString &symbol, int kind, QRandomGenerator &rnd)
@@ -223,9 +349,9 @@ QString orePhrase(const QString &symbol, int kind, QRandomGenerator &rnd)
     const MetalLex *m = metalLex(symbol);
     const bool ru = QCoreApplication::translate("PlanetTags", "rings")
                     == QString::fromUtf8("кольца");
-    const QString en = m ? QString::fromUtf8(m->en) : symbol;
-    const QString gen = (ru && m) ? QString::fromUtf8(m->ruGen) : en;
-    const QString adj = (ru && m) ? QString::fromUtf8(m->ruAdj) : en;
+    const QString en = m ? m->en : symbol;
+    const QString gen = (ru && m && !m->ruGen.isEmpty()) ? m->ruGen : en;
+    const QString adj = (ru && m && !m->ruAdj.isEmpty()) ? m->ruAdj : en;
     const int pick = rnd.bounded(2);
     QString text;
     if (kind <= 0)
@@ -264,20 +390,6 @@ QColor toneColor(const QString &tone)
     return QColor(110, 170, 200);
 }
 
-int rank5(int v)
-{
-    v = qBound(0, v, 12);
-    if (v <= 1)
-        return 0;
-    if (v <= 4)
-        return 1;
-    if (v <= 7)
-        return 2;
-    if (v <= 10)
-        return 3;
-    return 4;
-}
-
 const QVector<PlanetTagDef> &tagCatalog()
 {
     static QVector<PlanetTagDef> table;
@@ -309,7 +421,7 @@ const QVector<PlanetTagDef> &tagCatalog()
                     if (!s.isEmpty() && s.size() <= kTagCols)
                         d.labels.append(s);
                 }
-                if (!d.id.isEmpty() && !d.labels.isEmpty())
+                if (!d.id.isEmpty())
                     table.append(d);
             }
         }
@@ -318,49 +430,46 @@ const QVector<PlanetTagDef> &tagCatalog()
     return table;
 }
 
-bool tagApplies(const Planet &p, const PlanetTagDef &d, const SurfaceScan &scan, int wealth)
+bool tagApplies(const Planet &p, const PlanetTagDef &d, const TagWorld &w)
 {
     const QString &id = d.id;
     if (id.startsWith(QLatin1String("res_")))
-        return wealth == id.mid(4).toInt();
+        return w.wealth == id.mid(4).toInt();
     if (id.startsWith(QLatin1String("rad_")))
         return rank5(p.facts.radiation) == id.mid(4).toInt();
     if (id.startsWith(QLatin1String("wat_")))
-        return rank5(p.facts.water) == id.mid(4).toInt();
+        return w.waterRank == id.mid(4).toInt();
     if (id.startsWith(QLatin1String("ice_")))
-        return rank5(p.facts.ice) == id.mid(4).toInt();
+        return w.iceRank == id.mid(4).toInt();
     if (id.startsWith(QLatin1String("life_")))
-        return floraRank(p) == id.mid(4).toInt();
+        return w.floraRank == id.mid(4).toInt();
     if (id.startsWith(QLatin1String("tmp_")))
         return rank5(p.facts.temperature) == id.mid(4).toInt();
     if (id.startsWith(QLatin1String("sei_")))
         return rank5(p.facts.seismicity) == id.mid(4).toInt();
     if (id.startsWith(QLatin1String("lava_")))
-        return lavaRank(scan) == id.mid(5).toInt();
+        return lavaRank(w.scan) == id.mid(5).toInt();
     if (id.startsWith(QLatin1String("cloud_")))
-        return cloudRank(p, scan) == id.mid(6).toInt();
+        return cloudRank(p, w.scan) == id.mid(6).toInt();
     if (id == QLatin1String("civ_yes"))
         return !p.cities.isEmpty();
     if (id == QLatin1String("toxic_flora"))
         return p.plant_pixel_count > 0 && p.s.hazardLight() >= 0.45;
     if (id == QLatin1String("rifts"))
-        return double(scan.rifts) / double(scan.pixels) >= 0.01;
+        return double(w.scan.rifts) / double(w.scan.pixels) >= 0.01;
     if (id == QLatin1String("rugged"))
-    {
-        if (p.s.true_structure.size() < 2)
-            return false;
-        const double span = qAbs(p.s.true_structure.first() - p.s.true_structure.last());
-        return span >= 1.0 && scan.relief / span >= 0.78;
-    }
+        return w.rugged;
     if (id == QLatin1String("habitable"))
-        return rank5(p.facts.temperature) == 2 && p.facts.water >= 5
+        return rank5(p.facts.temperature) == 2
+            && double(p.water_pixel_count) / double(w.scan.pixels) >= 5.0 / 12.0
             && p.facts.radiation <= 4 && p.plant_pixel_count > 0;
     if (id == QLatin1String("ice_ocean"))
-        return p.facts.water >= 8 && p.facts.ice >= 8;
+        return double(p.water_pixel_count) / double(w.scan.pixels) >= 8.0 / 12.0
+            && double(p.ice_pixel_count) / double(w.scan.pixels) >= 8.0 / 12.0;
     if (id == QLatin1String("dark_flora"))
         return !p.s.has_star && p.plant_pixel_count > 0;
     if (id == QLatin1String("danger"))
-        return p.facts.radiation >= 8 || p.facts.seismicity >= 9 || lavaRank(scan) >= 3
+        return p.facts.radiation >= 8 || p.facts.seismicity >= 9 || lavaRank(w.scan) >= 3
             || (p.facts.life >= 3 && p.facts.radiation >= 6);
     if (id == QLatin1String("anomaly"))
     {
@@ -405,6 +514,14 @@ bool tagApplies(const Planet &p, const PlanetTagDef &d, const SurfaceScan &scan,
         return p.s.has_star;
     if (id == QLatin1String("no_star"))
         return !p.s.has_star;
+    if (id == QLatin1String("valuable_ores"))
+        return w.valuable;
+    if (id == QLatin1String("hazard_ores"))
+        return w.hazard;
+    if (id.startsWith(QLatin1String("emo_")))
+        return !w.landEmotion.isEmpty() && w.landEmotion == id.mid(4);
+    if (id.startsWith(QLatin1String("sky_")))
+        return !w.skyEmotion.isEmpty() && w.skyEmotion == id.mid(4);
     return false;
 }
 
@@ -415,10 +532,10 @@ QVector<PlacedTag> packTags(const QVector<QPair<QString, QColor>> &picked)
     int row = 0;
     for (const auto &item : picked)
     {
-        const int w = item.first.size();
-        if (w <= 0 || w > kTagCols)
+        const int tw = item.first.size();
+        if (tw <= 0 || tw > kTagCols)
             continue;
-        if (col > 0 && col + 1 + w > kTagCols)
+        if (col > 0 && col + 1 + tw > kTagCols)
         {
             col = 0;
             ++row;
@@ -431,7 +548,7 @@ QVector<PlacedTag> packTags(const QVector<QPair<QString, QColor>> &picked)
         t.col = col;
         t.row = row;
         out.append(t);
-        col += w;
+        col += tw;
         if (col < kTagCols)
             ++col;
         else
@@ -448,9 +565,18 @@ QVector<PlacedTag> packTags(const QVector<QPair<QString, QColor>> &picked)
 void planetPaintTagCard(Planet &planet)
 {
     planet.img_sys = planetCachedImage(QStringLiteral(":/images/res/images/window.png")).copy();
-    const SurfaceScan scan = scanSurface(planet);
+    TagWorld world;
+    world.scan = scanSurface(planet);
     const QVector<PlanetOre> ores = planetOreInventory(planet);
-    const int wealth = oreWealthRank(ores);
+    world.wealth = oreWealthRank(ores);
+    world.waterRank = fracToRank5(double(planet.water_pixel_count) / double(world.scan.pixels));
+    world.iceRank = fracToRank5(double(planet.ice_pixel_count) / double(world.scan.pixels));
+    world.floraRank = floraRank(planet);
+    const int land = qMax(1, world.scan.pixels - planet.water_pixel_count);
+    world.rugged = double(world.scan.mountain) / double(land) >= kRuggedLandShare;
+    markOreQuality(ores, world.valuable, world.hazard);
+    world.landEmotion = landEmotionId(planet, world.scan);
+    world.skyEmotion = skyEmotionId(planet, world.scan);
     QVector<PlanetTagDef> chosen;
     QSet<QString> families;
     const QVector<PlanetTagDef> &all = tagCatalog();
@@ -472,7 +598,7 @@ void planetPaintTagCard(Planet &planet)
     {
         if (!d.family.isEmpty() && families.contains(d.family))
             continue;
-        if (!tagApplies(planet, d, scan, wealth))
+        if (!tagApplies(planet, d, world))
             continue;
         if (!d.family.isEmpty())
             families.insert(d.family);

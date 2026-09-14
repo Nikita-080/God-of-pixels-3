@@ -91,12 +91,16 @@ QVector<PlanetOre> collectOres(const Planet &p)
         return out;
 
     QHash<QString, bool> radioactive;
+    QHash<QString, double> prevalence;
     for (const MineralSalt &m : planetMinerals())
+    {
         radioactive.insert(m.symbol, m.radioactive);
+        prevalence.insert(m.symbol, m.prevalence);
+    }
 
     out.reserve(score.size());
     for (auto it = score.begin(); it != score.end(); ++it)
-        out.append({it.key(), it.value(), radioactive.value(it.key())});
+        out.append({it.key(), it.value(), radioactive.value(it.key()), prevalence.value(it.key())});
     std::sort(out.begin(), out.end(), [](const PlanetOre &a, const PlanetOre &b) {
         if (a.area != b.area)
             return a.area > b.area;

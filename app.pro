@@ -35,6 +35,7 @@ SOURCES += \
     src/planet/planet_surface.cpp \
     src/planet/planet_tags.cpp \
     src/planet/planet_terrain.cpp \
+    src/gen/coloremotion.cpp \
     src/gen/cloudfactory.cpp \
     src/gen/facts.cpp \
     src/gen/noise3d.cpp \
@@ -56,6 +57,7 @@ HEADERS += \
     src/ui/windowsettings.h \
     src/planet/planet.h \
     src/planet/planet_p.h \
+    src/gen/coloremotion.h \
     src/gen/cloudfactory.h \
     src/gen/facts.h \
     src/gen/noise3d.h \

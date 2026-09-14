@@ -1002,7 +1002,11 @@
     <message><source>[error]</source><translation>[ошибка]</translation></message>
     <message><source>[undefined]</source><translation>[не задано]</translation></message>
     <message><source>[null]</source><translation>[null]</translation></message>
+    <message><source>[forbidden]</source><translation>[запрещено]</translation></message>
+    <message><source>[?????]</source><translation>[?????]</translation></message>
     <message><source>synthetic world</source><translation>синтетический мир</translation></message>
+    <message><source>failed experiment</source><translation>неудачный эксперимент</translation></message>
+    <message><source>**wh*o#*ar*&e y*&ou*?</source><translation>*кт*о#ты*& #т*ак&ой*?</translation></message>
     <message><source>useless</source><translation>бесполезная</translation></message>
     <message><source>no ores</source><translation>нет руд</translation></message>
     <message><source>nothing to mine</source><translation>нечего добывать</translation></message>
@@ -1025,5 +1029,7 @@
     <message><source>%1 veins</source><translation>жилы %1</translation></message>
     <message><source>traces of %1</source><translation>следы %1</translation></message>
     <message><source>a little %1</source><translation>немного %1</translation></message>
+    <message><source>valuable resources</source><translation>ценные ресурсы</translation></message>
+    <message><source>dangerous resources</source><translation>опасные ресурсы</translation></message>
 </context>
 </TS>

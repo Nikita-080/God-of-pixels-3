@@ -190,6 +190,20 @@
       "labels": ["vast deposits", "overflowing ore", "treasure world"]
     },
     {
+      "id": "valuable_ores",
+      "family": "",
+      "priority": 11,
+      "tone": "good",
+      "labels": ["valuable resources"]
+    },
+    {
+      "id": "hazard_ores",
+      "family": "",
+      "priority": 10,
+      "tone": "bad",
+      "labels": ["dangerous resources"]
+    },
+    {
       "id": "lava_1",
       "family": "lava",
       "priority": 11,
@@ -449,12 +463,110 @@
       "labels": ["no star", "rogue planet", "dark sky"]
     },
     {
+      "id": "emo_anger",
+      "family": "emotion_land",
+      "priority": 45,
+      "tone": "anomaly",
+      "labels": []
+    },
+    {
+      "id": "emo_disgust",
+      "family": "emotion_land",
+      "priority": 45,
+      "tone": "anomaly",
+      "labels": []
+    },
+    {
+      "id": "emo_fear",
+      "family": "emotion_land",
+      "priority": 45,
+      "tone": "anomaly",
+      "labels": []
+    },
+    {
+      "id": "emo_joy",
+      "family": "emotion_land",
+      "priority": 45,
+      "tone": "anomaly",
+      "labels": []
+    },
+    {
+      "id": "emo_sadness",
+      "family": "emotion_land",
+      "priority": 45,
+      "tone": "anomaly",
+      "labels": []
+    },
+    {
+      "id": "emo_calm",
+      "family": "emotion_land",
+      "priority": 45,
+      "tone": "anomaly",
+      "labels": []
+    },
+    {
+      "id": "emo_surprise",
+      "family": "emotion_land",
+      "priority": 45,
+      "tone": "anomaly",
+      "labels": []
+    },
+    {
+      "id": "sky_anger",
+      "family": "emotion_sky",
+      "priority": 46,
+      "tone": "anomaly",
+      "labels": []
+    },
+    {
+      "id": "sky_disgust",
+      "family": "emotion_sky",
+      "priority": 46,
+      "tone": "anomaly",
+      "labels": []
+    },
+    {
+      "id": "sky_fear",
+      "family": "emotion_sky",
+      "priority": 46,
+      "tone": "anomaly",
+      "labels": []
+    },
+    {
+      "id": "sky_joy",
+      "family": "emotion_sky",
+      "priority": 46,
+      "tone": "anomaly",
+      "labels": []
+    },
+    {
+      "id": "sky_sadness",
+      "family": "emotion_sky",
+      "priority": 46,
+      "tone": "anomaly",
+      "labels": []
+    },
+    {
+      "id": "sky_calm",
+      "family": "emotion_sky",
+      "priority": 46,
+      "tone": "anomaly",
+      "labels": []
+    },
+    {
+      "id": "sky_surprise",
+      "family": "emotion_sky",
+      "priority": 46,
+      "tone": "anomaly",
+      "labels": []
+    },
+    {
       "id": "easter_err",
       "family": "easter",
       "priority": 800,
       "tone": "easter",
       "easter": true,
-      "labels": ["[error]", "[undefined]", "[null]"]
+      "labels": ["[error]", "[undefined]", "[null]", "[forbidden]", "[?????]"]
     },
     {
       "id": "easter_sim",
@@ -462,7 +574,7 @@
       "priority": 800,
       "tone": "easter",
       "easter": true,
-      "labels": ["synthetic world"]
+      "labels": ["synthetic world", "failed experiment", "**wh*o#*ar*&e y*&ou*?"]
     }
   ]
 }

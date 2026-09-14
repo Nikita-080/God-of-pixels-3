@@ -28,6 +28,7 @@ SOURCES += \
     ../src/planet/planet_tags.cpp \
     ../src/planet/planet_terrain.cpp \
     ../src/gen/terrafactory.cpp \
+    ../src/gen/coloremotion.cpp \
     ../src/gen/noise3d.cpp \
     ../src/gen/cloudfactory.cpp \
     ../src/gen/planetsettings.cpp \
@@ -39,6 +40,7 @@ HEADERS += \
     ../src/planet/planet.h \
     ../src/planet/planet_p.h \
     ../src/gen/terrafactory.h \
+    ../src/gen/coloremotion.h \
     ../src/gen/noise3d.h \
     ../src/gen/cloudfactory.h \
     ../src/gen/planetsettings.h \

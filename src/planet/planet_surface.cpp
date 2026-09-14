@@ -76,43 +76,50 @@ void Planet::ImageCreating()
 void Planet::Plant()
 {
     plant_pixel_count = 0;
-    if (!s.is_plant or !(water_level > 0) or !s.is_atmo)
+    if (!s.is_plant || !(water_level > 0) || !s.is_atmo)
         return;
-    const double keep = s.parLight() * (1.0 - s.hazardLight());
-    rnd.seed(static_cast<quint32>(seed) ^ 0x51A2u);
+    const double keep = qBound(0.0, s.parLight() * (1.0 - s.hazardLight()), 1.0);
+    if (keep <= 0.0)
+        return;
     const QImage &diagram = planetCachedImage(s.is_gradient
         ? QStringLiteral(":/images/res/images/plantmatrixblur.png")
         : QStringLiteral(":/images/res/images/plantmatrix.png"));
+    if (diagram.isNull())
+        return;
+    const int dw = diagram.width() - 1;
+    const int dh = diagram.height() - 1;
     for (int i = 0; i < map_w; i++)
     {
         for (int k = 0; k < map_h; k++)
         {
-            if (matrix[i][k] > water_level)
+            if (matrix[i][k] <= water_level)
+                continue;
+            if (!faultKind.isEmpty() && faultKind[i][k] != 0)
+                continue;
+            const double T = t_map[i][k];
+            const double W = r_map[i][k];
+            if (W < 0 || W > 450 || T < -15 || T > 35)
+                continue;
+            const double tFit = qExp(-0.5 * qPow((T - 12.0) / 22.0, 2.0));
+            const double wFit = qBound(0.0, W / 70.0, 1.0);
+            if (tFit * (0.4 + 0.6 * wFit) < 1.0 - keep)
+                continue;
+            int x = qRound(-1.18 * T + 41.3);
+            int y = qRound(-0.13 * W + 59);
+            x = qBound(0, x, dw);
+            y = qBound(0, y, dh);
+            QColor color = diagram.pixelColor(x, y);
+            if (color.alpha() < 16)
+                continue;
+            QRgb *line = reinterpret_cast<QRgb *>(img.scanLine(k));
+            if (s.is_gradient)
             {
-                if (!faultKind.isEmpty() && faultKind[i][k] != 0)
-                    continue;
-                double T = t_map[i][k];
-                double W = r_map[i][k];
-                if (W >= 0 && W <= 450 && T >= -15 && T <= 35)
-                {
-                    int x = qRound(-1.18 * T + 41.3);
-                    int y = qRound(-0.13 * W + 59);
-                    x = qBound(0, x, diagram.width() - 1);
-                    y = qBound(0, y, diagram.height() - 1);
-                    QColor color = diagram.pixelColor(x, y);
-                    QRgb *line = reinterpret_cast<QRgb *>(img.scanLine(k));
-                    if (s.is_gradient)
-                    {
-                        double min = 1.0 * qMin(qMin(x, y), qMin(59 - x, 59 - y));
-                        if (min < 11)
-                            color = TransparentColor(QColor::fromRgb(line[i]), color, min / 10);
-                    }
-                    if (rnd.generateDouble() > keep)
-                        continue;
-                    line[i] = color.rgb();
-                    plant_pixel_count++;
-                }
+                const double edge = qMin(qMin(x, y), qMin(dw - x, dh - y));
+                if (edge < 11)
+                    color = TransparentColor(QColor::fromRgb(line[i]), color, edge / 10.0);
             }
+            line[i] = color.rgb();
+            plant_pixel_count++;
         }
     }
 }

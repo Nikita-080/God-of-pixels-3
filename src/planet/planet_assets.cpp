@@ -71,6 +71,7 @@ const QVector<MineralSalt> &planetMinerals()
                 m.soluble = mineralColor(obj.value(QStringLiteral("solubleSaltColor")).toArray());
                 m.insoluble = mineralColor(obj.value(QStringLiteral("inSolubleSaltColor")).toArray());
                 m.radioactive = obj.value(QStringLiteral("radioactivity")).toBool();
+                m.prevalence = obj.value(QStringLiteral("prevalence")).toDouble();
                 if (m.soluble.isValid() && m.insoluble.isValid())
                     table.append(m);
             }
