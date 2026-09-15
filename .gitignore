@@ -1,1 +1,4 @@
 _build_check/
+_build_app/
+_build_star/
+.idea/
