@@ -35,4 +35,15 @@ QVector<PlanetOre> planetOreInventory(const class Planet &planet);
 void planetPaintTagCard(class Planet &planet);
 QSet<QString> planetActiveTagIds(const class Planet &planet);
 
+enum class DescriptionBarColor
+{
+    Empty,
+    Green,
+    Yellow,
+    Red
+};
+
+DescriptionBarColor planetDescriptionBarColor(int lvl, const QString &type);
+bool planetDescriptionBarsAll(const class Facts &facts, DescriptionBarColor want);
+
 #endif

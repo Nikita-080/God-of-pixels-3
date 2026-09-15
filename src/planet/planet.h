@@ -3,6 +3,7 @@
 #include <QVector>
 #include <QImage>
 #include <QColor>
+#include <QSet>
 #include <QtGlobal>
 #include <QRandomGenerator>
 #include <planetsettings.h>
@@ -86,6 +87,8 @@ public:
     double ring_inner;
     double ring_outer;
     QVector<CityLight> cities;
+    QSet<QString> cardTagIds;
+    QSet<QString> cardLabelKeys;
     PlanetSettings s;
 
     void TMapCreating();

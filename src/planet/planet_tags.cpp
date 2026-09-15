@@ -623,6 +623,8 @@ QSet<QString> planetActiveTagIds(const Planet &planet)
 void planetPaintTagCard(Planet &planet)
 {
     planet.img_sys = planetCachedImage(QStringLiteral(":/images/res/images/window.png")).copy();
+    planet.cardTagIds.clear();
+    planet.cardLabelKeys.clear();
     const TagWorld world = makeTagWorld(planet);
     const QVector<PlanetOre> ores = planetOreInventory(planet);
     QVector<PlanetTagDef> chosen;
@@ -707,12 +709,17 @@ void planetPaintTagCard(Planet &planet)
         if (d.labels.isEmpty())
             continue;
         QString text;
+        QString labelKey;
         if (d.id.startsWith(QLatin1String("oreq_")))
+        {
             text = d.labels.first();
+            labelKey = text;
+        }
         else
         {
             const int i = planet.rnd.bounded(d.labels.size());
-            const QByteArray key = d.labels[i].toUtf8();
+            labelKey = d.labels[i];
+            const QByteArray key = labelKey.toUtf8();
             text = QCoreApplication::translate("PlanetTags", key.constData());
         }
         if (d.civ)
@@ -724,6 +731,9 @@ void planetPaintTagCard(Planet &planet)
         }
         if (text.size() > kTagCols)
             continue;
+        planet.cardTagIds.insert(d.id);
+        if (!labelKey.isEmpty())
+            planet.cardLabelKeys.insert(labelKey);
         picked.append(qMakePair(text, toneColor(d.tone)));
     }
     const QVector<PlacedTag> placed = packTags(picked);

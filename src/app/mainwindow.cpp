@@ -9,6 +9,7 @@
 #include "spheremath.h"
 #include "achievementengine.h"
 #include "achievementcontext.h"
+#include "achievementstore.h"
 #include "achievementtoast.h"
 #include "achievementsdialog.h"
 #include <QColorDialog>
@@ -247,11 +248,14 @@ void MainWindow::M_Achievements()
     dlg.exec();
 }
 
-void MainWindow::evaluateAchievements()
+void MainWindow::evaluateAchievements(bool countCreate)
 {
     if (isEmtyPlanet || !achievementToasts)
         return;
-    achievementToasts->enqueue(AchievementEngine::evaluate(AchievementContext::fromPlanet(planet)));
+    AchievementContext ctx = AchievementContext::fromPlanet(planet);
+    ctx.createdCount = countCreate ? AchievementStore::addCreatedPlanet()
+                                   : AchievementStore::createdCount();
+    achievementToasts->enqueue(AchievementEngine::evaluate(ctx));
 }
 
 void MainWindow::SetStyle()
@@ -800,7 +804,7 @@ void MainWindow::startGeneration(bool createNew, int seed, GenOp op)
             logOp(action, elapsed, true, planet.name);
         }
         if (finishedOp != GenOp::Load)
-            evaluateAchievements();
+            evaluateAchievements(finishedOp == GenOp::Create);
         if (queued)
             startGeneration(false, 0, queuedOp);
     });

@@ -1,6 +1,7 @@
 #include "planet.h"
 #include "planet_p.h"
 #include "starspectrum.h"
+#include "facts.h"
 #include <QCoreApplication>
 #include <QPainter>
 #include <QtMath>
@@ -115,6 +116,59 @@ QVector<PlanetOre> planetOreInventory(const Planet &planet)
     return collectOres(planet);
 }
 
+DescriptionBarColor planetDescriptionBarColor(int lvl, const QString &type)
+{
+    if (lvl <= 0)
+        return DescriptionBarColor::Empty;
+    if (type == QLatin1String("good"))
+    {
+        if (lvl <= 4)
+            return DescriptionBarColor::Red;
+        if (lvl >= 9)
+            return DescriptionBarColor::Green;
+        return DescriptionBarColor::Yellow;
+    }
+    if (type == QLatin1String("neutral"))
+    {
+        if (lvl <= 2 || lvl >= 11)
+            return DescriptionBarColor::Red;
+        if (lvl <= 4 || lvl >= 9)
+            return DescriptionBarColor::Yellow;
+        return DescriptionBarColor::Green;
+    }
+    if (type == QLatin1String("bad"))
+    {
+        if (lvl <= 4)
+            return DescriptionBarColor::Green;
+        if (lvl >= 9)
+            return DescriptionBarColor::Red;
+        return DescriptionBarColor::Yellow;
+    }
+    return DescriptionBarColor::Empty;
+}
+
+bool planetDescriptionBarsAll(const Facts &facts, DescriptionBarColor want)
+{
+    const DescriptionBarColor bars[] = {
+        planetDescriptionBarColor(facts.life, QStringLiteral("good")),
+        planetDescriptionBarColor(facts.water, QStringLiteral("neutral")),
+        planetDescriptionBarColor(facts.ice, QStringLiteral("bad")),
+        planetDescriptionBarColor(facts.radiation, QStringLiteral("bad")),
+        planetDescriptionBarColor(facts.temperature, QStringLiteral("neutral")),
+        planetDescriptionBarColor(facts.seismicity, QStringLiteral("bad")),
+    };
+    bool anyFilled = false;
+    for (DescriptionBarColor c : bars)
+    {
+        if (c == DescriptionBarColor::Empty)
+            continue;
+        anyFilled = true;
+        if (c != want)
+            return false;
+    }
+    return anyFilled;
+}
+
 void Planet::GenerateDescription()
 {
     facts.resources = Resources();
@@ -146,34 +200,14 @@ void Planet::Level(QString start, int string, int lvl, QString type, QPainter &p
     s.fill('\n', string - 1);
     s += start + "|            |";
     p.drawText(QRect(40, 27, 400, 400), s);
-    QColor color;
-    if (type == "good")
-    {
-        if (lvl <= 4)
-            color = QColor(200, 0, 0);
-        else if (lvl >= 9)
-            color = QColor(0, 200, 0);
-        else
-            color = QColor(200, 200, 0);
-    }
-    else if (type == "neutral")
-    {
-        if (lvl <= 2 || lvl >= 11)
-            color = QColor(200, 0, 0);
-        else if (lvl <= 4 || lvl >= 9)
-            color = QColor(200, 200, 0);
-        else
-            color = QColor(0, 200, 0);
-    }
-    if (type == "bad")
-    {
-        if (lvl <= 4)
-            color = QColor(0, 200, 0);
-        else if (lvl >= 9)
-            color = QColor(200, 0, 0);
-        else
-            color = QColor(200, 200, 0);
-    }
+    const DescriptionBarColor tone = planetDescriptionBarColor(lvl, type);
+    QColor color(110, 170, 200);
+    if (tone == DescriptionBarColor::Red)
+        color = QColor(200, 0, 0);
+    else if (tone == DescriptionBarColor::Green)
+        color = QColor(0, 200, 0);
+    else if (tone == DescriptionBarColor::Yellow)
+        color = QColor(200, 200, 0);
     p.setPen(QPen(color));
     s.fill('\n', string - 1);
     QString a(start.length() + 1, ' ');

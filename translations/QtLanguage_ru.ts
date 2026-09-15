@@ -1081,7 +1081,7 @@
     </message>
     <message>
         <source>Create the first planet</source>
-        <translation>Создай первую планету</translation>
+        <translation>Создайте первую планету</translation>
     </message>
     <message>
         <source>Beginner</source>
@@ -1101,19 +1101,19 @@
     </message>
     <message>
         <source>Create 50 planets</source>
-        <translation>Создай 50 планет</translation>
+        <translation>Создайте 50 планет</translation>
     </message>
     <message>
         <source>Create 100 planets</source>
-        <translation>Создай 100 планет</translation>
+        <translation>Создайте 100 планет</translation>
     </message>
     <message>
         <source>Create 200 planets</source>
-        <translation>Создай 200 планет</translation>
+        <translation>Создайте 200 планет</translation>
     </message>
     <message>
         <source>Create 300 planets</source>
-        <translation>Создай 300 планет</translation>
+        <translation>Создайте 300 планет</translation>
     </message>
     <message>
         <source>Hello Traveller</source>
@@ -1138,14 +1138,6 @@
     <message>
         <source>Create the paradise</source>
         <translation>Создайте рай</translation>
-    </message>
-    <message>
-        <source>The worst of all possible worlds</source>
-        <translation>Худший из миров</translation>
-    </message>
-    <message>
-        <source>Create the hell</source>
-        <translation>Создайте ад</translation>
     </message>
     <message>
         <source>The worst of all possible worlds</source>

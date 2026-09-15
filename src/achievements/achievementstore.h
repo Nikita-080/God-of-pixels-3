@@ -11,6 +11,8 @@ public:
     static QDateTime unlockedAt(const QString &id);
     static bool unlock(const QString &id);
     static QHash<QString, QDateTime> allUnlocked();
+    static int createdCount();
+    static int addCreatedPlanet();
 };
 
 #endif

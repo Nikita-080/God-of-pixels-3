@@ -68,7 +68,7 @@ private:
     void scheduleLivePreview();
     void runLivePreview();
     void applyPlanetToView();
-    void evaluateAchievements();
+    void evaluateAchievements(bool countCreate);
     void startGeneration(bool createNew, int seed = 0, GenOp op = GenOp::None);
     void logOp(const QString &action, qint64 ms, bool ok, const QString &detail = QString());
     void beginLoadingWatch();

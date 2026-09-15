@@ -15,13 +15,18 @@ struct AchievementContext
     int plantPixelCount = 0;
     int waterPixelCount = 0;
     int icePixelCount = 0;
+    int cityCount = 0;
+    int createdCount = 0;
     bool hasCities = false;
     bool hasStar = false;
     bool hasAtmo = false;
     bool hasRings = false;
+    bool isSunday = false;
     int atmoSize = 0;
     double hazardLight = 0.0;
     QSet<QString> tags;
+    QSet<QString> cardTagIds;
+    QSet<QString> cardLabelKeys;
 
     bool hasTag(const QString &id) const { return tags.contains(id); }
 

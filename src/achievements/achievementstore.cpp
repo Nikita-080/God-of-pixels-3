@@ -43,3 +43,16 @@ QHash<QString, QDateTime> AchievementStore::allUnlocked()
         out.insert(id, QDateTime::fromString(st.value(id).toString(), Qt::ISODate));
     return out;
 }
+
+int AchievementStore::createdCount()
+{
+    return QSettings().value(QLatin1String(AppKeys::achievementCreatedCount), 0).toInt();
+}
+
+int AchievementStore::addCreatedPlanet()
+{
+    QSettings st;
+    const int n = st.value(QLatin1String(AppKeys::achievementCreatedCount), 0).toInt() + 1;
+    st.setValue(QLatin1String(AppKeys::achievementCreatedCount), n);
+    return n;
+}
