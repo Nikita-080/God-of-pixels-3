@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE QtCreatorProject>
-<!-- Written by QtCreator 4.14.2, 2026-09-13T20:11:22. -->
+<!-- Written by QtCreator 4.14.2, 2026-09-15T15:54:06. -->
 <qtcreator>
  <data>
   <variable>EnvironmentId</variable>
@@ -70,6 +70,7 @@
     <value type="Qt::CheckState" key="C:/qtprojects/God-of-pixels-3/tests/test_planet.cpp:noiseHasNoMeridianSeam">Checked</value>
     <value type="Qt::CheckState" key="C:/qtprojects/God-of-pixels-3/tests/test_planet.cpp:oldDiamondSquareModeBecomesNoise">Checked</value>
     <value type="Qt::CheckState" key="C:/qtprojects/God-of-pixels-3/tests/test_planet.cpp:sameSeedSameHeight">Checked</value>
+    <value type="Qt::CheckState" key="C:/qtprojects/God-of-pixels-3/tests/test_planet.cpp:sameSeedSameTags">Checked</value>
     <value type="Qt::CheckState" key="C:/qtprojects/God-of-pixels-3/tests/test_planet.cpp:sphericalFaultFinite">Checked</value>
     <value type="Qt::CheckState" key="C:/qtprojects/God-of-pixels-3/tests/test_planet.cpp:transparentColorLerp">Checked</value>
    </valuemap>

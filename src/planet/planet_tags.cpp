@@ -31,8 +31,8 @@ struct PlanetTagDef
     QString family;
     int priority;
     QString tone;
-    bool easter;
-    bool civ;
+    bool easter = false;
+    bool civ = false;
     QVector<QString> labels;
 };
 
@@ -535,6 +535,26 @@ bool tagApplies(const Planet &p, const PlanetTagDef &d, const TagWorld &w)
     return false;
 }
 
+QChar radioNoiseChar(QRandomGenerator &rnd)
+{
+    static const char kNoise[] = {'@', '#', '$', '%', '*'};
+    return QLatin1Char(kNoise[rnd.bounded(5)]);
+}
+
+QString jamCivEasterText(QString text, int radio, QRandomGenerator &rnd)
+{
+    if (text.isEmpty())
+        return text;
+    const int n = qBound(0, radio, kStarBandMax);
+    if (n <= 0)
+        return text;
+    const int room = kTagCols - text.size();
+    const int toInsert = qMin(n, qMax(0, room));
+    for (int i = 0; i < toInsert; ++i)
+        text.insert(rnd.bounded(text.size() + 1), radioNoiseChar(rnd));
+    return text;
+}
+
 QVector<PlacedTag> packTags(const QVector<QPair<QString, QColor>> &picked)
 {
     QVector<PlacedTag> out;
@@ -646,12 +666,12 @@ void planetPaintTagCard(Planet &planet)
             chosen.append(d);
         }
     }
-    if (!easter.isEmpty() && planet.rnd.bounded(100) < 2)
+    if (!easter.isEmpty() && planet.rnd.bounded(100) < 5)
     {
         const PlanetTagDef &egg = easter[planet.rnd.bounded(easter.size())];
         chosen.append(egg);
     }
-    if (!planet.cities.isEmpty() && !easterCiv.isEmpty() && planet.rnd.bounded(100) < 2)
+    if (!planet.cities.isEmpty() && !easterCiv.isEmpty() && planet.rnd.bounded(100) < 5)
     {
         const PlanetTagDef &egg = easterCiv[planet.rnd.bounded(easterCiv.size())];
         chosen.append(egg);
@@ -673,7 +693,15 @@ void planetPaintTagCard(Planet &planet)
         else
         {
             const int i = planet.rnd.bounded(d.labels.size());
-            text = QCoreApplication::translate("PlanetTags", d.labels[i].toUtf8().constData());
+            const QByteArray key = d.labels[i].toUtf8();
+            text = QCoreApplication::translate("PlanetTags", key.constData());
+        }
+        if (d.civ)
+        {
+            const int radio = planet.s.has_star
+                                  ? starBand(planet.s.star_spectrum, StarRadio)
+                                  : 0;
+            text = jamCivEasterText(text, radio, planet.rnd);
         }
         if (text.size() > kTagCols)
             continue;

@@ -63,14 +63,14 @@ void Planet::Civilization()
     });
 
     const double lifeMul = 1.0 - s.hazardLight();
-    const int maxCities = qBound(0, qRound((qBound(6, map_w / 6, 70)) * lifeMul), 70);
-    const int minDist2 = qMax(16, (map_w / 28) * (map_w / 28));
+    const int maxCities = qBound(0, qRound((qBound(18, map_w / 2, 210)) * lifeMul), 210);
+    const int minDist2 = qMax(9, ((map_w / 28) * (map_w / 28)) / 3);
     QVector<QPoint> placed;
     for (const Cand &c : cand)
     {
         if (cities.size() >= maxCities)
             break;
-        if (rnd.generateDouble() > (0.28 * double(c.score) + 0.04) * lifeMul)
+        if (rnd.generateDouble() > qMin(1.0, 3.0 * (0.28 * double(c.score) + 0.04) * lifeMul))
             continue;
         bool far = true;
         for (const QPoint &p : placed)
@@ -92,6 +92,8 @@ void Planet::Civilization()
         city.x = float(p.x * 1.004);
         city.y = float(p.y * 1.004);
         city.z = float(p.z * 1.004);
+        city.mapX = c.x;
+        city.mapY = c.y;
         cities.append(city);
 
         const QColor glow = s.civ_color;

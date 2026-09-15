@@ -207,7 +207,7 @@ void Planet::DrawDescription()
         }
     }
     head += QLatin1Char('\n');
-    head += QCoreApplication::translate("Planet", "spectrum   - ") + QLatin1Char('\n');
+    head += QCoreApplication::translate("Planet", "spectrum:") + QLatin1Char('\n');
     p.drawText(QRect(40, 27, 400, 400), head);
     const int specY = 27 + p.fontMetrics().lineSpacing() * 4;
     paintStarSpectrum(p, QRect(40, specY, 220, 36),
@@ -263,26 +263,134 @@ void Planet::SystemMap()
 
 void Planet::GalaxyMap()
 {
-    QImage img_ptr = planetCachedImage(QStringLiteral(":/images/res/images/icon ptr.png"));
-    QImage img_map = planetCachedImage(QStringLiteral(":/images/res/images/GalaxyMap.png"));
-    img_gal = planetCachedImage(QStringLiteral(":/images/res/images/window.png"));
-    rnd.seed(static_cast<quint32>(seed));
-    int x = RAND(0, 218);
-    int y = RAND(0, 218);
+    img_gal = planetCachedImage(QStringLiteral(":/images/res/images/window.png")).copy();
+    const int outW = 257;
+    const int outH = 257;
+    QImage atlas(outW, outH, QImage::Format_ARGB32);
+    atlas.fill(Qt::transparent);
+
+    QPainter ap;
+    ap.begin(&atlas);
+    ap.setRenderHint(QPainter::Antialiasing, false);
+
+    const double maxLat = 85.0 * M_PI / 180.0;
+    const double maxY = sphereAtanh(sin(maxLat));
+    ap.setPen(QPen(QColor(140, 140, 140, 180), 1));
+    for (int deg = 0; deg < 360; deg += 30)
+    {
+        const int gx = int(qBound(0.0, (deg / 360.0) * outW, double(outW - 1)));
+        ap.drawLine(gx, 0, gx, outH - 1);
+    }
+    for (int deg = -60; deg <= 60; deg += 30)
+    {
+        const double lat = qDegreesToRadians(double(deg));
+        const double mer = sphereAtanh(sin(lat));
+        const int gy = int(qBound(0.0, (maxY - mer) / (2.0 * maxY) * outH, double(outH - 1)));
+        ap.drawLine(0, gy, outW - 1, gy);
+    }
+    ap.end();
+
+    auto wrapX = [this](int x) {
+        const int w = map_w;
+        if (w <= 0)
+            return 0;
+        return (x % w + w) % w;
+    };
+    auto inY = [this](int y) {
+        return y >= 0 && y < map_h;
+    };
+    auto isLand = [&](int x, int y) {
+        if (!inY(y) || map_w <= 0 || matrix.isEmpty())
+            return false;
+        x = wrapX(x);
+        if (x >= matrix.size() || y >= matrix[x].size())
+            return false;
+        return matrix[x][y] >= water_level;
+    };
+    auto isIce = [&](int x, int y) {
+        if (!inY(y) || t_map.isEmpty())
+            return false;
+        x = wrapX(x);
+        if (x >= t_map.size() || y >= t_map[x].size())
+            return false;
+        if (!faultKind.isEmpty() && x < faultKind.size() && y < faultKind[x].size()
+            && faultKind[x][y] != 0)
+            return false;
+        return t_map[x][y] < -15.0;
+    };
+    auto plot = [&](int px, int py, QRgb rgb) {
+        if (px < 0 || py < 0 || px >= outW || py >= outH)
+            return;
+        atlas.setPixel(px, py, rgb);
+        if (px + 1 < outW)
+            atlas.setPixel(px + 1, py, rgb);
+        if (py + 1 < outH)
+            atlas.setPixel(px, py + 1, rgb);
+    };
+
+    const QRgb coastRgb = s.beach_color.isValid() ? s.beach_color.rgb() : qRgb(210, 190, 140);
+    const QRgb iceRgb = qRgb(255, 255, 255);
+    if (map_w > 0 && map_h > 0 && !matrix.isEmpty())
+    {
+        const int ndx[4] = {1, -1, 0, 0};
+        const int ndy[4] = {0, 0, 1, -1};
+        for (int x = 0; x < map_w; ++x)
+        {
+            for (int y = 0; y < map_h; ++y)
+            {
+                int mx = 0;
+                int my = 0;
+                if (!equirectToMercatorPixel(x, y, map_w, map_h, outW, outH, &mx, &my))
+                    continue;
+                if (isLand(x, y))
+                {
+                    bool edge = false;
+                    for (int i = 0; i < 4; ++i)
+                    {
+                        if (!isLand(x + ndx[i], y + ndy[i]))
+                        {
+                            edge = true;
+                            break;
+                        }
+                    }
+                    if (edge)
+                        plot(mx, my, coastRgb);
+                }
+                if (isIce(x, y))
+                {
+                    bool edge = false;
+                    for (int i = 0; i < 4; ++i)
+                    {
+                        if (!isIce(x + ndx[i], y + ndy[i]))
+                        {
+                            edge = true;
+                            break;
+                        }
+                    }
+                    if (edge)
+                        plot(mx, my, iceRgb);
+                }
+            }
+        }
+    }
+
+    ap.begin(&atlas);
+    ap.setPen(QPen(QColor(255, 0, 0), 1));
+    ap.setBrush(QColor(255, 0, 0));
+    for (const CityLight &c : cities)
+    {
+        int mx = 0;
+        int my = 0;
+        if (!equirectToMercatorPixel(c.mapX, c.mapY, map_w, map_h, outW, outH, &mx, &my))
+            continue;
+        ap.drawLine(mx - 2, my, mx + 2, my);
+        ap.drawLine(mx, my - 2, mx, my + 2);
+    }
+    ap.end();
 
     QPainter p;
     p.begin(&img_gal);
-
-    for (int i = 0; i < 38; i++)
-    {
-        for (int k = 0; k < 38; k++)
-        {
-            QColor pc = img_ptr.pixelColor(i, k);
-            if (!(pc.red() == 0 && pc.green() == 0 && pc.blue() == 0))
-                img_map.setPixelColor(x + i, y + k, pc);
-        }
-    }
-    p.drawImage(QRect(36, 36, 257, 257), img_map);
+    p.drawImage(QRect(36, 36, 257, 257), atlas);
     p.end();
 }
 

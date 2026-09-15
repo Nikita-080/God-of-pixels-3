@@ -1,7 +1,5 @@
 <RCC>
     <qresource prefix="/images">
-        <file>res/images/GalaxyMap.png</file>
-        <file>res/images/icon ptr.png</file>
         <file>res/images/logo.png</file>
         <file>res/images/loading.gif</file>
         <file>res/images/plantmatrix.png</file>

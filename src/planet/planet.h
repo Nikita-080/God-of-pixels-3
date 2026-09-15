@@ -32,6 +32,8 @@ struct CityLight
     float x;
     float y;
     float z;
+    int mapX;
+    int mapY;
 };
 
 class Planet

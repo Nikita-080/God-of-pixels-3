@@ -630,8 +630,8 @@
         <translation>ресурсы    - </translation>
     </message>
     <message>
-        <source>spectrum   - </source>
-        <translation>спектр     - </translation>
+        <source>spectrum:</source>
+        <translation>спектр:</translation>
     </message>
     <message>
         <location filename="planet.cpp" line="820"/>
@@ -1007,12 +1007,12 @@
     <message><source>kzzzkt</source><translation>кзззкт</translation></message>
     <message><source>synthetic world</source><translation>синтетический мир</translation></message>
     <message><source>failed experiment</source><translation>неудачный эксперимент</translation></message>
-    <message><source>**wh-o#-ar-&amp;e y-&amp;ou-?</source><translation>-кт-о#ты*&amp; #т-ак&amp;ой-?</translation></message>
-    <message><source>#yo-u _a%re no&amp;t g#od</source><translation>#ты- _н%е бо&amp;г</translation></message>
-    <message><source>%we% a&amp;re -se-e yo#u@</source><translation>%мы% ви&amp;д-им те#бя@</translation></message>
-    <message><source>$st#up-i-d @g##o&amp;d</source><translation>$гл#уп-ы-й @бо##г</translation></message>
-    <message><source>#no% n-o --no &amp;n&amp;o</source><translation>#н%ет н-ет н-е-т &amp;не&amp;т</translation></message>
-    <message><source>##he:lp&amp; u$s@</source><translation>##по:мог&amp;и н$ам@</translation></message>
+    <message><source>who are you?</source><translation>кто ты такой?</translation></message>
+    <message><source>you are not god</source><translation>ты не бог</translation></message>
+    <message><source>we are see you</source><translation>мы видим тебя</translation></message>
+    <message><source>stupid god</source><translation>глупый бог</translation></message>
+    <message><source>no no no no</source><translation>нет нет нет нет</translation></message>
+    <message><source>help us</source><translation>помоги нам</translation></message>
     <message><source>useless</source><translation>бесполезная</translation></message>
     <message><source>no ores</source><translation>нет руд</translation></message>
     <message><source>nothing to mine</source><translation>нечего добывать</translation></message>
