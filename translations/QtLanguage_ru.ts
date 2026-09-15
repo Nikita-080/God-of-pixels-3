@@ -1075,5 +1075,125 @@
         <source>Achievement unlocked</source>
         <translation>Достижение получено</translation>
     </message>
+    <message>
+        <source>First planet</source>
+        <translation>Первая планета</translation>
+    </message>
+    <message>
+        <source>Create the first planet</source>
+        <translation>Создай первую планету</translation>
+    </message>
+    <message>
+        <source>Beginner</source>
+        <translation>Начинающий</translation>
+    </message>
+    <message>
+        <source>Creator</source>
+        <translation>Творец</translation>
+    </message>
+    <message>
+        <source>Demigod</source>
+        <translation>Полубог</translation>
+    </message>
+    <message>
+        <source>True God</source>
+        <translation>Истинный Бог</translation>
+    </message>
+    <message>
+        <source>Create 50 planets</source>
+        <translation>Создай 50 планет</translation>
+    </message>
+    <message>
+        <source>Create 100 planets</source>
+        <translation>Создай 100 планет</translation>
+    </message>
+    <message>
+        <source>Create 200 planets</source>
+        <translation>Создай 200 планет</translation>
+    </message>
+    <message>
+        <source>Create 300 planets</source>
+        <translation>Создай 300 планет</translation>
+    </message>
+    <message>
+        <source>Hello Traveller</source>
+        <translation>Привет Странник</translation>
+    </message>
+    <message>
+        <source>kzzzkt</source>
+        <translation>кзззкт</translation>
+    </message>
+    <message>
+        <source>On the seventh day he rested</source>
+        <translation>На седьмой день он отдыхал</translation>
+    </message>
+    <message>
+        <source>Create planet on sunday</source>
+        <translation>Создайте планету в воскресенье</translation>
+    </message>
+    <message>
+        <source>The best of all possible worlds</source>
+        <translation>Лучший из миров</translation>
+    </message>
+    <message>
+        <source>Create the paradise</source>
+        <translation>Создайте рай</translation>
+    </message>
+    <message>
+        <source>The worst of all possible worlds</source>
+        <translation>Худший из миров</translation>
+    </message>
+    <message>
+        <source>Create the hell</source>
+        <translation>Создайте ад</translation>
+    </message>
+    <message>
+        <source>The worst of all possible worlds</source>
+        <translation>Худший из миров</translation>
+    </message>
+    <message>
+        <source>Create the hell</source>
+        <translation>Создайте ад</translation>
+    </message>
+    <message>
+        <source>Night lights</source>
+        <translation>Ночные огни</translation>
+    </message>
+    <message>
+        <source>Create 1 city</source>
+        <translation>Создайте 1 город</translation>
+    </message>
+    <message>
+        <source>It was a mistake</source>
+        <translation>Это была ошибка</translation>
+    </message>
+    <message>
+        <source>Create 100 cities</source>
+        <translation>Создайте 100 городов</translation>
+    </message>
+    <message>
+        <source>Sun destroyer</source>
+        <translation>Гаситель Солнц</translation>
+    </message>
+    <message>
+        <source>Leave the world in the dark</source>
+        <translation>Оставьте мир в темноте</translation>
+    </message>
+    <message>
+        <source>What was that?</source>
+        <translation>Что это было?</translation>
+    </message>
+    <message>
+        <source>Hear your creations</source>
+        <translation>Услышьте свои творения</translation>
+    </message>
+    <message>
+        <source>Green world</source>
+        <translation>Зеленый мир</translation>
+    </message>
+    <message>
+        <source>Grow plants</source>
+        <translation>Вырастите растения</translation>
+    </message>
 </context>
 </TS>

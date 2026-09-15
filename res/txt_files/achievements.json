@@ -7,12 +7,142 @@
   },
   "achievements": [
     {
-      "_comment": "Template only. Replace id and add a matching predicate in AchievementRules; this entry is not unlocked in-game.",
-      "id": "example",
+      "_comment": "Первый раз нажать на кнопку создания планеты",
+      "id": "a_1_planet",
       "rarity": "common",
       "secret": false,
-      "title": "Example achievement",
-      "description": "Replace this description.\nUp to three lines.\nThird line.",
+      "title": "First planet",
+      "description": "Create the first planet",
+      "icon": "",
+      "icon_locked": ""
+    },
+    {
+      "_comment": "Нажать на кнопку создания планеты 50 раз",
+      "id": "a_50_planet",
+      "rarity": "uncommon",
+      "secret": false,
+      "title": "Beginner",
+      "description": "Create 50 planets",
+      "icon": "",
+      "icon_locked": ""
+    },
+    {
+      "_comment": "Нажать на кнопку создания планеты 100 раз",
+      "id": "a_100_planet",
+      "rarity": "rare",
+      "secret": false,
+      "title": "Creator",
+      "description": "Create 100 planets",
+      "icon": "",
+      "icon_locked": ""
+    },
+    {
+      "_comment": "Нажать на кнопку создания планеты 200 раз",
+      "id": "a_200_planet",
+      "rarity": "epic",
+      "secret": false,
+      "title": "Demigod",
+      "description": "Create 200 planets",
+      "icon": "",
+      "icon_locked": ""
+    },
+    {
+      "_comment": "Нажать на кнопку создания планеты 300 раз",
+      "id": "a_300_planet",
+      "rarity": "legendary",
+      "secret": false,
+      "title": "True God",
+      "description": "Create 300 planets",
+      "icon": "",
+      "icon_locked": ""
+    },
+    {
+      "_comment": "Получить планету с тегом kzzzkt",
+      "id": "a_kzzzkt",
+      "rarity": "special",
+      "secret": true,
+      "title": "Hello Traveller",
+      "description": "kzzzkt",
+      "icon": "",
+      "icon_locked": ""
+    },
+    {
+      "_comment": "Создать планету в воскресенье",
+      "id": "a_sunday",
+      "rarity": "special",
+      "secret": true,
+      "title": "On the seventh day he rested",
+      "description": "Create planet on sunday",
+      "icon": "",
+      "icon_locked": ""
+    },
+    {
+      "_comment": "Создать планету, у которой в карточке описания все прогрессбары зеленые (незаполненные не считаются)",
+      "id": "a_green",
+      "rarity": "epic",
+      "secret": false,
+      "title": "The best of all possible worlds",
+      "description": "Create the paradise",
+      "icon": "",
+      "icon_locked": ""
+    },
+    {
+      "_comment": "Создать планету, у которой в карточке описания все прогрессбары красные (незаполненные не считаются)",
+      "id": "a_red",
+      "rarity": "epic",
+      "secret": false,
+      "title": "The worst of all possible worlds",
+      "description": "Create the hell",
+      "icon": "",
+      "icon_locked": ""
+    },
+    {
+      "_comment": "Создать планету с минимум 1 городом",
+      "id": "a_1_city",
+      "rarity": "rare",
+      "secret": false,
+      "title": "Night lights",
+      "description": "Create 1 city",
+      "icon": "",
+      "icon_locked": ""
+    },
+    {
+      "_comment": "Создать планету с минимум 100 городов",
+      "id": "a_100_cities",
+      "rarity": "legendary",
+      "secret": false,
+      "title": "It was a mistake",
+      "description": "Create 100 cities",
+      "icon": "",
+      "icon_locked": ""
+    },
+    {
+      "_comment": "Создать планету без звезды",
+      "id": "a_no_star",
+      "rarity": "uncommon",
+      "secret": true,
+      "title": "Sun destroyer",
+      "description": "Leave the world in the dark",
+      "icon": "",
+      "icon_locked": ""
+    },
+    {
+      "_comment": "Создать планету с тегом из easter_civ",
+      "id": "a_message",
+      "rarity": "special",
+      "secret": true,
+      "title": "What was that?",
+      "description": "Hear your creations",
+      "icon": "",
+      "icon_locked": ""
+    },
+    {
+      "_comment": "Создать планету, на которой растут растения",
+      "id": "a_plant",
+      "rarity": "rare",
+      "secret": false,
+      "title": "Green world",
+      "description": "Grow plants",
       "icon": "",
       "icon_locked": ""
     }
