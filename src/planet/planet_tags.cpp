@@ -442,6 +442,22 @@ const QVector<PlanetTagDef> &tagCatalog()
     return table;
 }
 
+TagWorld makeTagWorld(const Planet &planet)
+{
+    TagWorld world;
+    world.scan = scanSurface(planet);
+    const QVector<PlanetOre> ores = planetOreInventory(planet);
+    world.wealth = oreWealthRank(ores);
+    world.waterRank = fracToRank5(double(planet.water_pixel_count) / double(world.scan.pixels));
+    world.iceRank = fracToRank5(double(planet.ice_pixel_count) / double(world.scan.pixels));
+    world.floraRank = floraRank(planet);
+    const int land = qMax(1, world.scan.pixels - planet.water_pixel_count);
+    world.rugged = double(world.scan.mountain) / double(land) >= kRuggedLandShare;
+    markOreQuality(ores, world.valuable, world.hazard);
+    world.emotion = planetEmotionId(planet, world.scan);
+    return world;
+}
+
 bool tagApplies(const Planet &p, const PlanetTagDef &d, const TagWorld &w)
 {
     const QString &id = d.id;
@@ -592,20 +608,23 @@ QVector<PlacedTag> packTags(const QVector<QPair<QString, QColor>> &picked)
 
 }
 
+QSet<QString> planetActiveTagIds(const Planet &planet)
+{
+    const TagWorld world = makeTagWorld(planet);
+    QSet<QString> ids;
+    for (const PlanetTagDef &d : tagCatalog())
+    {
+        if (tagApplies(planet, d, world))
+            ids.insert(d.id);
+    }
+    return ids;
+}
+
 void planetPaintTagCard(Planet &planet)
 {
     planet.img_sys = planetCachedImage(QStringLiteral(":/images/res/images/window.png")).copy();
-    TagWorld world;
-    world.scan = scanSurface(planet);
+    const TagWorld world = makeTagWorld(planet);
     const QVector<PlanetOre> ores = planetOreInventory(planet);
-    world.wealth = oreWealthRank(ores);
-    world.waterRank = fracToRank5(double(planet.water_pixel_count) / double(world.scan.pixels));
-    world.iceRank = fracToRank5(double(planet.ice_pixel_count) / double(world.scan.pixels));
-    world.floraRank = floraRank(planet);
-    const int land = qMax(1, world.scan.pixels - planet.water_pixel_count);
-    world.rugged = double(world.scan.mountain) / double(land) >= kRuggedLandShare;
-    markOreQuality(ores, world.valuable, world.hazard);
-    world.emotion = planetEmotionId(planet, world.scan);
     QVector<PlanetTagDef> chosen;
     QSet<QString> families;
     const QVector<PlanetTagDef> &all = tagCatalog();

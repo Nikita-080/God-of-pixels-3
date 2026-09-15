@@ -30,6 +30,10 @@
         <file>res/images/TabIcon9.png</file>
         <file>res/images/TabIcon10.png</file>
         <file>res/images/window.png</file>
+        <file>res/images/achievements/default.png</file>
+        <file>res/images/achievements/default_locked.png</file>
+        <file>res/images/achievements/secret.png</file>
+        <file>res/images/achievements/secret_locked.png</file>
     </qresource>
     <qresource prefix="/css_files">
         <file>res/css_files/app.qss</file>
@@ -48,6 +52,7 @@
         <file>res/txt_files/minerals.json</file>
         <file>res/txt_files/planet_tags.json</file>
         <file>res/txt_files/metal_lex.json</file>
+        <file>res/txt_files/achievements.json</file>
     </qresource>
     <qresource prefix="/translations">
         <file alias="QtLanguage_ru.qm">translations/QtLanguage_ru.qm</file>

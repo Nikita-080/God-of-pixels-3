@@ -2,6 +2,7 @@
 #define PLANET_P_H
 
 #include <QImage>
+#include <QSet>
 #include <QString>
 #include <QVector>
 #include <QColor>
@@ -32,5 +33,6 @@ struct PlanetOre
 
 QVector<PlanetOre> planetOreInventory(const class Planet &planet);
 void planetPaintTagCard(class Planet &planet);
+QSet<QString> planetActiveTagIds(const class Planet &planet);
 
 #endif

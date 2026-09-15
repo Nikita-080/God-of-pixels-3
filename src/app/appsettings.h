@@ -15,6 +15,7 @@ const char dirPlanet[] = "paths/planet";
 const char dirSettings[] = "paths/settings";
 const char dirAutogen[] = "paths/autogen";
 const char windowGeometry[] = "ui/windowGeometry";
+const char achievementUnlockPrefix[] = "achievements/unlock/";
 }
 
 inline QString startPath(const char *dirKey, const QString &fileName = QString())

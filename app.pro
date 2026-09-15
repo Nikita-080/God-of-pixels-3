@@ -11,12 +11,21 @@ INCLUDEPATH += \
     $$PWD/src/ui \
     $$PWD/src/planet \
     $$PWD/src/gen \
-    $$PWD/src/render
+    $$PWD/src/render \
+    $$PWD/src/achievements
 
 SOURCES += \
     src/app/main.cpp \
     src/app/mainwindow.cpp \
+    src/achievements/achievement.cpp \
+    src/achievements/achievementcatalog.cpp \
+    src/achievements/achievementcontext.cpp \
+    src/achievements/achievementengine.cpp \
+    src/achievements/achievementrules.cpp \
+    src/achievements/achievementstore.cpp \
     src/ui/autogensettings.cpp \
+    src/ui/achievementsdialog.cpp \
+    src/ui/achievementtoast.cpp \
     src/ui/colorswatch.cpp \
     src/ui/multislider.cpp \
     src/ui/previewpanel.cpp \
@@ -48,7 +57,15 @@ HEADERS += \
     src/app/appsettings.h \
     src/app/global.h \
     src/app/mainwindow.h \
+    src/achievements/achievement.h \
+    src/achievements/achievementcatalog.h \
+    src/achievements/achievementcontext.h \
+    src/achievements/achievementengine.h \
+    src/achievements/achievementrules.h \
+    src/achievements/achievementstore.h \
     src/ui/autogensettings.h \
+    src/ui/achievementsdialog.h \
+    src/ui/achievementtoast.h \
     src/ui/colorswatch.h \
     src/ui/multislider.h \
     src/ui/previewpanel.h \

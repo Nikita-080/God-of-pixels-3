@@ -320,6 +320,10 @@
         <translation>О программе</translation>
     </message>
     <message>
+        <source>Achievements</source>
+        <translation>Достижения</translation>
+    </message>
+    <message>
         <location filename="mainwindow.ui" line="8155"/>
         <source>Switch language</source>
         <translation>Переключить язык</translation>
@@ -1060,5 +1064,16 @@
     <message><source></source><translation></translation></message>
     <message><source>amazing world</source><translation>удивительный мир</translation></message>
     <message><source>incredible world</source><translation>невероятный мир</translation></message>
+</context>
+<context>
+    <name>Achievements</name>
+    <message>
+        <source>Achievements</source>
+        <translation>Достижения</translation>
+    </message>
+    <message>
+        <source>Achievement unlocked</source>
+        <translation>Достижение получено</translation>
+    </message>
 </context>
 </TS>

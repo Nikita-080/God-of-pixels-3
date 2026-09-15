@@ -11,6 +11,7 @@
 class PreviewPanel;
 class SettingsPanel;
 class PlanetGLWidget;
+class AchievementToastHost;
 class QTimer;
 class QThread;
 class QTextEdit;
@@ -51,6 +52,7 @@ private:
     void M_Load_Planet();
     void M_Save_Full_Image();
     void M_About();
+    void M_Achievements();
     void M_Switch_Language();
     void CreateNewPlanet();
     void RecreatePlanet();
@@ -66,6 +68,7 @@ private:
     void scheduleLivePreview();
     void runLivePreview();
     void applyPlanetToView();
+    void evaluateAchievements();
     void startGeneration(bool createNew, int seed = 0, GenOp op = GenOp::None);
     void logOp(const QString &action, qint64 ms, bool ok, const QString &detail = QString());
     void beginLoadingWatch();
@@ -99,6 +102,7 @@ private:
     bool autogenRunning;
     PlanetGLWidget *autogenGl;
     QTextEdit *opConsole;
+    AchievementToastHost *achievementToasts;
     GenOp genActiveOp;
     GenOp genQueuedOp;
     QElapsedTimer genOpTimer;

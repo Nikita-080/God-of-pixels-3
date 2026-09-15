@@ -7634,6 +7634,7 @@ color: rgb(255, 255, 255);</string>
     <property name="title">
      <string>Help</string>
     </property>
+    <addaction name="action_achievements"/>
     <addaction name="action_6"/>
    </widget>
    <addaction name="menu"/>
@@ -7669,6 +7670,11 @@ color: rgb(255, 255, 255);</string>
   <action name="action_6">
    <property name="text">
     <string>About program</string>
+   </property>
+  </action>
+  <action name="action_achievements">
+   <property name="text">
+    <string>Achievements</string>
    </property>
   </action>
   <action name="action_7">

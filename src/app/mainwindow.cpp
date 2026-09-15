@@ -7,6 +7,10 @@
 #include "appsettings.h"
 #include "global.h"
 #include "spheremath.h"
+#include "achievementengine.h"
+#include "achievementcontext.h"
+#include "achievementtoast.h"
+#include "achievementsdialog.h"
 #include <QColorDialog>
 #include <QFile>
 #include <QFileDialog>
@@ -76,6 +80,7 @@ MainWindow::MainWindow(QWidget *parent)
     , autogenRunning(false)
     , autogenGl(nullptr)
     , opConsole(nullptr)
+    , achievementToasts(nullptr)
     , genActiveOp(GenOp::None)
     , genQueuedOp(GenOp::None)
 {
@@ -128,6 +133,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->action, &QAction::triggered, this, &MainWindow::M_Save_Image);
     connect(ui->action_2, &QAction::triggered, this, &MainWindow::M_Save_Planet);
     connect(ui->action_6, &QAction::triggered, this, &MainWindow::M_About);
+    connect(ui->action_achievements, &QAction::triggered, this, &MainWindow::M_Achievements);
     connect(ui->action_8, &QAction::triggered, this, &MainWindow::M_Save_Full_Image);
     connect(ui->action_9, &QAction::triggered, this, &MainWindow::M_Load_Planet);
     connect(ui->action_10, &QAction::triggered, this, &MainWindow::M_Switch_Language);
@@ -147,6 +153,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     setupMainLayout();
     SetStyle();
+    achievementToasts = new AchievementToastHost(this);
 
     Settings_Get();
     s.Load(":/txt_files/res/txt_files/settingsbase.json");
@@ -232,6 +239,19 @@ void MainWindow::M_About()
     message.append(tr("feedback - riabovnick080@yandex.ru"));
     msb.setText(message);
     msb.exec();
+}
+
+void MainWindow::M_Achievements()
+{
+    AchievementsDialog dlg(this);
+    dlg.exec();
+}
+
+void MainWindow::evaluateAchievements()
+{
+    if (isEmtyPlanet || !achievementToasts)
+        return;
+    achievementToasts->enqueue(AchievementEngine::evaluate(AchievementContext::fromPlanet(planet)));
 }
 
 void MainWindow::SetStyle()
@@ -779,6 +799,8 @@ void MainWindow::startGeneration(bool createNew, int seed, GenOp op)
             }
             logOp(action, elapsed, true, planet.name);
         }
+        if (finishedOp != GenOp::Load)
+            evaluateAchievements();
         if (queued)
             startGeneration(false, 0, queuedOp);
     });

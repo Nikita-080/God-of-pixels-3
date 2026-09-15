@@ -1,0 +1,20 @@
+{
+  "defaults": {
+    "icon": ":/images/res/images/achievements/default.png",
+    "icon_locked": ":/images/res/images/achievements/default_locked.png",
+    "icon_secret": ":/images/res/images/achievements/secret.png",
+    "icon_secret_locked": ":/images/res/images/achievements/secret_locked.png"
+  },
+  "achievements": [
+    {
+      "_comment": "Template only. Replace id and add a matching predicate in AchievementRules; this entry is not unlocked in-game.",
+      "id": "example",
+      "rarity": "common",
+      "secret": false,
+      "title": "Example achievement",
+      "description": "Replace this description.\nUp to three lines.\nThird line.",
+      "icon": "",
+      "icon_locked": ""
+    }
+  ]
+}
