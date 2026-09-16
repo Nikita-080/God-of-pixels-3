@@ -157,16 +157,12 @@ bool planetDescriptionBarsAll(const Facts &facts, DescriptionBarColor want)
         planetDescriptionBarColor(facts.temperature, QStringLiteral("neutral")),
         planetDescriptionBarColor(facts.seismicity, QStringLiteral("bad")),
     };
-    bool anyFilled = false;
     for (DescriptionBarColor c : bars)
     {
-        if (c == DescriptionBarColor::Empty)
-            continue;
-        anyFilled = true;
         if (c != want)
             return false;
     }
-    return anyFilled;
+    return true;
 }
 
 void Planet::GenerateDescription()
