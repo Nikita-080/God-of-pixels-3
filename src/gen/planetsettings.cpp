@@ -25,6 +25,7 @@ PlanetSettings::PlanetSettings()
     ring_material = 0;
     ring_intensity = 2;
     is_civ = false;
+    is_plant = false;
     civ_color = QColor(QStringLiteral("#ffcc66"));
     seismicity = 0;
 }

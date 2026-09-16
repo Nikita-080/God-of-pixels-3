@@ -434,7 +434,7 @@ void SettingsPanel::wireLiveUpdates()
             connect(b, &QCheckBox::toggled, this, requestFull);
     }
     if (auto *b = child<QCheckBox>("checkAtmo"))
-        connect(b, &QCheckBox::toggled, this, requestAppearance);
+        connect(b, &QCheckBox::toggled, this, requestFull);
     if (auto *b = child<QCheckBox>("checkRing"))
         connect(b, &QCheckBox::toggled, this, requestAppearance);
     if (auto *r = child<QRadioButton>("radioName1"))

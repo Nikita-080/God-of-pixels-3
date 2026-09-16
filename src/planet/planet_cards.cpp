@@ -188,6 +188,8 @@ void Planet::CalculateDescription()
     if (pixel_count <= 0)
         pixel_count = 1;
     facts.life = qRound(plant_pixel_count * 12.0 / qMax(1, pixel_count - water_pixel_count));
+    if (!s.is_plant || plant_pixel_count <= 0)
+        facts.life = 0;
     facts.ice = qRound(ice_pixel_count * 12.0 / pixel_count);
     facts.water = qRound(water_pixel_count * 12.0 / pixel_count);
     facts.temperature = qRound((s.effectiveTemperature() + 90) * 12.0 / 230);

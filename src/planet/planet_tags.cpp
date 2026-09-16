@@ -158,18 +158,9 @@ int fracToRank5(double frac)
 
 int floraRank(const Planet &p)
 {
-    if (p.plant_pixel_count <= 0)
+    if (!p.s.is_plant || !p.s.is_atmo || p.plant_pixel_count <= 0)
         return 0;
-    const int pix = qMax(1, p.map_w * p.map_h);
-    const int land = qMax(1, pix - p.water_pixel_count);
-    const double ofLand = double(p.plant_pixel_count) / double(land);
-    if (ofLand < 0.03)
-        return 1;
-    if (ofLand < 0.10)
-        return 2;
-    if (ofLand < 0.22)
-        return 3;
-    return 4;
+    return rank5(p.facts.life);
 }
 
 int oreWealthRank(const QVector<PlanetOre> &ores)
@@ -458,27 +449,34 @@ TagWorld makeTagWorld(const Planet &planet)
     return world;
 }
 
+int tagIdRank(const QString &id, const QLatin1String &prefix)
+{
+    bool ok = false;
+    const int n = id.mid(prefix.size()).toInt(&ok);
+    return ok ? n : -1;
+}
+
 bool tagApplies(const Planet &p, const PlanetTagDef &d, const TagWorld &w)
 {
     const QString &id = d.id;
     if (id.startsWith(QLatin1String("res_")))
-        return w.wealth == id.mid(4).toInt();
+        return w.wealth == tagIdRank(id, QLatin1String("res_"));
     if (id.startsWith(QLatin1String("rad_")))
-        return rank5(p.facts.radiation) == id.mid(4).toInt();
+        return rank5(p.facts.radiation) == tagIdRank(id, QLatin1String("rad_"));
     if (id.startsWith(QLatin1String("wat_")))
-        return w.waterRank == id.mid(4).toInt();
+        return w.waterRank == tagIdRank(id, QLatin1String("wat_"));
     if (id.startsWith(QLatin1String("ice_")))
-        return w.iceRank == id.mid(4).toInt();
+        return w.iceRank == tagIdRank(id, QLatin1String("ice_"));
     if (id.startsWith(QLatin1String("life_")))
-        return w.floraRank == id.mid(4).toInt();
+        return w.floraRank == tagIdRank(id, QLatin1String("life_"));
     if (id.startsWith(QLatin1String("tmp_")))
-        return rank5(p.facts.temperature) == id.mid(4).toInt();
+        return rank5(p.facts.temperature) == tagIdRank(id, QLatin1String("tmp_"));
     if (id.startsWith(QLatin1String("sei_")))
-        return rank5(p.facts.seismicity) == id.mid(4).toInt();
+        return rank5(p.facts.seismicity) == tagIdRank(id, QLatin1String("sei_"));
     if (id.startsWith(QLatin1String("lava_")))
-        return lavaRank(w.scan) == id.mid(5).toInt();
+        return lavaRank(w.scan) == tagIdRank(id, QLatin1String("lava_"));
     if (id.startsWith(QLatin1String("cloud_")))
-        return cloudRank(p, w.scan) == id.mid(6).toInt();
+        return cloudRank(p, w.scan) == tagIdRank(id, QLatin1String("cloud_"));
     if (id == QLatin1String("civ_yes"))
         return !p.cities.isEmpty();
     if (id == QLatin1String("toxic_flora"))
