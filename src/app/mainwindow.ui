@@ -442,7 +442,7 @@
      <string>Change</string>
     </property>
    </widget>
-      <widget class="QTabWidget" name="tabWidget">
+   <widget class="QTabWidget" name="tabWidget">
     <property name="geometry">
      <rect>
       <x>10</x>
@@ -557,7 +557,7 @@
      <enum>QTabWidget::West</enum>
     </property>
     <property name="currentIndex">
-     <number>0</number>
+     <number>5</number>
     </property>
     <property name="iconSize">
      <size>
@@ -4382,7 +4382,7 @@ margin: 5px;}</string>
        <rect>
         <x>10</x>
         <y>50</y>
-        <width>171</width>
+        <width>191</width>
         <height>31</height>
        </rect>
       </property>
@@ -7576,7 +7576,7 @@ color: rgb(255, 255, 255);</string>
      <set>Qt::AlignCenter</set>
     </property>
    </widget>
-      <widget class="QPushButton" name="btnLogo">
+   <widget class="QPushButton" name="btnLogo">
     <property name="geometry">
      <rect>
       <x>1166</x>

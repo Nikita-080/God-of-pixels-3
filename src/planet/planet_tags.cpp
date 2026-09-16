@@ -308,16 +308,9 @@ QString planetEmotionId(const Planet &p, const SurfaceScan &scan)
     return landEmotionId(p, scan);
 }
 
-struct MetalLex
+QString metalEnglishName(const QString &symbol)
 {
-    QString en;
-    QString ruGen;
-    QString ruAdj;
-};
-
-const MetalLex *metalLex(const QString &symbol)
-{
-    static QHash<QString, MetalLex> table;
+    static QHash<QString, QString> table;
     static bool loaded = false;
     if (!loaded)
     {
@@ -327,33 +320,29 @@ const MetalLex *metalLex(const QString &symbol)
             const QJsonObject root = QJsonDocument::fromJson(file.readAll()).object();
             for (auto it = root.begin(); it != root.end(); ++it)
             {
-                if (!it.value().isObject())
-                    continue;
-                const QJsonObject o = it.value().toObject();
-                MetalLex m;
-                m.en = o.value(QStringLiteral("en")).toString();
-                m.ruGen = o.value(QStringLiteral("ruGen")).toString();
-                m.ruAdj = o.value(QStringLiteral("ruAdj")).toString();
-                if (!m.en.isEmpty())
-                    table.insert(it.key(), m);
+                const QString en = it.value().isString()
+                                       ? it.value().toString()
+                                       : it.value().toObject().value(QStringLiteral("en")).toString();
+                if (!en.isEmpty())
+                    table.insert(it.key(), en);
             }
         }
         loaded = true;
     }
-    auto it = table.constFind(symbol);
-    if (it == table.cend())
-        return nullptr;
-    return &it.value();
+    return table.value(symbol, symbol);
+}
+
+QString metalForm(const QString &en, const char *comment)
+{
+    const QByteArray utf8 = en.toUtf8();
+    return QCoreApplication::translate("PlanetTags", utf8.constData(), comment);
 }
 
 QString orePhrase(const QString &symbol, int kind, QRandomGenerator &rnd)
 {
-    const MetalLex *m = metalLex(symbol);
-    const bool ru = QCoreApplication::translate("PlanetTags", "rings")
-                    == QString::fromUtf8("кольца");
-    const QString en = m ? m->en : symbol;
-    const QString gen = (ru && m && !m->ruGen.isEmpty()) ? m->ruGen : en;
-    const QString adj = (ru && m && !m->ruAdj.isEmpty()) ? m->ruAdj : en;
+    const QString en = metalEnglishName(symbol);
+    const QString gen = metalForm(en, "metal genitive");
+    const QString adj = metalForm(en, "metal adjective");
     const int pick = rnd.bounded(2);
     QString text;
     if (kind <= 0)

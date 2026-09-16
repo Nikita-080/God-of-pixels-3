@@ -6,6 +6,8 @@
 #include <QTimer>
 #include <QWheelEvent>
 #include <QQuaternion>
+#include <QHash>
+#include <QPair>
 #include <QtMath>
 #include <cmath>
 
@@ -26,6 +28,106 @@ float wrapDeg(float a)
         a += 360.0f;
     return a;
 }
+
+quint32 wangHash(quint32 x)
+{
+    x = (x ^ 61u) ^ (x >> 16);
+    x *= 9u;
+    x = x ^ (x >> 4);
+    x *= 0x27d4eb2du;
+    x = x ^ (x >> 15);
+    return x;
+}
+
+float hashDir(const QVector3D &n, quint32 seed)
+{
+    const quint32 hx = quint32(qint32(qRound(n.x() * 4096.0f)));
+    const quint32 hy = quint32(qint32(qRound(n.y() * 4096.0f)));
+    const quint32 hz = quint32(qint32(qRound(n.z() * 4096.0f)));
+    const quint32 h = wangHash(hx * 73856093u ^ hy * 19349663u ^ hz * 83492791u ^ seed);
+    return float(h & 0x00ffffffu) / float(0x00ffffffu);
+}
+
+float rockNoise(const QVector3D &n, quint32 seed)
+{
+    const float a = hashDir(n, seed);
+    const float b = hashDir(n, seed ^ 0x9e3779b9u);
+    return (a * 0.65f + b * 0.35f) * 2.0f - 1.0f;
+}
+
+struct IcoMesh
+{
+    QVector<QVector3D> v;
+    QVector<int> idx;
+};
+
+int icoMid(QVector<QVector3D> &v, QHash<QPair<int, int>, int> &mids, int a, int b)
+{
+    const QPair<int, int> key(qMin(a, b), qMax(a, b));
+    const auto it = mids.constFind(key);
+    if (it != mids.cend())
+        return it.value();
+    const QVector3D p = (v[a] + v[b]).normalized();
+    const int id = v.size();
+    v.append(p);
+    mids.insert(key, id);
+    return id;
+}
+
+const IcoMesh &rockIcoMesh()
+{
+    static IcoMesh mesh;
+    static bool ready = false;
+    if (ready)
+        return mesh;
+    const float t = 0.5f * (1.0f + std::sqrt(5.0f));
+    const QVector3D raw[] = {
+        QVector3D(-1, t, 0), QVector3D(1, t, 0), QVector3D(-1, -t, 0), QVector3D(1, -t, 0),
+        QVector3D(0, -1, t), QVector3D(0, 1, t), QVector3D(0, -1, -t), QVector3D(0, 1, -t),
+        QVector3D(t, 0, -1), QVector3D(t, 0, 1), QVector3D(-t, 0, -1), QVector3D(-t, 0, 1)
+    };
+    mesh.v.reserve(42);
+    for (const QVector3D &p : raw)
+        mesh.v.append(p.normalized());
+    const int faces[][3] = {
+        {0, 11, 5}, {0, 5, 1}, {0, 1, 7}, {0, 7, 10}, {0, 10, 11},
+        {1, 5, 9}, {5, 11, 4}, {11, 10, 2}, {10, 7, 6}, {7, 1, 8},
+        {3, 9, 4}, {3, 4, 2}, {3, 2, 6}, {3, 6, 8}, {3, 8, 9},
+        {4, 9, 5}, {2, 4, 11}, {6, 2, 10}, {8, 6, 7}, {9, 8, 1}
+    };
+    QVector<int> idx;
+    idx.reserve(60);
+    for (int i = 0; i < 20; ++i)
+    {
+        idx.append(faces[i][0]);
+        idx.append(faces[i][1]);
+        idx.append(faces[i][2]);
+    }
+    QHash<QPair<int, int>, int> mids;
+    mesh.idx.reserve(240);
+    for (int i = 0; i + 2 < idx.size(); i += 3)
+    {
+        const int a = idx[i];
+        const int b = idx[i + 1];
+        const int c = idx[i + 2];
+        const int ab = icoMid(mesh.v, mids, a, b);
+        const int bc = icoMid(mesh.v, mids, b, c);
+        const int ca = icoMid(mesh.v, mids, c, a);
+        mesh.idx << a << ab << ca << b << bc << ab << c << ca << bc << ab << bc << ca;
+    }
+    ready = true;
+    return mesh;
+}
+
+QVector3D deformRockPoint(const RingRock &rock, const QVector3D &unitN)
+{
+    const QVector3D n = unitN.normalized();
+    const float k = 1.0f + 0.28f * rockNoise(n, rock.noiseSeed);
+    const QVector3D local(n.x() * rock.sx * k, n.y() * rock.sy * k, n.z() * rock.sz * k);
+    const QQuaternion rot = QQuaternion::fromEulerAngles(rock.pitch, rock.yaw, rock.roll);
+    return QVector3D(rock.x, rock.y, rock.z) + rot.rotatedVector(local * rock.radius);
+}
+
 }
 
 static const char *kPlanetVert =
@@ -597,32 +699,28 @@ void PlanetGLWidget::rebuildRings()
         }
         else
         {
-            const int slices = 10;
-            const int stacks = 6;
+            const IcoMesh &ico = rockIcoMesh();
             for (const RingRock &rock : planet->ring_rocks)
             {
                 const QVector3D col(rock.color.redF(), rock.color.greenF(), rock.color.blueF());
-                const QVector3D c(rock.x, rock.y, rock.z);
-                for (int y = 0; y < stacks; ++y)
+                QVector<QVector3D> deformed;
+                deformed.reserve(ico.v.size());
+                for (const QVector3D &n : ico.v)
+                    deformed.append(deformRockPoint(rock, n));
+                for (int i = 0; i + 2 < ico.idx.size(); i += 3)
                 {
-                    const float phi0 = float(y) / stacks * float(M_PI);
-                    const float phi1 = float(y + 1) / stacks * float(M_PI);
-                    for (int x = 0; x < slices; ++x)
+                    const QVector3D &a = deformed[ico.idx[i]];
+                    const QVector3D &b = deformed[ico.idx[i + 1]];
+                    const QVector3D &c = deformed[ico.idx[i + 2]];
+                    QVector3D nrm = QVector3D::crossProduct(b - a, c - a);
+                    if (nrm.lengthSquared() > 1e-12f)
+                        nrm.normalize();
+                    const QVector3D pts[3] = {a, b, c};
+                    for (const QVector3D &p : pts)
                     {
-                        const float th0 = float(x) / slices * float(2.0 * M_PI);
-                        const float th1 = float(x + 1) / slices * float(2.0 * M_PI);
-                        const QVector3D n00(qSin(phi0) * qCos(th0), qCos(phi0), qSin(phi0) * qSin(th0));
-                        const QVector3D n10(qSin(phi0) * qCos(th1), qCos(phi0), qSin(phi0) * qSin(th1));
-                        const QVector3D n01(qSin(phi1) * qCos(th0), qCos(phi1), qSin(phi1) * qSin(th0));
-                        const QVector3D n11(qSin(phi1) * qCos(th1), qCos(phi1), qSin(phi1) * qSin(th1));
-                        const QVector3D nrm[6] = {n00, n10, n11, n00, n11, n01};
-                        for (int k = 0; k < 6; ++k)
-                        {
-                            const QVector3D p = c + nrm[k] * rock.radius;
-                            rockData << p.x() << p.y() << p.z();
-                            rockData << nrm[k].x() << nrm[k].y() << nrm[k].z();
-                            rockData << col.x() << col.y() << col.z();
-                        }
+                        rockData << p.x() << p.y() << p.z();
+                        rockData << nrm.x() << nrm.y() << nrm.z();
+                        rockData << col.x() << col.y() << col.z();
                     }
                 }
             }

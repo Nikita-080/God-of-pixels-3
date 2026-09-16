@@ -25,6 +25,13 @@ struct RingRock
     float y;
     float z;
     float radius;
+    float sx;
+    float sy;
+    float sz;
+    float yaw;
+    float pitch;
+    float roll;
+    quint32 noiseSeed;
     QColor color;
 };
 

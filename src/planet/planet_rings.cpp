@@ -60,9 +60,16 @@ void Planet::PrepareRings()
         const double th = rnd.generateDouble() * 2.0 * M_PI;
         RingRock rock;
         rock.x = float(r * cos(th));
-        rock.y = 0.0f;
+        rock.y = float((rnd.generateDouble() - 0.5) * 0.035);
         rock.z = float(r * sin(th));
         rock.radius = float(0.04 + rnd.generateDouble() * 0.08);
+        rock.sx = float(0.48 + rnd.generateDouble() * 0.95);
+        rock.sy = float(0.22 + rnd.generateDouble() * 0.48);
+        rock.sz = float(0.48 + rnd.generateDouble() * 0.95);
+        rock.yaw = float(rnd.generateDouble() * 360.0);
+        rock.pitch = float((rnd.generateDouble() - 0.5) * 80.0);
+        rock.roll = float(rnd.generateDouble() * 360.0);
+        rock.noiseSeed = rnd.generate();
         if (!ring_colors.isEmpty())
             rock.color = ring_colors[RAND(0, ring_colors.size() - 1)];
         else
