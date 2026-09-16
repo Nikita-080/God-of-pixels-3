@@ -118,7 +118,8 @@ QVector<PlanetOre> planetOreInventory(const Planet &planet)
 
 DescriptionBarColor planetDescriptionBarColor(int lvl, const QString &type)
 {
-    if (lvl <= 0)
+    lvl = qBound(0, lvl, 12);
+    if (lvl < 1)
         return DescriptionBarColor::Empty;
     if (type == QLatin1String("good"))
     {
@@ -149,17 +150,25 @@ DescriptionBarColor planetDescriptionBarColor(int lvl, const QString &type)
 
 bool planetDescriptionBarsAll(const Facts &facts, DescriptionBarColor want)
 {
-    const DescriptionBarColor bars[] = {
-        planetDescriptionBarColor(facts.life, QStringLiteral("good")),
-        planetDescriptionBarColor(facts.water, QStringLiteral("neutral")),
-        planetDescriptionBarColor(facts.ice, QStringLiteral("bad")),
-        planetDescriptionBarColor(facts.radiation, QStringLiteral("bad")),
-        planetDescriptionBarColor(facts.temperature, QStringLiteral("neutral")),
-        planetDescriptionBarColor(facts.seismicity, QStringLiteral("bad")),
-    };
-    for (DescriptionBarColor c : bars)
+    struct Bar
     {
-        if (c != want)
+        int lvl;
+        const char *type;
+    };
+    const Bar bars[] = {
+        {facts.life, "good"},
+        {facts.water, "neutral"},
+        {facts.ice, "bad"},
+        {facts.radiation, "bad"},
+        {facts.temperature, "neutral"},
+        {facts.seismicity, "bad"},
+    };
+    for (const Bar &bar : bars)
+    {
+        const int lvl = qBound(0, bar.lvl, 12);
+        if (lvl < 1)
+            return false;
+        if (planetDescriptionBarColor(lvl, QLatin1String(bar.type)) != want)
             return false;
     }
     return true;
@@ -183,16 +192,17 @@ void Planet::CalculateDescription()
     int pixel_count = map_w * map_h;
     if (pixel_count <= 0)
         pixel_count = 1;
-    facts.life = qRound(plant_pixel_count * 12.0 / qMax(1, pixel_count - water_pixel_count));
+    facts.life = qBound(0, qRound(plant_pixel_count * 12.0 / qMax(1, pixel_count - water_pixel_count)), 12);
     if (!s.is_plant || plant_pixel_count <= 0)
         facts.life = 0;
-    facts.ice = qRound(ice_pixel_count * 12.0 / pixel_count);
-    facts.water = qRound(water_pixel_count * 12.0 / pixel_count);
-    facts.temperature = qRound((s.effectiveTemperature() + 90) * 12.0 / 230);
+    facts.ice = qBound(0, qRound(ice_pixel_count * 12.0 / pixel_count), 12);
+    facts.water = qBound(0, qRound(water_pixel_count * 12.0 / pixel_count), 12);
+    facts.temperature = qBound(0, qRound((s.effectiveTemperature() + 90) * 12.0 / 230), 12);
 }
 
 void Planet::Level(QString start, int string, int lvl, QString type, QPainter &p)
 {
+    lvl = qBound(0, lvl, 12);
     p.setPen(QPen(QColor(110, 170, 200)));
     QString s;
     s.fill('\n', string - 1);

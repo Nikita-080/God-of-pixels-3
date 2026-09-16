@@ -57,6 +57,22 @@ const QHash<QString, AchievementPredicate> &ruleTable()
         table.insert(QStringLiteral("a_plant"), [](const AchievementContext &c) {
             return c.plantPixelCount > 0;
         });
+        table.insert(QStringLiteral("a_uran"), [](const AchievementContext &c) {
+            return c.firstResourceSymbol == QLatin1String("U");
+        });
+        table.insert(QStringLiteral("a_ocean"), [](const AchievementContext &c) {
+            return c.shelfOceanOnly;
+        });
+        table.insert(QStringLiteral("a_save"), [](const AchievementContext &c) {
+            return c.planetSaved;
+        });
+        table.insert(QStringLiteral("a_random"), [](const AchievementContext &c) {
+            return c.autogenAllRandom;
+        });
+        table.insert(QStringLiteral("a_red_1_city"), [](const AchievementContext &c) {
+            return c.cityCount >= 1
+                && planetDescriptionBarsAll(c.facts, DescriptionBarColor::Red);
+        });
         ready = true;
     }
     return table;

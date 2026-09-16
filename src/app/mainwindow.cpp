@@ -248,13 +248,19 @@ void MainWindow::M_Achievements()
     dlg.exec();
 }
 
-void MainWindow::evaluateAchievements(bool countCreate)
+void MainWindow::evaluateAchievements(bool countCreate, bool planetSaved, bool autogenAllRandom)
 {
-    if (isEmtyPlanet || !achievementToasts)
+    if (!achievementToasts)
         return;
-    AchievementContext ctx = AchievementContext::fromPlanet(planet);
+    if (isEmtyPlanet && !planetSaved && !autogenAllRandom)
+        return;
+    AchievementContext ctx;
+    if (!isEmtyPlanet)
+        ctx = AchievementContext::fromPlanet(planet);
     ctx.createdCount = countCreate ? AchievementStore::addCreatedPlanet()
                                    : AchievementStore::createdCount();
+    ctx.planetSaved = planetSaved;
+    ctx.autogenAllRandom = autogenAllRandom;
     achievementToasts->enqueue(AchievementEngine::evaluate(ctx));
 }
 
@@ -447,6 +453,20 @@ void MainWindow::AutoGen()
     if (ok)
         ui->progressAutogen->setValue(100);
     logOp(tr("Autogen"), autogenTimer.elapsed(), ok, box.path);
+    if (ok && autogenRunning)
+    {
+        bool allRandom = !box.isRndList.isEmpty();
+        for (bool flag : box.isRndList)
+        {
+            if (!flag)
+            {
+                allRandom = false;
+                break;
+            }
+        }
+        if (allRandom)
+            evaluateAchievements(false, false, true);
+    }
     finishAutogen();
 }
 
@@ -698,6 +718,8 @@ void MainWindow::M_Save_Planet()
     logOp(tr("Save planet"), t.elapsed(), ok, QFileInfo(filename).fileName());
     if (!ok)
         QMessageBox::critical(nullptr, tr("Error"), tr("0001 unable to save file"));
+    else
+        evaluateAchievements(false, true);
 }
 
 void MainWindow::Gen(bool isCreateNew, Planet *p, int seed)

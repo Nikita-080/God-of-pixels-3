@@ -82,7 +82,7 @@
       "rarity": "epic",
       "secret": false,
       "title": "The best of all possible worlds",
-      "description": "Create the paradise",
+      "description": "Fill in all the scales with green",
       "icon": "",
       "icon_locked": ""
     },
@@ -92,7 +92,7 @@
       "rarity": "epic",
       "secret": false,
       "title": "The worst of all possible worlds",
-      "description": "Create the hell",
+      "description": "Fill in all the scales with red",
       "icon": "",
       "icon_locked": ""
     },
@@ -143,6 +143,56 @@
       "secret": false,
       "title": "Green world",
       "description": "Grow plants",
+      "icon": "",
+      "icon_locked": ""
+    },
+    {
+      "_comment": "Создать планету, у которой будет U на первом месте в списке ресурсов в карточке описания",
+      "id": "a_uran",
+      "rarity": "legendary",
+      "secret": false,
+      "title": "Nuclear wastelands",
+      "description": "Get U in the first place in the resources",
+      "icon": "",
+      "icon_locked": ""
+    },
+    {
+      "_comment": "Создать планету, у которой в структуре не будет ничего кроме шельфа и океана",
+      "id": "a_ocean",
+      "rarity": "special",
+      "secret": true,
+      "title": "Million more well on the way",
+      "description": "Create an ocean planet",
+      "icon": "",
+      "icon_locked": ""
+    },
+    {
+      "_comment": "Сохранить планету в файл .planet",
+      "id": "a_save",
+      "rarity": "common",
+      "secret": false,
+      "title": "Stasis storage",
+      "description": "Save the planet",
+      "icon": "",
+      "icon_locked": ""
+    },
+    {
+      "_comment": "Запустить автоген с полным списком случайных настроек (выдается в конце автогена)",
+      "id": "a_random",
+      "rarity": "special",
+      "secret": true,
+      "title": "Let Randy decide",
+      "description": "Run the autogen with all random settings",
+      "icon": "",
+      "icon_locked": ""
+    },
+    {
+      "_comment": "Комбинация a_1_city и a_red",
+      "id": "a_red_1_city",
+      "rarity": "special",
+      "secret": true,
+      "title": "40,000 Ways to die",
+      "description": "Fill in all the scales with red and create cities",
       "icon": "",
       "icon_locked": ""
     }

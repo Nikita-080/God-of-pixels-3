@@ -22,8 +22,12 @@ struct AchievementContext
     bool hasAtmo = false;
     bool hasRings = false;
     bool isSunday = false;
+    bool planetSaved = false;
+    bool autogenAllRandom = false;
+    bool shelfOceanOnly = false;
     int atmoSize = 0;
     double hazardLight = 0.0;
+    QString firstResourceSymbol;
     QSet<QString> tags;
     QSet<QString> cardTagIds;
     QSet<QString> cardLabelKeys;

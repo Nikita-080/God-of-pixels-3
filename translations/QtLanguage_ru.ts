@@ -1269,16 +1269,16 @@
         <translation>Лучший из миров</translation>
     </message>
     <message>
-        <source>Create the paradise</source>
-        <translation>Создайте рай</translation>
+        <source>Fill in all the scales with green</source>
+        <translation>Заполните все шкалы зеленым</translation>
     </message>
     <message>
         <source>The worst of all possible worlds</source>
         <translation>Худший из миров</translation>
     </message>
     <message>
-        <source>Create the hell</source>
-        <translation>Создайте ад</translation>
+        <source>Fill in all the scales with red</source>
+        <translation>Заполните все шкалы красным</translation>
     </message>
     <message>
         <source>Night lights</source>
@@ -1319,6 +1319,46 @@
     <message>
         <source>Grow plants</source>
         <translation>Вырастите растения</translation>
+    </message>
+    <message>
+        <source>Nuclear wastelands</source>
+        <translation>Ядерные пустоши</translation>
+    </message>
+    <message>
+        <source>Get U in the first place in the resources</source>
+        <translation>Получите U на первом месте в ресурсах</translation>
+    </message>
+    <message>
+        <source>Create an ocean planet</source>
+        <translation>Создайте планету-океан</translation>
+    </message>
+    <message>
+        <source>Million more well on the way</source>
+        <translation>Ещё миллион на подходе</translation>
+    </message>
+    <message>
+        <source>Stasis storage</source>
+        <translation>Стазис хранилище</translation>
+    </message>
+    <message>
+        <source>Save the planet</source>
+        <translation>Сохраните планету</translation>
+    </message>
+    <message>
+        <source>Let Randy decide</source>
+        <translation>Пусть решит Ренди</translation>
+    </message>
+    <message>
+        <source>Run the autogen with all random settings</source>
+        <translation>Запустите автоген со всеми случайными настройками</translation>
+    </message>
+    <message>
+        <source>40,000 Ways to die</source>
+        <translation>40,000 Способов умереть</translation>
+    </message>
+    <message>
+        <source>Fill in all the scales with red and create cities</source>
+        <translation>Заполните все шкалы красным и создайте города</translation>
     </message>
 </context>
 </TS>
