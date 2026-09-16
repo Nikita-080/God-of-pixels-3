@@ -85,7 +85,7 @@ MainWindow::MainWindow(QWidget *parent)
     , genActiveOp(GenOp::None)
     , genQueuedOp(GenOp::None)
 {
-    QSettings st;
+    QSettings st(appSettingsFile(), QSettings::IniFormat);
     language = st.value(AppKeys::language, QStringLiteral("en")).toString();
     if (language != QStringLiteral("ru"))
         language = QStringLiteral("en");
@@ -139,12 +139,12 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->action_9, &QAction::triggered, this, &MainWindow::M_Load_Planet);
     connect(ui->action_10, &QAction::triggered, this, &MainWindow::M_Switch_Language);
     connect(ui->action_live, &QAction::toggled, this, [](bool on) {
-        QSettings().setValue(AppKeys::livePreview, on);
+        QSettings(appSettingsFile(), QSettings::IniFormat).setValue(AppKeys::livePreview, on);
     });
     connect(preview->liveCheck(), &QCheckBox::toggled, ui->action_live, &QAction::setChecked);
     connect(ui->action_live, &QAction::toggled, preview->liveCheck(), &QCheckBox::setChecked);
     connect(preview->spinCheck(), &QCheckBox::toggled, this, [](bool on) {
-        QSettings().setValue(AppKeys::globeSpin, on);
+        QSettings(appSettingsFile(), QSettings::IniFormat).setValue(AppKeys::globeSpin, on);
     });
     connect(preview->spinCheck(), &QCheckBox::toggled, preview->glWidget(), &PlanetGLWidget::setSpinning);
     connect(settingsPanel, &SettingsPanel::settingsChanged, this, [this](bool appearanceOnly) {
@@ -188,7 +188,7 @@ MainWindow::~MainWindow()
 
 void MainWindow::closeEvent(QCloseEvent *event)
 {
-    QSettings().setValue(AppKeys::windowGeometry, saveGeometry());
+    QSettings(appSettingsFile(), QSettings::IniFormat).setValue(AppKeys::windowGeometry, saveGeometry());
     QMainWindow::closeEvent(event);
 }
 
@@ -213,7 +213,7 @@ void MainWindow::M_Switch_Language()
         language = "ru";
         qApp->installTranslator(&qtLanguageTranslator);
     }
-    QSettings().setValue(AppKeys::language, language);
+    QSettings(appSettingsFile(), QSettings::IniFormat).setValue(AppKeys::language, language);
 }
 
 void MainWindow::changeEvent(QEvent *event)

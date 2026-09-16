@@ -1,4 +1,5 @@
 #include "mainwindow.h"
+#include "appsettings.h"
 #include <QApplication>
 #include <QSurfaceFormat>
 #include <QTranslator>
@@ -10,6 +11,7 @@ int main(int argc, char *argv[]){
     QApplication a(argc, argv);
     a.setOrganizationName(QStringLiteral("NikitaRiabovSoft"));
     a.setApplicationName(QStringLiteral("GodOfPixels3"));
+    migrateAppSettingsFromRegistry();
     MainWindow w;
     w.show();
     return a.exec();

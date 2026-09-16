@@ -15,28 +15,30 @@ bool AchievementStore::isUnlocked(const QString &id)
 {
     if (id.isEmpty())
         return false;
-    return QSettings().contains(unlockKey(id));
+    return QSettings(appSettingsFile(), QSettings::IniFormat).contains(unlockKey(id));
 }
 
 QDateTime AchievementStore::unlockedAt(const QString &id)
 {
     if (id.isEmpty())
         return QDateTime();
-    return QDateTime::fromString(QSettings().value(unlockKey(id)).toString(), Qt::ISODate);
+    return QDateTime::fromString(
+        QSettings(appSettingsFile(), QSettings::IniFormat).value(unlockKey(id)).toString(), Qt::ISODate);
 }
 
 bool AchievementStore::unlock(const QString &id)
 {
     if (id.isEmpty() || isUnlocked(id))
         return false;
-    QSettings().setValue(unlockKey(id), QDateTime::currentDateTimeUtc().toString(Qt::ISODate));
+    QSettings(appSettingsFile(), QSettings::IniFormat)
+        .setValue(unlockKey(id), QDateTime::currentDateTimeUtc().toString(Qt::ISODate));
     return true;
 }
 
 QHash<QString, QDateTime> AchievementStore::allUnlocked()
 {
     QHash<QString, QDateTime> out;
-    QSettings st;
+    QSettings st(appSettingsFile(), QSettings::IniFormat);
     st.beginGroup(QStringLiteral("achievements/unlock"));
     const QStringList keys = st.childKeys();
     for (const QString &id : keys)
@@ -46,12 +48,14 @@ QHash<QString, QDateTime> AchievementStore::allUnlocked()
 
 int AchievementStore::createdCount()
 {
-    return QSettings().value(QLatin1String(AppKeys::achievementCreatedCount), 0).toInt();
+    return QSettings(appSettingsFile(), QSettings::IniFormat)
+        .value(QLatin1String(AppKeys::achievementCreatedCount), 0)
+        .toInt();
 }
 
 int AchievementStore::addCreatedPlanet()
 {
-    QSettings st;
+    QSettings st(appSettingsFile(), QSettings::IniFormat);
     const int n = st.value(QLatin1String(AppKeys::achievementCreatedCount), 0).toInt() + 1;
     st.setValue(QLatin1String(AppKeys::achievementCreatedCount), n);
     return n;

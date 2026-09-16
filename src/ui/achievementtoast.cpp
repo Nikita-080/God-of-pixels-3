@@ -18,16 +18,16 @@ public:
     AchievementToast(const AchievementDef &def, QWidget *parent)
         : QWidget(parent)
     {
-        setFixedSize(320, 78);
+        setFixedSize(426, 104);
 
         barColor = achievementRarityColor(def.rarity);
 
         auto *root = new QHBoxLayout(this);
-        root->setContentsMargins(12, 8, 8, 8);
-        root->setSpacing(8);
+        root->setContentsMargins(16, 12, 12, 12);
+        root->setSpacing(12);
 
         auto *icon = new QLabel(this);
-        icon->setFixedSize(56, 56);
+        icon->setFixedSize(74, 74);
         icon->setScaledContents(true);
         const QPixmap pm(def.resolvedIcon(true, achievementDefaults()));
         if (!pm.isNull())
@@ -37,28 +37,28 @@ public:
         auto *textCol = new QVBoxLayout;
         textCol->setSpacing(2);
         auto *caption = new QLabel(QCoreApplication::translate("Achievements", "Achievement unlocked"), this);
-        caption->setStyleSheet(QStringLiteral("color: rgb(160, 200, 220); font-size: 10px; background: transparent;"));
+        caption->setStyleSheet(QStringLiteral("color: rgb(160, 200, 220); font-size: 13px; background: transparent;"));
         auto *title = new QLabel(QCoreApplication::translate("Achievements", def.title.toUtf8().constData()), this);
         title->setWordWrap(true);
-        title->setStyleSheet(QStringLiteral("color: rgb(230, 240, 245); font-weight: bold; background: transparent;"));
+        title->setStyleSheet(QStringLiteral("color: rgb(230, 240, 245); font-size: 16px; font-weight: bold; background: transparent;"));
         textCol->addWidget(caption);
         textCol->addWidget(title);
         textCol->addStretch(1);
         root->addLayout(textCol, 1);
 
         auto *closeBtn = new QPushButton(QStringLiteral("x"), this);
-        closeBtn->setFixedSize(22, 22);
+        closeBtn->setFixedSize(28, 28);
         closeBtn->setFlat(true);
         closeBtn->setCursor(Qt::PointingHandCursor);
         closeBtn->setStyleSheet(QStringLiteral(
-            "QPushButton { color: rgb(110, 170, 200); background: transparent; border: none; }"
+            "QPushButton { color: rgb(110, 170, 200); background: transparent; border: none; font-size: 16px; }"
             "QPushButton:hover { color: rgb(230, 240, 245); }"));
         connect(closeBtn, &QPushButton::clicked, this, &QWidget::deleteLater);
         root->addWidget(closeBtn, 0, Qt::AlignTop);
 
         auto *timer = new QTimer(this);
         timer->setSingleShot(true);
-        timer->setInterval(4500);
+        timer->setInterval(9000);
         connect(timer, &QTimer::timeout, this, &QWidget::deleteLater);
         timer->start();
     }

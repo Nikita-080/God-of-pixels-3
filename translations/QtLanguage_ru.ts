@@ -295,9 +295,20 @@
         <translation>Настройки</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="8099"/>
+        <source>Generation settings</source>
+        <translation>Настройки генерации</translation>
+    </message>
+    <message>
+        <source>Program settings</source>
+        <translation>Настройки программы</translation>
+    </message>
+    <message>
         <source>Help</source>
-        <translation>Помощь</translation>
+        <translation type="vanished">Помощь</translation>
+    </message>
+    <message>
+        <source>Information</source>
+        <translation>Информация</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="8120"/>
