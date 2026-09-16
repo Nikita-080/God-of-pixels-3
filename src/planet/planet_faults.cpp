@@ -1,10 +1,10 @@
 #include "planet.h"
-#include "planet_p.h"
 #include "noise3d.h"
 #include <QQueue>
 #include <QPair>
 #include <QtMath>
 #include <QPoint>
+#include <queue>
 
 namespace {
 const quint8 kFaultNone = 0;
@@ -29,6 +29,15 @@ int wrapX(int x, int w)
 {
     return (x % w + w) % w;
 }
+
+struct LavaHeatNode
+{
+    double d;
+    int x;
+    int y;
+    double fall;
+    bool operator<(const LavaHeatNode &o) const { return d > o.d; }
+};
 }
 
 void Planet::ApplyFaults()
@@ -292,11 +301,60 @@ void Planet::ApplyLavaClimate()
 {
     if (map_w <= 0 || lavaHeat.isEmpty() || t_map.isEmpty())
         return;
-    QVector<QVector<double>> heat = lavaHeat;
+
     const int radius = qMax(1, map_w / 28);
-    planetBoxBlurWrapX(heat, radius);
-    planetBoxBlurClampY(heat, radius);
-    const double tBoost = 18.0 + 22.0 * (qBound(0, s.seismicity, 12) / 12.0);
+    const double r = double(radius);
+    const double tBoost = 50.0 * (qBound(0, s.seismicity, 12) / 12.0);
+
+    QVector<QVector<double>> dist(map_w);
+    QVector<QVector<double>> heat(map_w);
+    for (int x = 0; x < map_w; ++x)
+    {
+        dist[x].fill(1.0e9, map_h);
+        heat[x].fill(0.0, map_h);
+    }
+
+    std::priority_queue<LavaHeatNode> pq;
+    for (int x = 0; x < map_w; ++x)
+    {
+        for (int y = 0; y < map_h; ++y)
+        {
+            const double fall = lavaHeat[x][y];
+            if (fall <= 0.0)
+                continue;
+            dist[x][y] = 0.0;
+            heat[x][y] = fall;
+            pq.push({0.0, x, y, fall});
+        }
+    }
+
+    const int ndx[8] = {1, -1, 0, 0, 1, 1, -1, -1};
+    const int ndy[8] = {0, 0, 1, -1, 1, -1, 1, -1};
+    const double nstep[8] = {1.0, 1.0, 1.0, 1.0, M_SQRT2, M_SQRT2, M_SQRT2, M_SQRT2};
+
+    while (!pq.empty())
+    {
+        const LavaHeatNode cur = pq.top();
+        pq.pop();
+        if (cur.d > dist[cur.x][cur.y] + 1.0e-9)
+            continue;
+        if (cur.d >= r)
+            continue;
+        for (int i = 0; i < 8; ++i)
+        {
+            const int nx = wrapX(cur.x + ndx[i], map_w);
+            const int ny = cur.y + ndy[i];
+            if (ny < 0 || ny >= map_h)
+                continue;
+            const double nd = cur.d + nstep[i];
+            if (nd > r || nd >= dist[nx][ny])
+                continue;
+            dist[nx][ny] = nd;
+            heat[nx][ny] = cur.fall * (1.0 - nd / r);
+            pq.push({nd, nx, ny, cur.fall});
+        }
+    }
+
     for (int x = 0; x < map_w; ++x)
     {
         for (int y = 0; y < map_h; ++y)

@@ -193,10 +193,16 @@ void Planet::CalculateDescription()
     if (pixel_count <= 0)
         pixel_count = 1;
     facts.life = qBound(0, qRound(plant_pixel_count * 12.0 / qMax(1, pixel_count - water_pixel_count)), 12);
-    if (!s.is_plant || plant_pixel_count <= 0)
+    if (plant_pixel_count > 0 || !cities.isEmpty())
+        facts.life = qMax(1, facts.life);
+    else
         facts.life = 0;
     facts.ice = qBound(0, qRound(ice_pixel_count * 12.0 / pixel_count), 12);
+    if (ice_pixel_count > 0)
+        facts.ice = qMax(1, facts.ice);
     facts.water = qBound(0, qRound(water_pixel_count * 12.0 / pixel_count), 12);
+    if (water_pixel_count > 0)
+        facts.water = qMax(1, facts.water);
     facts.temperature = qBound(0, qRound((s.effectiveTemperature() + 90) * 12.0 / 230), 12);
 }
 
