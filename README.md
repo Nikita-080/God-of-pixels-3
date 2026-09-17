@@ -12,7 +12,7 @@ Shape the terrain, add oceans and atmosphere, grow plants, control the climate, 
 
 # CORE Update — v2.0.0
 
-<img src="promo/core_preview_crop.gif">
+<img src="promo/core_preview_crop_3.gif">
 
 > **A new foundation for God of Pixels 3.**
 
