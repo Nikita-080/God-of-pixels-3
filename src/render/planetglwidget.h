@@ -58,6 +58,7 @@ private:
     void stopCameraReset();
     void tickCameraReset();
     void rebuildStarfield();
+    void buildAccretionDisk();
     void drawStarAndSky(const QMatrix4x4 &proj, const QMatrix4x4 &view, const QVector3D &lightDir);
 
     const Planet *planet;
@@ -68,6 +69,7 @@ private:
     QOpenGLShaderProgram blitProg;
     QOpenGLShaderProgram cityProg;
     QOpenGLShaderProgram starProg;
+    QOpenGLShaderProgram diskProg;
     QOpenGLShaderProgram starfieldProg;
     QOpenGLBuffer sphereVbo;
     QOpenGLBuffer ringVbo;
@@ -75,12 +77,14 @@ private:
     QOpenGLBuffer blitVbo;
     QOpenGLBuffer cityVbo;
     QOpenGLBuffer starfieldVbo;
+    QOpenGLBuffer diskVbo;
     std::unique_ptr<QOpenGLFramebufferObject> sceneFbo;
     int sphereVertexCount;
     int ringVertexCount;
     int rockVertexCount;
     int cityVertexCount;
     int starfieldCount;
+    int diskVertexCount;
     std::unique_ptr<QOpenGLTexture> albedo;
     std::unique_ptr<QOpenGLTexture> clouds;
     float azimuth;

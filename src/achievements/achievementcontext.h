@@ -25,6 +25,7 @@ struct AchievementContext
     bool planetSaved = false;
     bool autogenAllRandom = false;
     bool shelfOceanOnly = false;
+    bool blackHole = false;
     int atmoSize = 0;
     double hazardLight = 0.0;
     QString firstResourceSymbol;

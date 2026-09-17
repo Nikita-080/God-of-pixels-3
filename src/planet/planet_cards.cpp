@@ -6,6 +6,8 @@
 #include <QPainter>
 #include <QtMath>
 #include <QHash>
+#include <QFont>
+#include <QFontMetrics>
 #include <algorithm>
 
 namespace {
@@ -245,11 +247,15 @@ void Planet::DrawDescription()
     head += QCoreApplication::translate("Planet", "resources  - ") + facts.resources;
     if (starclass.isEmpty())
         head += QCoreApplication::translate("Planet", "star       - [not found]");
+    else if (s.has_star && isStarBlackHole(s.star_spectrum))
+        head += QCoreApplication::translate("Planet", "star       - black hole");
     else
     {
         head += QCoreApplication::translate("Planet", "star       - ");
         for (int i = 0; i < starclass.length(); i++)
         {
+            if (starclass[i] < 0 || starclass[i] >= classes.size())
+                continue;
             head += classes[starclass[i]];
             head += QLatin1Char(' ');
         }
@@ -258,8 +264,33 @@ void Planet::DrawDescription()
     head += QCoreApplication::translate("Planet", "spectrum:") + QLatin1Char('\n');
     p.drawText(QRect(40, 27, 400, 400), head);
     const int specY = 27 + p.fontMetrics().lineSpacing() * 4;
-    paintStarSpectrum(p, QRect(40, specY, 220, 36),
-                      this->s.has_star ? this->s.star_spectrum : QVector<int>(StarBandCount, 0));
+    const QRect specRect(40, specY, 220, 36);
+    if (s.has_star && isStarBlackHole(s.star_spectrum))
+    {
+        p.fillRect(specRect, QColor(8, 12, 16));
+        p.setPen(QColor(40, 70, 90));
+        p.drawRect(specRect.adjusted(0, 0, -1, -1));
+        const QString err = QCoreApplication::translate("Planet", "[ERROR]");
+        QFont errFont(QStringLiteral("Consolas"), 8, QFont::Bold);
+        for (int pt = 22; pt >= 8; --pt)
+        {
+            errFont.setPointSize(pt);
+            const QFontMetrics fm(errFont);
+            if (fm.horizontalAdvance(err) <= specRect.width() - 8
+                && fm.height() <= specRect.height() - 4)
+                break;
+        }
+        p.setFont(errFont);
+        p.setPen(QColor(220, 20, 20));
+        p.drawText(specRect, Qt::AlignCenter, err);
+        p.setFont(QFont(QStringLiteral("Consolas"), 8));
+        p.setPen(QPen(QColor(110, 170, 200)));
+    }
+    else
+    {
+        paintStarSpectrum(p, specRect,
+                          this->s.has_star ? this->s.star_spectrum : QVector<int>(StarBandCount, 0));
+    }
 
     Level(QCoreApplication::translate("Planet", "life         "), 9, facts.life, "good", p);
     Level(QCoreApplication::translate("Planet", "water        ", nullptr), 10, facts.water, "neutral", p);

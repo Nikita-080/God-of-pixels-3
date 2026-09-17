@@ -635,6 +635,14 @@
         <translation>звезда     - [не найдено]</translation>
     </message>
     <message>
+        <source>star       - black hole</source>
+        <translation>звезда     - чёрная дыра</translation>
+    </message>
+    <message>
+        <source>[ERROR]</source>
+        <translation>[ОШИБКА]</translation>
+    </message>
+    <message>
         <location filename="planet.cpp" line="809"/>
         <source>star       - </source>
         <translation>звезда     - </translation>
@@ -960,6 +968,12 @@
     <message><source>red dwarf</source><translation>красный карлик</translation></message>
     <message><source>brown dwarf</source><translation>коричневый карлик</translation></message>
     <message><source>infrared star</source><translation>инфракрасная звезда</translation></message>
+    <message><source>black hole</source><translation>чёрная дыра</translation></message>
+    <message><source>event horizon</source><translation>горизонт событий</translation></message>
+    <message><source>singularity</source><translation>сингулярность</translation></message>
+    <message><source>hypermass</source><translation>гипермасса</translation></message>
+    <message><source>reality collapse</source><translation>коллапс реальности</translation></message>
+    <message><source>time anomaly</source><translation>временная аномалия</translation></message>
     <message><source>thin clouds</source><translation>редкие облака</translation></message>
     <message><source>haze</source><translation>дымка</translation></message>
     <message><source>light cloud</source><translation>лёгкая облачность</translation></message>
@@ -1354,12 +1368,16 @@
         <translation>Получите Au на первом месте в ресурсах</translation>
     </message>
     <message>
+        <source>One Hour</source>
+        <translation>Один час</translation>
+    </message>
+    <message>
         <source>One hour</source>
         <translation>Один час</translation>
     </message>
     <message>
         <source>Create a world where one hour lasts seven years</source>
-        <translation>Создать мир, где один час длится семь лет</translation>
+        <translation>Создайте мир, где один час длится семь лет</translation>
     </message>
 </context>
 </TS>

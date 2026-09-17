@@ -323,6 +323,13 @@
       "labels": ["brown dwarf", "infrared star"]
     },
     {
+      "id": "star_blackhole",
+      "family": "star",
+      "priority": 33,
+      "tone": "anomaly",
+      "labels": ["black hole", "event horizon", "singularity", "hypermass", "reality collapse", "time anomaly"]
+    },
+    {
       "id": "cloud_1",
       "family": "clouds",
       "priority": 38,

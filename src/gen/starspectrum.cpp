@@ -51,8 +51,20 @@ QVector3D starLightRgb(const QVector<int> &bands)
     return c;
 }
 
+bool isStarBlackHole(const QVector<int> &bands)
+{
+    for (int i = 0; i < StarBandCount; ++i)
+    {
+        if (starBand(bands, i) > 0)
+            return false;
+    }
+    return true;
+}
+
 int inferStarClass(const QVector<int> &bands)
 {
+    if (isStarBlackHole(bands))
+        return 12;
     const int uv = starBand(bands, StarUv);
     const int r = starBand(bands, StarRed);
     const int g = starBand(bands, StarGreen);

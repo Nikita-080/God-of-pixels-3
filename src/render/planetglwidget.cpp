@@ -350,6 +350,43 @@ static const char *kStarFrag =
     "  gl_FragColor = vec4(uColor, uAlpha);\n"
     "}\n";
 
+static const char *kDiskVert =
+    "#version 120\n"
+    "attribute vec3 aPos;\n"
+    "uniform mat4 uMvp;\n"
+    "varying vec2 vXZ;\n"
+    "void main() {\n"
+    "  vXZ = aPos.xy;\n"
+    "  gl_Position = uMvp * vec4(aPos, 1.0);\n"
+    "}\n";
+
+static const char *kDiskFrag =
+    "#version 120\n"
+    "varying vec2 vXZ;\n"
+    "uniform float uTime;\n"
+    "void main() {\n"
+    "  float r = length(vXZ);\n"
+    "  float inner = 1.05;\n"
+    "  float outer = 3.2;\n"
+    "  if (r < inner || r > outer) discard;\n"
+    "  float t = (r - inner) / (outer - inner);\n"
+    "  float ang = atan(vXZ.y, vXZ.x);\n"
+    "  ang += uTime * pow(max(r, inner), -1.5);\n"
+    "  float spokes = 0.5 + 0.5 * sin(ang * 9.0 + r * 4.0);\n"
+    "  float grain = 0.5 + 0.5 * sin(ang * 21.0 - r * 8.0);\n"
+    "  vec3 hot = vec3(1.0, 0.85, 0.35);\n"
+    "  vec3 midc = vec3(1.0, 0.45, 0.08);\n"
+    "  vec3 cool = vec3(0.55, 0.08, 0.02);\n"
+    "  vec3 col = mix(hot, midc, smoothstep(0.0, 0.45, t));\n"
+    "  col = mix(col, cool, smoothstep(0.45, 1.0, t));\n"
+    "  col *= 0.55 + 0.45 * spokes;\n"
+    "  col *= 0.7 + 0.3 * grain;\n"
+    "  col *= 0.75 + 0.45 * clamp(vXZ.x / max(r, 0.01), -1.0, 1.0);\n"
+    "  float alpha = 0.95 * (1.0 - smoothstep(0.75, 1.0, t));\n"
+    "  alpha *= smoothstep(inner, inner + 0.12, r);\n"
+    "  gl_FragColor = vec4(col, alpha);\n"
+    "}\n";
+
 static const char *kStarfieldVert =
     "#version 120\n"
     "attribute vec3 aPos;\n"
@@ -376,11 +413,13 @@ PlanetGLWidget::PlanetGLWidget(QWidget *parent)
     , blitVbo(QOpenGLBuffer::VertexBuffer)
     , cityVbo(QOpenGLBuffer::VertexBuffer)
     , starfieldVbo(QOpenGLBuffer::VertexBuffer)
+    , diskVbo(QOpenGLBuffer::VertexBuffer)
     , sphereVertexCount(0)
     , ringVertexCount(0)
     , rockVertexCount(0)
     , cityVertexCount(0)
     , starfieldCount(0)
+    , diskVertexCount(0)
     , azimuth(kDefaultAzimuth)
     , elevation(kDefaultElevation)
     , cameraDistance(defaultCameraDistance())
@@ -415,6 +454,7 @@ PlanetGLWidget::~PlanetGLWidget()
     blitVbo.destroy();
     cityVbo.destroy();
     starfieldVbo.destroy();
+    diskVbo.destroy();
     albedo.reset();
     clouds.reset();
     doneCurrent();
@@ -581,12 +621,18 @@ void PlanetGLWidget::initializeGL()
     starProg.bindAttributeLocation("aPos", 0);
     starProg.link();
 
+    diskProg.addShaderFromSourceCode(QOpenGLShader::Vertex, kDiskVert);
+    diskProg.addShaderFromSourceCode(QOpenGLShader::Fragment, kDiskFrag);
+    diskProg.bindAttributeLocation("aPos", 0);
+    diskProg.link();
+
     starfieldProg.addShaderFromSourceCode(QOpenGLShader::Vertex, kStarfieldVert);
     starfieldProg.addShaderFromSourceCode(QOpenGLShader::Fragment, kStarfieldFrag);
     starfieldProg.bindAttributeLocation("aPos", 0);
     starfieldProg.link();
 
     buildSphere(96, 64);
+    buildAccretionDisk();
     rebuildRings();
     buildBlitQuad();
     ready = true;
@@ -658,6 +704,37 @@ void PlanetGLWidget::buildSphere(int slices, int stacks)
     sphereVbo.bind();
     sphereVbo.allocate(data.constData(), data.size() * int(sizeof(float)));
     sphereVbo.release();
+}
+
+void PlanetGLWidget::buildAccretionDisk()
+{
+    const int segs = 96;
+    const float inner = 1.05f;
+    const float outer = 3.2f;
+    QVector<float> data;
+    data.reserve(segs * 6 * 3);
+    for (int i = 0; i < segs; ++i)
+    {
+        const float a0 = float(i) / float(segs) * float(2.0 * M_PI);
+        const float a1 = float(i + 1) / float(segs) * float(2.0 * M_PI);
+        const float c0 = qCos(a0);
+        const float s0 = qSin(a0);
+        const float c1 = qCos(a1);
+        const float s1 = qSin(a1);
+        const float p[6][2] = {
+            {inner * c0, inner * s0}, {outer * c0, outer * s0}, {outer * c1, outer * s1},
+            {inner * c0, inner * s0}, {outer * c1, outer * s1}, {inner * c1, inner * s1}
+        };
+        for (int k = 0; k < 6; ++k)
+            data << p[k][0] << p[k][1] << 0.0f;
+    }
+    diskVertexCount = data.size() / 3;
+    if (diskVbo.isCreated())
+        diskVbo.destroy();
+    diskVbo.create();
+    diskVbo.bind();
+    diskVbo.allocate(data.constData(), data.size() * int(sizeof(float)));
+    diskVbo.release();
 }
 
 void PlanetGLWidget::rebuildRings()
@@ -1024,29 +1101,78 @@ void PlanetGLWidget::drawScene(const QMatrix4x4 &proj, const QMatrix4x4 &view)
         QMatrix4x4 starModel;
         starModel.translate(dir * 6.0f);
         starModel.scale(radius);
-        QMatrix4x4 haloModel = starModel;
-        haloModel.scale(1.85f);
+        const bool blackHole = isStarBlackHole(planet->s.star_spectrum);
+        if (blackHole)
+        {
+            QVector3D up(0.0f, 1.0f, 0.0f);
+            if (qAbs(QVector3D::dotProduct(up, dir)) > 0.92f)
+                up = QVector3D(1.0f, 0.0f, 0.0f);
+            const QVector3D right = QVector3D::crossProduct(up, dir).normalized();
+            const QVector3D diskN = QQuaternion::fromAxisAndAngle(right, 65.0f).rotatedVector(dir);
+            QMatrix4x4 diskModel;
+            diskModel.translate(dir * 6.0f);
+            diskModel.rotate(QQuaternion::rotationTo(QVector3D(0.0f, 0.0f, 1.0f), diskN));
+            diskModel.scale(radius);
+
+            glDisable(GL_BLEND);
+            glDepthMask(GL_TRUE);
+            starProg.bind();
+            starProg.setUniformValue("uMvp", proj * view * starModel);
+            starProg.setUniformValue("uColor", QVector3D(0.0f, 0.0f, 0.0f));
+            starProg.setUniformValue("uAlpha", 1.0f);
+            sphereVbo.bind();
+            starProg.enableAttributeArray(0);
+            starProg.setAttributeBuffer(0, GL_FLOAT, 0, 3, 8 * sizeof(float));
+            glDrawArrays(GL_TRIANGLES, 0, sphereVertexCount);
+            sphereVbo.release();
+            starProg.release();
+
+            if (diskVertexCount > 0 && diskVbo.isCreated())
+            {
+                glEnable(GL_BLEND);
+                glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+                glDepthMask(GL_FALSE);
+                glDisable(GL_CULL_FACE);
+                diskProg.bind();
+                diskProg.setUniformValue("uMvp", proj * view * diskModel);
+                diskProg.setUniformValue("uTime", ringSpinDeg * float(M_PI / 180.0));
+                diskVbo.bind();
+                diskProg.enableAttributeArray(0);
+                diskProg.setAttributeBuffer(0, GL_FLOAT, 0, 3, 3 * sizeof(float));
+                glDrawArrays(GL_TRIANGLES, 0, diskVertexCount);
+                diskVbo.release();
+                diskProg.release();
+                glEnable(GL_CULL_FACE);
+                glDepthMask(GL_TRUE);
+                glDisable(GL_BLEND);
+            }
+        }
+        else
+        {
+            QMatrix4x4 haloModel = starModel;
+            haloModel.scale(1.85f);
 #ifndef GL_POINT_SPRITE
 #define GL_POINT_SPRITE 0x8861
 #endif
-        glEnable(GL_BLEND);
-        glBlendFunc(GL_SRC_ALPHA, GL_ONE);
-        glDepthMask(GL_FALSE);
-        starProg.bind();
-        starProg.setUniformValue("uMvp", proj * view * haloModel);
-        starProg.setUniformValue("uColor", lightCol);
-        starProg.setUniformValue("uAlpha", 0.35f);
-        sphereVbo.bind();
-        starProg.enableAttributeArray(0);
-        starProg.setAttributeBuffer(0, GL_FLOAT, 0, 3, 8 * sizeof(float));
-        glDrawArrays(GL_TRIANGLES, 0, sphereVertexCount);
-        glDepthMask(GL_TRUE);
-        glDisable(GL_BLEND);
-        starProg.setUniformValue("uMvp", proj * view * starModel);
-        starProg.setUniformValue("uAlpha", 1.0f);
-        glDrawArrays(GL_TRIANGLES, 0, sphereVertexCount);
-        sphereVbo.release();
-        starProg.release();
+            glEnable(GL_BLEND);
+            glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+            glDepthMask(GL_FALSE);
+            starProg.bind();
+            starProg.setUniformValue("uMvp", proj * view * haloModel);
+            starProg.setUniformValue("uColor", lightCol);
+            starProg.setUniformValue("uAlpha", 0.35f);
+            sphereVbo.bind();
+            starProg.enableAttributeArray(0);
+            starProg.setAttributeBuffer(0, GL_FLOAT, 0, 3, 8 * sizeof(float));
+            glDrawArrays(GL_TRIANGLES, 0, sphereVertexCount);
+            glDepthMask(GL_TRUE);
+            glDisable(GL_BLEND);
+            starProg.setUniformValue("uMvp", proj * view * starModel);
+            starProg.setUniformValue("uAlpha", 1.0f);
+            glDrawArrays(GL_TRIANGLES, 0, sphereVertexCount);
+            sphereVbo.release();
+            starProg.release();
+        }
     }
 }
 

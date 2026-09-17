@@ -1,6 +1,7 @@
 #include "achievementcontext.h"
 #include "planet.h"
 #include "planet_p.h"
+#include "starspectrum.h"
 #include <QDate>
 
 bool structureOnlyShelfAndOcean(const QVector<double> &st)
@@ -29,6 +30,7 @@ AchievementContext AchievementContext::fromPlanet(const Planet &planet)
     ctx.cityCount = planet.cities.size();
     ctx.hasCities = !planet.cities.isEmpty();
     ctx.hasStar = planet.s.has_star;
+    ctx.blackHole = planet.s.has_star && isStarBlackHole(planet.s.star_spectrum);
     ctx.hasAtmo = planet.s.is_atmo;
     ctx.hasRings = planet.s.is_ring;
     ctx.isSunday = QDate::currentDate().dayOfWeek() == Qt::Sunday;

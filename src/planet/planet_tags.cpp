@@ -494,15 +494,18 @@ bool tagApplies(const Planet &p, const PlanetTagDef &d, const TagWorld &w)
         return hi >= 16 || radio >= 9 || (!p.s.has_star && p.plant_pixel_count > 0);
     }
     if (id == QLatin1String("xrays"))
-        return p.s.has_star
+        return p.s.has_star && !isStarBlackHole(p.s.star_spectrum)
             && starBand(p.s.star_spectrum, StarGamma) + starBand(p.s.star_spectrum, StarXray) >= 14;
     if (id == QLatin1String("radio_loud"))
-        return p.s.has_star && starBand(p.s.star_spectrum, StarRadio) >= 8;
+        return p.s.has_star && !isStarBlackHole(p.s.star_spectrum)
+            && starBand(p.s.star_spectrum, StarRadio) >= 8;
     if (id == QLatin1String("dim_star"))
-        return p.s.has_star && p.s.visibleLight() < 0.28;
+        return p.s.has_star && !isStarBlackHole(p.s.star_spectrum) && p.s.visibleLight() < 0.28;
+    if (id == QLatin1String("star_blackhole"))
+        return p.s.has_star && isStarBlackHole(p.s.star_spectrum);
     if (id.startsWith(QLatin1String("star_")))
     {
-        if (!p.s.has_star || p.starclass.isEmpty())
+        if (!p.s.has_star || p.starclass.isEmpty() || isStarBlackHole(p.s.star_spectrum))
             return false;
         const int c = p.starclass.first();
         if (id == QLatin1String("star_blue"))
@@ -512,7 +515,7 @@ bool tagApplies(const Planet &p, const PlanetTagDef &d, const TagWorld &w)
         if (id == QLatin1String("star_red"))
             return c == 6;
         if (id == QLatin1String("star_brown"))
-            return c >= 9;
+            return c >= 9 && c <= 11;
         return false;
     }
     if (id == QLatin1String("rings"))

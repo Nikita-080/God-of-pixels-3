@@ -32,6 +32,7 @@ double starVisible(const QVector<int> &bands);
 double starPar(const QVector<int> &bands);
 double starHazard(const QVector<int> &bands);
 QVector3D starLightRgb(const QVector<int> &bands);
+bool isStarBlackHole(const QVector<int> &bands);
 int inferStarClass(const QVector<int> &bands);
 QColor starBandColor(int band);
 QString starBandTitle(int band);

@@ -63,6 +63,9 @@ const QHash<QString, AchievementPredicate> &ruleTable()
         table.insert(QStringLiteral("a_aurum"), [](const AchievementContext &c) {
             return c.firstResourceSymbol == QLatin1String("Au");
         });
+        table.insert(QStringLiteral("a_blackhole"), [](const AchievementContext &c) {
+            return c.hasStar && c.blackHole;
+        });
         table.insert(QStringLiteral("a_ocean"), [](const AchievementContext &c) {
             return c.shelfOceanOnly;
         });
