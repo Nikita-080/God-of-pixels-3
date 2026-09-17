@@ -149,7 +149,7 @@
     {
       "_comment": "Создать планету, у которой будет U на первом месте в списке ресурсов в карточке описания",
       "id": "a_uran",
-      "rarity": "legendary",
+      "rarity": "epic",
       "secret": false,
       "title": "Nuclear wastelands",
       "description": "Get U in the first place in the resources",
@@ -189,10 +189,30 @@
     {
       "_comment": "Комбинация a_1_city и a_red",
       "id": "a_red_1_city",
-      "rarity": "special",
-      "secret": true,
+      "rarity": "legendary",
+      "secret": false,
       "title": "40,000 Ways to die",
       "description": "Fill in all the scales with red and create cities",
+      "icon": "",
+      "icon_locked": ""
+    },
+    {
+      "_comment": "Создать планету, у которой будет Au на первом месте в списке ресурсов в карточке описания",
+      "id": "a_aurum",
+      "rarity": "epic",
+      "secret": false,
+      "title": "The black spot",
+      "description": "Get Au in the first place in the resources",
+      "icon": "",
+      "icon_locked": ""
+    },
+    {
+      "_comment": "Создать черную дыру (звезду, у которой 0 на всех частях спектра)",
+      "id": "a_blackhole",
+      "rarity": "special",
+      "secret": true,
+      "title": "One Hour",
+      "description": "Create a world where one hour lasts seven years",
       "icon": "",
       "icon_locked": ""
     }

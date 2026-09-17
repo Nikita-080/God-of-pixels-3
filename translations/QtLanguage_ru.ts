@@ -860,7 +860,6 @@
     <message><source>mild radiation</source><translation>слабая радиация</translation></message>
     <message><source>trace radiation</source><translation>следы радиации</translation></message>
     <message><source>raised radiation</source><translation>повышенная радиация</translation></message>
-    <message><source>hot isotopes</source><translation>горячие изотопы</translation></message>
     <message><source>elevated background</source><translation>высокий фон</translation></message>
     <message><source>dangerous radiation</source><translation>опасная радиация</translation></message>
     <message><source>hard radiation</source><translation>жёсткая радиация</translation></message>
@@ -874,10 +873,8 @@
     <message><source>dry crust</source><translation>сухая кора</translation></message>
     <message><source>scarce water</source><translation>мало воды</translation></message>
     <message><source>few lakes</source><translation>редкие озёра</translation></message>
-    <message><source>rare rain</source><translation>редкий дождь</translation></message>
     <message><source>has water</source><translation>есть вода</translation></message>
     <message><source>lakes and seas</source><translation>озёра и моря</translation></message>
-    <message><source>wet lowlands</source><translation>сырые низины</translation></message>
     <message><source>much water</source><translation>много воды</translation></message>
     <message><source>wide oceans</source><translation>широкие океаны</translation></message>
     <message><source>water world</source><translation>водный мир</translation></message>
@@ -892,12 +889,10 @@
     <message><source>thin frost</source><translation>тонкий иней</translation></message>
     <message><source>icy</source><translation>ледяная</translation></message>
     <message><source>glaciers</source><translation>ледники</translation></message>
-    <message><source>ice belts</source><translation>ледяные пояса</translation></message>
     <message><source>heavy ice</source><translation>много льда</translation></message>
     <message><source>frozen world</source><translation>ледяной мир</translation></message>
     <message><source>glacial planet</source><translation>ледниковая планета</translation></message>
     <message><source>iceball</source><translation>ледяной шар</translation></message>
-    <message><source>snowball world</source><translation>снежный ком</translation></message>
     <message><source>total freeze</source><translation>сплошная мерзлота</translation></message>
     <message><source>barren</source><translation>бесплодная</translation></message>
     <message><source>no flora</source><translation>нет флоры</translation></message>
@@ -906,7 +901,6 @@
     <message><source>rare plants</source><translation>редкие растения</translation></message>
     <message><source>thin green</source><translation>редкая зелень</translation></message>
     <message><source>living</source><translation>живая</translation></message>
-    <message><source>green belts</source><translation>зелёные пояса</translation></message>
     <message><source>plant cover</source><translation>растительный покров</translation></message>
     <message><source>lush</source><translation>пышная</translation></message>
     <message><source>dense flora</source><translation>густая флора</translation></message>
@@ -930,11 +924,10 @@
     <message><source>lava world</source><translation>мир лавы</translation></message>
     <message><source>magma ocean</source><translation>океан магмы</translation></message>
     <message><source>sea of fire</source><translation>море огня</translation></message>
-    <message><source>rifts</source><translation>рифты</translation></message>
+    <message><source>rifts</source><translation>разломы</translation></message>
     <message><source>canyons</source><translation>каньоны</translation></message>
     <message><source>crust cracks</source><translation>трещины коры</translation></message>
     <message><source>mountains</source><translation>горы</translation></message>
-    <message><source>rugged</source><translation>пересечённая</translation></message>
     <message><source>high relief</source><translation>высокий рельеф</translation></message>
     <message><source>habitable</source><translation>пригодна для жизни</translation></message>
     <message><source>livable</source><translation>можно жить</translation></message>
@@ -950,7 +943,6 @@
     <message><source>hostile world</source><translation>враждебный мир</translation></message>
     <message><source>anomaly</source><translation>аномалия</translation></message>
     <message><source>strange</source><translation>странная</translation></message>
-    <message><source>unnatural</source><translation>неприродная</translation></message>
     <message><source>x-rays</source><translation>рентген</translation></message>
     <message><source>hard x-rays</source><translation>жёсткий рентген</translation></message>
     <message><source>x-ray star</source><translation>рентгеновская звезда</translation></message>
@@ -991,7 +983,6 @@
     <message><source>scorching</source><translation>палящая</translation></message>
     <message><source>extreme heat</source><translation>адский жар</translation></message>
     <message><source>quiet crust</source><translation>спокойная кора</translation></message>
-    <message><source>no quakes</source><translation>нет толчков</translation></message>
     <message><source>mild quakes</source><translation>слабые толчки</translation></message>
     <message><source>active crust</source><translation>активная кора</translation></message>
     <message><source>faults</source><translation>разломы</translation></message>
@@ -1043,7 +1034,7 @@
     <message><source>metal-rich</source><translation>богата металлами</translation></message>
     <message><source>vast deposits</source><translation>огромные залежи</translation></message>
     <message><source>overflowing ore</source><translation>руды в избытке</translation></message>
-    <message><source>treasure world</source><translation>кладовая</translation></message>
+    <message><source>treasure world</source><translation>мир сокровищ</translation></message>
     <message><source>%1 ores</source><translation>%1 руды</translation></message>
     <message><source>much %1</source><translation>много %1</translation></message>
     <message><source>%1 deposits</source><translation>залежи %1</translation></message>
@@ -1176,25 +1167,19 @@
     <message><source>dangerous resources</source><translation>опасные ресурсы</translation></message>
     <message><source>sense of danger</source><translation>чувство опасности</translation></message>
     <message><source>sense of hostility</source><translation>чувство враждебности</translation></message>
-    <message><source></source><translation></translation></message>
     <message><source>disgusting world</source><translation>отвратительный мир</translation></message>
     <message><source>corrupted world</source><translation>испорченный мир</translation></message>
-    <message><source></source><translation></translation></message>
     <message><source>feeling of fear</source><translation>чувство страха</translation></message>
     <message><source>terror</source><translation>ужас</translation></message>
     <message><source>primal horror</source><translation>первобытный ужас</translation></message>
     <message><source>frightening world</source><translation>страшный мир</translation></message>
-    <message><source></source><translation></translation></message>
     <message><source>happy world</source><translation>счастливый мир</translation></message>
-    <message><source></source><translation></translation></message>
     <message><source>feeling of sadness</source><translation>чувство грусти</translation></message>
     <message><source>sad world</source><translation>грустный мир</translation></message>
-    <message><source></source><translation></translation></message>
     <message><source>calm world</source><translation>спокойный мир</translation></message>
     <message><source>tranquility</source><translation>спокойствие</translation></message>
     <message><source>peace</source><translation>умиротворение</translation></message>
     <message><source>serenity</source><translation>безмятежность</translation></message>
-    <message><source></source><translation></translation></message>
     <message><source>amazing world</source><translation>удивительный мир</translation></message>
     <message><source>incredible world</source><translation>невероятный мир</translation></message>
 </context>
@@ -1359,6 +1344,22 @@
     <message>
         <source>Fill in all the scales with red and create cities</source>
         <translation>Заполните все шкалы красным и создайте города</translation>
+    </message>
+    <message>
+        <source>The black spot</source>
+        <translation>Чёрная метка</translation>
+    </message>
+    <message>
+        <source>Get Au in the first place in the resources</source>
+        <translation>Получите Au на первом месте в ресурсах</translation>
+    </message>
+    <message>
+        <source>One hour</source>
+        <translation>Один час</translation>
+    </message>
+    <message>
+        <source>Create a world where one hour lasts seven years</source>
+        <translation>Создать мир, где один час длится семь лет</translation>
     </message>
 </context>
 </TS>

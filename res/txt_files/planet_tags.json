@@ -19,7 +19,7 @@
       "family": "radiation",
       "priority": 11,
       "tone": "caution",
-      "labels": ["raised radiation", "hot isotopes", "elevated background"]
+      "labels": ["raised radiation", "elevated background"]
     },
     {
       "id": "rad_3",
@@ -47,14 +47,14 @@
       "family": "water",
       "priority": 18,
       "tone": "caution",
-      "labels": ["scarce water", "few lakes", "rare rain"]
+      "labels": ["scarce water", "few lakes"]
     },
     {
       "id": "wat_2",
       "family": "water",
       "priority": 16,
       "tone": "good",
-      "labels": ["has water", "lakes and seas", "wet lowlands"]
+      "labels": ["has water", "lakes and seas"]
     },
     {
       "id": "wat_3",
@@ -89,7 +89,7 @@
       "family": "ice",
       "priority": 22,
       "tone": "caution",
-      "labels": ["icy", "glaciers", "ice belts"]
+      "labels": ["icy", "glaciers"]
     },
     {
       "id": "ice_3",
@@ -103,7 +103,7 @@
       "family": "ice",
       "priority": 20,
       "tone": "bad",
-      "labels": ["iceball", "snowball world", "total freeze"]
+      "labels": ["iceball", "total freeze"]
     },
     {
       "id": "life_0",
@@ -124,7 +124,7 @@
       "family": "life",
       "priority": 18,
       "tone": "good",
-      "labels": ["living", "green belts", "plant cover"]
+      "labels": ["living", "plant cover"]
     },
     {
       "id": "life_3",
@@ -236,7 +236,7 @@
       "family": "",
       "priority": 34,
       "tone": "info",
-      "labels": ["mountains", "rugged", "high relief"]
+      "labels": ["mountains", "high relief"]
     },
     {
       "id": "habitable",
@@ -271,7 +271,7 @@
       "family": "",
       "priority": 15,
       "tone": "anomaly",
-      "labels": ["anomaly", "strange", "unnatural"]
+      "labels": ["anomaly", "strange"]
     },
     {
       "id": "xrays",
@@ -383,7 +383,7 @@
       "family": "seismicity",
       "priority": 910,
       "tone": "good",
-      "labels": ["quiet crust", "no quakes"]
+      "labels": ["quiet crust"]
     },
     {
       "id": "sei_1",
