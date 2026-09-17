@@ -266,14 +266,15 @@ static const char *kAtmoFrag =
     "  vec3 l = normalize(uLight);\n"
     "  vec3 viewDir = normalize(uCam - vWorld);\n"
     "  float ndv = max(dot(n, viewDir), 0.0);\n"
+    "  float sun = smoothstep(-0.15, 0.35, dot(n, l));\n"
     "  float limb = pow(1.0 - ndv, mix(4.8, 0.35, uAtmoSize));\n"
-    "  float haze = mix(limb, 1.0, uAtmo) * uAtmo;\n"
-    "  vec3 tint = uLightI > 0.001 ? uLightColor : vec3(1.0);\n"
-    "  float lit = max(dot(n, l), 0.0) * uLightI;\n"
+    "  float haze = limb * uAtmo * sun * uLightI;\n"
+    "  haze += (1.0 - limb) * uAtmo * 0.1 * sun * uLightI;\n"
     "  if (uFillLight > 0.5)\n"
-    "    lit += max(dot(n, viewDir), 0.0) * 0.15;\n"
-    "  vec3 col = uAtmoColor * (0.4 + 0.6 * lit) * tint;\n"
-    "  gl_FragColor = vec4(col, haze);\n"
+    "    haze += limb * uAtmo * 0.25;\n"
+    "  vec3 tint = uLightI > 0.001 ? uLightColor : vec3(1.0);\n"
+    "  vec3 col = uAtmoColor * tint;\n"
+    "  gl_FragColor = vec4(col, clamp(haze, 0.0, 1.0));\n"
     "}\n";
 
 static const char *kRingVert =
@@ -299,6 +300,7 @@ static const char *kRingFrag =
     "uniform vec3 uCam;\n"
     "uniform float uFillLight;\n"
     "uniform float uTwoSided;\n"
+    "uniform float uPlanetR;\n"
     "varying vec3 vPos;\n"
     "varying vec3 vNormal;\n"
     "varying vec3 vColor;\n"
@@ -307,7 +309,12 @@ static const char *kRingFrag =
     "  vec3 l = normalize(uLight);\n"
     "  float ndl = dot(n, l);\n"
     "  if (uTwoSided > 0.5) ndl = abs(ndl);\n"
-    "  float shade = 0.45 + 0.55 * max(ndl, 0.0);\n"
+    "  float pb = dot(vPos, l);\n"
+    "  float impact = length(vPos - l * pb);\n"
+    "  float shadow = 1.0;\n"
+    "  if (pb < 0.0)\n"
+    "    shadow = smoothstep(uPlanetR * 0.92, uPlanetR * 1.08, impact);\n"
+    "  float shade = (0.45 + 0.55 * max(ndl, 0.0)) * shadow;\n"
     "  if (uFillLight > 0.5)\n"
     "    shade += 0.12 * max(dot(normalize(vPos), normalize(uCam)), 0.0);\n"
     "  gl_FragColor = vec4(vColor * shade, 0.92);\n"
@@ -409,6 +416,7 @@ static const char *kStarfieldVert =
     "uniform mat4 uMvp;\n"
     "void main() {\n"
     "  gl_Position = uMvp * vec4(aPos, 1.0);\n"
+    "  gl_Position.z = gl_Position.w * 0.999;\n"
     "  gl_PointSize = 1.8;\n"
     "}\n";
 
@@ -1090,6 +1098,7 @@ void PlanetGLWidget::drawScene(const QMatrix4x4 &proj, const QMatrix4x4 &view)
         ringProg.setUniformValue("uLight", light);
         ringProg.setUniformValue("uCam", cameraPos());
         ringProg.setUniformValue("uFillLight", planet->s.is_fill_light ? 1.0f : 0.0f);
+        ringProg.setUniformValue("uPlanetR", 1.0f);
         auto drawLit = [this](QOpenGLBuffer &vbo, int count) {
             if (count <= 0 || !vbo.isCreated())
                 return;
@@ -1272,7 +1281,7 @@ void PlanetGLWidget::paintGL()
     ensureSceneFbo(res);
 
     QMatrix4x4 proj;
-    proj.perspective(kFovDeg, 1.0f, 0.1f, qMax(20.0f, cameraDistance + 8.0f));
+    proj.perspective(kFovDeg, 1.0f, 0.1f, cameraDistance + 32.0f);
     QMatrix4x4 view;
     view.lookAt(cameraPos(), QVector3D(0, 0, 0), QVector3D(0, 1, 0));
 
@@ -1311,11 +1320,15 @@ void PlanetGLWidget::paintGL()
 
 QImage PlanetGLWidget::captureView()
 {
+    const QImage shot = grabFramebuffer();
+    if (!shot.isNull())
+        return shot;
     if (!sceneFbo || !sceneFbo->isValid())
-        return grabFramebuffer();
-    const QImage raw = sceneFbo->toImage();
+        return QImage();
+    makeCurrent();
+    const QImage raw = sceneFbo->toImage(true);
     if (raw.isNull())
-        return grabFramebuffer();
+        return QImage();
     const int side = qMax(width(), 1);
     return raw.scaled(side, side, Qt::IgnoreAspectRatio, Qt::FastTransformation);
 }

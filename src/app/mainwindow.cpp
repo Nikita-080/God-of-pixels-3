@@ -638,6 +638,12 @@ void MainWindow::M_Save_Image()
     rememberPath(AppKeys::dirImage, filename);
     QElapsedTimer t;
     t.start();
+    if (!isEmtyPlanet && preview && preview->glWidget())
+    {
+        const QImage shot = preview->glWidget()->captureView();
+        if (!shot.isNull())
+            planet.img_view = shot;
+    }
     const QImage out = planet.img_view.isNull() ? planet.img : planet.img_view;
     const bool ok = out.save(filename);
     logOp(tr("Save image"), t.elapsed(), ok, QFileInfo(filename).fileName());
@@ -656,6 +662,15 @@ void MainWindow::M_Save_Full_Image()
     rememberPath(AppKeys::dirImage, filename);
     QElapsedTimer t;
     t.start();
+    if (!isEmtyPlanet && preview && preview->glWidget())
+    {
+        const QImage shot = preview->glWidget()->captureView();
+        if (!shot.isNull())
+        {
+            planet.img_view = shot;
+            planet.FinalImage();
+        }
+    }
     const bool ok = planet.img_final.save(filename);
     logOp(tr("Save full image"), t.elapsed(), ok, QFileInfo(filename).fileName());
     if (!ok)
