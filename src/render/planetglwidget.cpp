@@ -8,6 +8,7 @@
 #include <QQuaternion>
 #include <QHash>
 #include <QPair>
+#include <QByteArray>
 #include <QtMath>
 #include <cmath>
 
@@ -130,6 +131,17 @@ QVector3D deformRockPoint(const RingRock &rock, const QVector3D &unitN)
 
 }
 
+static const char *kEquirectUv =
+    "vec2 equirectUv(vec3 p) {\n"
+    "  p = normalize(p);\n"
+    "  float lon = atan(p.z, p.x);\n"
+    "  float lat = asin(clamp(p.y, -1.0, 1.0));\n"
+    "  float u = lon * 0.15915494309189535;\n"
+    "  if (u < 0.0) u += 1.0;\n"
+    "  float v = 0.5 + lat * 0.3183098861837907;\n"
+    "  return vec2(u, v);\n"
+    "}\n";
+
 static const char *kPlanetVert =
     "#version 120\n"
     "attribute vec3 aPos;\n"
@@ -139,12 +151,12 @@ static const char *kPlanetVert =
     "uniform mat4 uModel;\n"
     "varying vec3 vWorld;\n"
     "varying vec3 vNormal;\n"
-    "varying vec2 vUv;\n"
+    "varying vec3 vLocal;\n"
     "void main() {\n"
     "  vec4 wp = uModel * vec4(aPos, 1.0);\n"
     "  vWorld = wp.xyz;\n"
+    "  vLocal = aPos;\n"
     "  vNormal = mat3(uModel) * aNormal;\n"
-    "  vUv = aUv;\n"
     "  gl_Position = uMvp * vec4(aPos, 1.0);\n"
     "}\n";
 
@@ -158,7 +170,9 @@ static const char *kPlanetFrag =
     "uniform float uFillLight;\n"
     "varying vec3 vWorld;\n"
     "varying vec3 vNormal;\n"
-    "varying vec2 vUv;\n"
+    "varying vec3 vLocal;\n";
+
+static const char *kPlanetFragBody =
     "void main() {\n"
     "  vec3 n = normalize(vNormal);\n"
     "  vec3 l = normalize(uLight);\n"
@@ -168,7 +182,7 @@ static const char *kPlanetFrag =
     "  float lit = max(dot(n, l), 0.0) * uLightI;\n"
     "  if (uFillLight > 0.5)\n"
     "    lit += max(dot(n, viewDir), 0.0) * fillI;\n"
-    "  vec3 albedo = texture2D(uAlbedo, vUv).rgb;\n"
+    "  vec3 albedo = texture2D(uAlbedo, equirectUv(vLocal)).rgb;\n"
     "  vec3 col = albedo * lit * tint;\n"
     "  gl_FragColor = vec4(col, 1.0);\n"
     "}\n";
@@ -182,12 +196,12 @@ static const char *kCloudVert =
     "uniform mat4 uModel;\n"
     "varying vec3 vWorld;\n"
     "varying vec3 vNormal;\n"
-    "varying vec2 vUv;\n"
+    "varying vec3 vLocal;\n"
     "void main() {\n"
     "  vec4 wp = uModel * vec4(aPos, 1.0);\n"
     "  vWorld = wp.xyz;\n"
+    "  vLocal = aPos;\n"
     "  vNormal = mat3(uModel) * aNormal;\n"
-    "  vUv = aUv;\n"
     "  gl_Position = uMvp * vec4(aPos, 1.0);\n"
     "}\n";
 
@@ -202,9 +216,11 @@ static const char *kCloudFrag =
     "uniform float uCloudAlpha;\n"
     "varying vec3 vWorld;\n"
     "varying vec3 vNormal;\n"
-    "varying vec2 vUv;\n"
+    "varying vec3 vLocal;\n";
+
+static const char *kCloudFragBody =
     "void main() {\n"
-    "  vec4 c = texture2D(uClouds, vUv);\n"
+    "  vec4 c = texture2D(uClouds, equirectUv(vLocal));\n"
     "  float a = c.a * uCloudAlpha;\n"
     "  if (a < 0.02) discard;\n"
     "  vec3 n = normalize(vNormal);\n"
@@ -579,14 +595,16 @@ void PlanetGLWidget::initializeGL()
     glClearColor(0, 0, 0, 1);
 
     planetProg.addShaderFromSourceCode(QOpenGLShader::Vertex, kPlanetVert);
-    planetProg.addShaderFromSourceCode(QOpenGLShader::Fragment, kPlanetFrag);
+    planetProg.addShaderFromSourceCode(QOpenGLShader::Fragment,
+                                      QByteArray(kPlanetFrag) + kEquirectUv + kPlanetFragBody);
     planetProg.bindAttributeLocation("aPos", 0);
     planetProg.bindAttributeLocation("aNormal", 1);
     planetProg.bindAttributeLocation("aUv", 2);
     planetProg.link();
 
     cloudProg.addShaderFromSourceCode(QOpenGLShader::Vertex, kCloudVert);
-    cloudProg.addShaderFromSourceCode(QOpenGLShader::Fragment, kCloudFrag);
+    cloudProg.addShaderFromSourceCode(QOpenGLShader::Fragment,
+                                     QByteArray(kCloudFrag) + kEquirectUv + kCloudFragBody);
     cloudProg.bindAttributeLocation("aPos", 0);
     cloudProg.bindAttributeLocation("aNormal", 1);
     cloudProg.bindAttributeLocation("aUv", 2);
@@ -893,8 +911,7 @@ QVector3D PlanetGLWidget::poleAxis() const
             pole = QVector3D(0, 1, 0);
         else
             pole.normalize();
-        // QOpenGLTexture mirrors QImage vertically, so map north lands on mesh -Y.
-        pole.setY(-pole.y());
+        // Map north is +Y in TexelXYZ / latLonDegToSphere; albedo UV uses the same frame.
     }
     return pole;
 }
@@ -909,8 +926,17 @@ QMatrix4x4 PlanetGLWidget::spinAroundPole(float degrees) const
 
 QMatrix4x4 PlanetGLWidget::ringBasis() const
 {
+    const QVector3D n = poleAxis();
+    QVector3D helper(0.0f, 1.0f, 0.0f);
+    if (qAbs(QVector3D::dotProduct(helper, n)) > 0.92f)
+        helper = QVector3D(1.0f, 0.0f, 0.0f);
+    const QVector3D x = QVector3D::crossProduct(helper, n).normalized();
+    const QVector3D z = QVector3D::crossProduct(n, x).normalized();
     QMatrix4x4 m;
-    m.rotate(QQuaternion::rotationTo(QVector3D(0, 1, 0), poleAxis()));
+    m.setColumn(0, QVector4D(x, 0.0f));
+    m.setColumn(1, QVector4D(n, 0.0f));
+    m.setColumn(2, QVector4D(z, 0.0f));
+    m.setColumn(3, QVector4D(0.0f, 0.0f, 0.0f, 1.0f));
     return m;
 }
 

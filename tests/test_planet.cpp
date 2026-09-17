@@ -68,6 +68,8 @@ private slots:
     void noiseHasNoMeridianSeam();
     void sphericalFaultFinite();
     void sameSeedSameTags();
+    void climateIceAtPoles();
+    void climateIceFollowsTiltedPole();
 };
 
 void TestPlanet::transparentColorLerp()
@@ -166,6 +168,38 @@ void TestPlanet::sameSeedSameTags()
     QCOMPARE(a.img_sys.size(), b.img_sys.size());
     QCOMPARE(a.img_sys, b.img_sys);
     QVERIFY(!a.img_sys.isNull());
+}
+
+void TestPlanet::climateIceAtPoles()
+{
+    Planet p;
+    p.s = testSettings();
+    p.SetSeed(7);
+    p.Generate();
+    const int x = p.map_w / 2;
+    const double tNorth = p.t_map[x][1];
+    const double tSouth = p.t_map[x][p.map_h - 2];
+    const double tEq = p.t_map[x][p.map_h / 2];
+    QVERIFY(tNorth < tEq);
+    QVERIFY(tSouth < tEq);
+    QVERIFY(tNorth < -15.0);
+    QVERIFY(tSouth < -15.0);
+    QVERIFY(tEq > -15.0);
+}
+
+void TestPlanet::climateIceFollowsTiltedPole()
+{
+    Planet p;
+    p.s = testSettings();
+    p.s.polar_lat = 0;
+    p.s.polar_lon = 0;
+    p.SetSeed(7);
+    p.Generate();
+    const int yEq = p.map_h / 2;
+    const double tPlusX = p.t_map[0][yEq];
+    const double tNorth = p.t_map[p.map_w / 2][1];
+    QVERIFY(tPlusX < tNorth);
+    QVERIFY(tPlusX < -15.0);
 }
 
 QTEST_MAIN(TestPlanet)
