@@ -153,6 +153,7 @@ SettingsPanel::SettingsPanel(QTabWidget *tabs, QWidget *parent)
               labelShineLatTitle, labelShineLonTitle, 128);
     addLatLon(child<QWidget>("tab_10"), sliderPolarLat, sliderPolarLon,
               labelPolarLatTitle, labelPolarLonTitle, 110);
+    sliderPolarLat->setValue(90);
 
     checkFillLight = new QCheckBox(lightTab);
     checkFillLight->setObjectName(QStringLiteral("checkFillLight"));

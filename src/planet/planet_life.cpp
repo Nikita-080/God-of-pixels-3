@@ -22,7 +22,7 @@ void Planet::Civilization()
         for (int y = 0; y < map_h; ++y)
             waterNear[x][y] = matrix[x][y] < water_level ? 1.0 : 0.0;
     }
-    const int nearR = qMax(2, map_w / 48);
+    const int nearR = qMax(3, map_w / 28);
     planetBoxBlurWrapX(waterNear, nearR);
     planetBoxBlurClampY(waterNear, nearR);
 
@@ -50,7 +50,8 @@ void Planet::Civilization()
             if (T < -8.0)
                 continue;
             const double hScore = qExp(-0.5 * qPow((matrix[x][y] - plainsMid) / plainsSig, 2.0));
-            const double waterScore = qBound(0.0, waterNear[x][y] / 0.55, 1.0);
+            const double waterBlend = qBound(0.0, waterNear[x][y] / 0.40, 1.0);
+            const double waterScore = 0.40 + 0.60 * qSqrt(waterBlend);
             const double tScore = qExp(-0.5 * qPow((T - tIdeal) / tSig, 2.0));
             const double wScore = qExp(-0.5 * qPow((r_map[x][y] - wIdeal) / wSig, 2.0));
             const float score = float(hScore * waterScore * tScore * wScore);
@@ -64,27 +65,35 @@ void Planet::Civilization()
 
     const double lifeMul = 1.0 - s.hazardLight();
     const int maxCities = qBound(0, qRound((qBound(18, map_w / 2, 210)) * lifeMul), 210);
-    const int minDist2 = qMax(9, ((map_w / 28) * (map_w / 28)) / 3);
+    const int minDist2 = qMax(9, ((map_w / 36) * (map_w / 36)) / 3);
+    const int aggloDist2 = qMax(minDist2 + 1, (map_w / 14) * (map_w / 14));
     QVector<QPoint> placed;
     for (const Cand &c : cand)
     {
         if (cities.size() >= maxCities)
             break;
-        if (rnd.generateDouble() > qMin(1.0, 3.0 * (0.28 * double(c.score) + 0.04) * lifeMul))
-            continue;
         bool far = true;
+        int nearCount = 0;
         for (const QPoint &p : placed)
         {
             int dx = qAbs(c.x - p.x());
             dx = qMin(dx, map_w - dx);
             const int dy = c.y - p.y();
-            if (dx * dx + dy * dy < minDist2)
+            const int d2 = dx * dx + dy * dy;
+            if (d2 < minDist2)
             {
                 far = false;
                 break;
             }
+            if (d2 < aggloDist2)
+                ++nearCount;
         }
         if (!far)
+            continue;
+        double pAccept = (0.10 + 0.35 * double(c.score)) * lifeMul;
+        if (nearCount > 0)
+            pAccept *= 1.0 + 0.85 * qMin(nearCount, 3);
+        if (rnd.generateDouble() > qMin(1.0, pAccept))
             continue;
         placed.append(QPoint(c.x, c.y));
         const SphereVec3 p = TexelXYZ(c.x, c.y);

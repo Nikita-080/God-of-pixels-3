@@ -4,6 +4,7 @@
 #include <QMainWindow>
 #include <QTranslator>
 #include <QElapsedTimer>
+#include <QJsonObject>
 #include <planet.h>
 #include <autogensettings.h>
 #include <planetsettings.h>
@@ -99,6 +100,8 @@ private:
     bool genQueued;
     bool genQueuedCreateNew;
     int genQueuedSeed;
+    bool restoreViewOnApply;
+    QJsonObject pendingView;
     bool autogenRunning;
     PlanetGLWidget *autogenGl;
     QTextEdit *opConsole;

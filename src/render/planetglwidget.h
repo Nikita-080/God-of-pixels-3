@@ -11,6 +11,7 @@
 #include <QVector3D>
 #include <QElapsedTimer>
 #include <QWheelEvent>
+#include <QJsonObject>
 #include <memory>
 
 class QTimer;
@@ -30,6 +31,8 @@ public:
     void resetCamera();
     void setSpinning(bool on);
     QImage captureView();
+    QJsonObject viewToJson() const;
+    void applyViewJson(const QJsonObject &view);
 
 protected:
     void initializeGL() override;

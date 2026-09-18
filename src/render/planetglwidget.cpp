@@ -1,6 +1,7 @@
 #include "planetglwidget.h"
 #include "planet.h"
 #include "starspectrum.h"
+#include <QJsonObject>
 #include <QMouseEvent>
 #include <QRandomGenerator>
 #include <QTimer>
@@ -138,7 +139,7 @@ static const char *kEquirectUv =
     "  float lat = asin(clamp(p.y, -1.0, 1.0));\n"
     "  float u = lon * 0.15915494309189535;\n"
     "  if (u < 0.0) u += 1.0;\n"
-    "  float v = 0.5 + lat * 0.3183098861837907;\n"
+    "  float v = 0.5 - lat * 0.3183098861837907;\n"
     "  return vec2(u, v);\n"
     "}\n";
 
@@ -266,14 +267,24 @@ static const char *kAtmoFrag =
     "  vec3 l = normalize(uLight);\n"
     "  vec3 viewDir = normalize(uCam - vWorld);\n"
     "  float ndv = max(dot(n, viewDir), 0.0);\n"
-    "  float sun = smoothstep(-0.15, 0.35, dot(n, l));\n"
+    "  float ndl = dot(n, l);\n"
+    "  float lambert = max(ndl, 0.0);\n"
+    "  float wrap = ndl * 0.5 + 0.5;\n"
+    "  float diffuse = mix(lambert, wrap * wrap, uAtmo);\n"
     "  float limb = pow(1.0 - ndv, mix(4.8, 0.35, uAtmoSize));\n"
-    "  float haze = limb * uAtmo * sun * uLightI;\n"
-    "  haze += (1.0 - limb) * uAtmo * 0.1 * sun * uLightI;\n"
+    "  float density = mix(limb, 1.0, uAtmo) * uAtmo;\n"
+    "  float lit = max(diffuse, 0.0) * uLightI;\n"
     "  if (uFillLight > 0.5)\n"
-    "    haze += limb * uAtmo * 0.25;\n"
+    "    lit += ndv * 0.15;\n"
+    "  float haze = density;\n"
+    "  if (uAtmo < 0.995)\n"
+    "  {\n"
+    "    haze *= smoothstep(-0.12, 0.2, ndl);\n"
+    "    if (uFillLight > 0.5)\n"
+    "      haze = max(haze, density * 0.25);\n"
+    "  }\n"
     "  vec3 tint = uLightI > 0.001 ? uLightColor : vec3(1.0);\n"
-    "  vec3 col = uAtmoColor * tint;\n"
+    "  vec3 col = uAtmoColor * tint * lit;\n"
     "  gl_FragColor = vec4(col, clamp(haze, 0.0, 1.0));\n"
     "}\n";
 
@@ -883,8 +894,13 @@ void PlanetGLWidget::uploadTexture(std::unique_ptr<QOpenGLTexture> &tex, const Q
     tex.reset();
     if (img.isNull())
         return;
-    tex.reset(new QOpenGLTexture(img.convertToFormat(QImage::Format_RGBA8888),
-                                QOpenGLTexture::DontGenerateMipMaps));
+    const QImage rgba = img.convertToFormat(QImage::Format_RGBA8888);
+    tex.reset(new QOpenGLTexture(QOpenGLTexture::Target2D));
+    tex->setFormat(QOpenGLTexture::RGBA8_UNorm);
+    tex->setSize(rgba.width(), rgba.height());
+    tex->setAutoMipMapGenerationEnabled(false);
+    tex->allocateStorage(QOpenGLTexture::RGBA, QOpenGLTexture::UInt8);
+    tex->setData(QOpenGLTexture::RGBA, QOpenGLTexture::UInt8, rgba.constBits());
     tex->setMinificationFilter(QOpenGLTexture::Linear);
     tex->setMagnificationFilter(QOpenGLTexture::Linear);
     tex->setWrapMode(QOpenGLTexture::DirectionS, repeatU ? QOpenGLTexture::Repeat : QOpenGLTexture::ClampToEdge);
@@ -919,7 +935,7 @@ QVector3D PlanetGLWidget::poleAxis() const
             pole = QVector3D(0, 1, 0);
         else
             pole.normalize();
-        // Map north is +Y in TexelXYZ / latLonDegToSphere; albedo UV uses the same frame.
+        // Map row 0 is north = +Y; albedo is uploaded unflipped so shader v = 0.5 - lat/π.
     }
     return pole;
 }
@@ -1331,6 +1347,36 @@ QImage PlanetGLWidget::captureView()
         return QImage();
     const int side = qMax(width(), 1);
     return raw.scaled(side, side, Qt::IgnoreAspectRatio, Qt::FastTransformation);
+}
+
+QJsonObject PlanetGLWidget::viewToJson() const
+{
+    QJsonObject view;
+    view.insert(QStringLiteral("azimuth"), double(azimuth));
+    view.insert(QStringLiteral("elevation"), double(elevation));
+    view.insert(QStringLiteral("distance"), double(cameraDistance));
+    view.insert(QStringLiteral("planetSpin"), double(planetSpinDeg));
+    view.insert(QStringLiteral("cloudSpin"), double(cloudSpinDeg));
+    view.insert(QStringLiteral("ringSpin"), double(ringSpinDeg));
+    return view;
+}
+
+void PlanetGLWidget::applyViewJson(const QJsonObject &view)
+{
+    stopCameraReset();
+    if (view.contains(QStringLiteral("azimuth")))
+        azimuth = wrapDeg(float(view.value(QStringLiteral("azimuth")).toDouble()));
+    if (view.contains(QStringLiteral("elevation")))
+        elevation = qBound(-89.0f, float(view.value(QStringLiteral("elevation")).toDouble()), 89.0f);
+    if (view.contains(QStringLiteral("distance")))
+        cameraDistance = qBound(1.25f, float(view.value(QStringLiteral("distance")).toDouble()), 12.0f);
+    if (view.contains(QStringLiteral("planetSpin")))
+        planetSpinDeg = wrapDeg(float(view.value(QStringLiteral("planetSpin")).toDouble()));
+    if (view.contains(QStringLiteral("cloudSpin")))
+        cloudSpinDeg = wrapDeg(float(view.value(QStringLiteral("cloudSpin")).toDouble()));
+    if (view.contains(QStringLiteral("ringSpin")))
+        ringSpinDeg = wrapDeg(float(view.value(QStringLiteral("ringSpin")).toDouble()));
+    update();
 }
 
 void PlanetGLWidget::mousePressEvent(QMouseEvent *event)

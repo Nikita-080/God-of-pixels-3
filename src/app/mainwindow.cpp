@@ -78,6 +78,7 @@ MainWindow::MainWindow(QWidget *parent)
     , genQueued(false)
     , genQueuedCreateNew(false)
     , genQueuedSeed(0)
+    , restoreViewOnApply(false)
     , autogenRunning(false)
     , autogenGl(nullptr)
     , opConsole(nullptr)
@@ -591,6 +592,12 @@ void MainWindow::applyPlanetToView()
     preview->setHasPlanet(true);
     preview->glWidget()->setPlanet(&planet);
     preview->glWidget()->refreshTextures();
+    if (restoreViewOnApply)
+    {
+        preview->glWidget()->applyViewJson(pendingView);
+        restoreViewOnApply = false;
+        pendingView = QJsonObject();
+    }
     preview->glWidget()->repaint();
     const QImage shot = preview->glWidget()->captureView();
     if (!shot.isNull())
@@ -705,6 +712,8 @@ void MainWindow::M_Load_Planet()
         return;
     }
     Settings_Set();
+    restoreViewOnApply = jobject.contains(QStringLiteral("view")) && jobject.value(QStringLiteral("view")).isObject();
+    pendingView = restoreViewOnApply ? jobject.value(QStringLiteral("view")).toObject() : QJsonObject();
     startGeneration(true, jobject["seed"].toInt(), GenOp::Load);
 }
 
@@ -726,6 +735,8 @@ void MainWindow::M_Save_Planet()
         QJsonObject jobject;
         jobject["seed"] = planet.seed;
         jobject["settings"] = planet.s.JSON_serialize();
+        if (preview && preview->glWidget())
+            jobject["view"] = preview->glWidget()->viewToJson();
         QTextStream stream(&file);
         stream << QJsonDocument(jobject).toJson();
         file.close();

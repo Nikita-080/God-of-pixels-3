@@ -12,6 +12,9 @@ Planet::Planet()
     map_h = 0;
     world_size = 0;
     seed = 0;
+    x_polar = 0.0;
+    y_polar = 1.0;
+    z_polar = 0.0;
 }
 
 void Planet::SetSeed(int value)
