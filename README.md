@@ -103,7 +103,7 @@ The image above shows render examples of Pluto and Mars created with God of Pixe
 # Links
 
 * [God of Pixels 3 on itch.io](https://rbnik.itch.io/god-of-pixels-3)
-* [CORE trailer (soon)](https://example.com)
+* [CORE trailer](https://www.youtube.com/watch?v=3anYwaeRQnc)
 * [Gameplay trailer](https://www.youtube.com/watch?v=IHq2dUxOy3s)
 * [Cinematic trailer](https://www.youtube.com/watch?v=Ci2XzR3cnhA)
 * [Climate simulation](https://elibrary.ru/item.asp?id=80284921)
