@@ -12,6 +12,7 @@
 #include "achievementstore.h"
 #include "achievementtoast.h"
 #include "achievementsdialog.h"
+#include "programsettingsdialog.h"
 #include <QColorDialog>
 #include <QFile>
 #include <QFileDialog>
@@ -25,6 +26,7 @@
 #include <QTimer>
 #include <QThread>
 #include <QDir>
+#include <QGridLayout>
 #include <QHBoxLayout>
 #include <QVBoxLayout>
 #include <QSizePolicy>
@@ -32,12 +34,14 @@
 #include <QCloseEvent>
 #include <QEvent>
 #include <QSize>
-#include <QElapsedTimer>
-#include <QTextEdit>
-#include <QTextCursor>
-#include <QTextCharFormat>
-#include <QTime>
-#include <QFileInfo>
+#include <QPlainTextEdit>
+#include <QCoreApplication>
+#include <QStringList>
+#include <QPushButton>
+#include <QAction>
+#include <QMenu>
+#include <QIcon>
+#include <algorithm>
 
 namespace {
 
@@ -71,6 +75,7 @@ MainWindow::MainWindow(QWidget *parent)
     , loadingDelayTimer(nullptr)
     , genThread(nullptr)
     , genWork(nullptr)
+    , livePreview(false)
     , isEmtyPlanet(true)
     , liveSuspended(false)
     , appearanceOnlyLive(false)
@@ -81,7 +86,8 @@ MainWindow::MainWindow(QWidget *parent)
     , restoreViewOnApply(false)
     , autogenRunning(false)
     , autogenGl(nullptr)
-    , opConsole(nullptr)
+    , factsView(nullptr)
+    , actionProgramSettings(nullptr)
     , achievementToasts(nullptr)
     , genActiveOp(GenOp::None)
     , genQueuedOp(GenOp::None)
@@ -90,6 +96,7 @@ MainWindow::MainWindow(QWidget *parent)
     language = st.value(AppKeys::language, QStringLiteral("en")).toString();
     if (language != QStringLiteral("ru"))
         language = QStringLiteral("en");
+    livePreview = st.value(AppKeys::livePreview, false).toBool();
     if (language == QStringLiteral("ru"))
     {
         qtLanguageTranslator.load(":/translations/QtLanguage_ru");
@@ -97,7 +104,6 @@ MainWindow::MainWindow(QWidget *parent)
     }
 
     ui->setupUi(this);
-    ui->action_live->setChecked(st.value(AppKeys::livePreview, false).toBool());
     ui->tabWidget->setIconSize(QSize(60, 60));
     for (int i = 0; i < 10; ++i)
     {
@@ -105,7 +111,6 @@ MainWindow::MainWindow(QWidget *parent)
     }
 
     preview = new PreviewPanel;
-    preview->liveCheck()->setChecked(ui->action_live->isChecked());
     preview->spinCheck()->setChecked(st.value(AppKeys::globeSpin, false).toBool());
     preview->glWidget()->setSpinning(preview->spinCheck()->isChecked());
     settingsPanel = new SettingsPanel(ui->tabWidget);
@@ -138,12 +143,21 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->action_achievements, &QAction::triggered, this, &MainWindow::M_Achievements);
     connect(ui->action_8, &QAction::triggered, this, &MainWindow::M_Save_Full_Image);
     connect(ui->action_9, &QAction::triggered, this, &MainWindow::M_Load_Planet);
-    connect(ui->action_10, &QAction::triggered, this, &MainWindow::M_Switch_Language);
-    connect(ui->action_live, &QAction::toggled, this, [](bool on) {
-        QSettings(appSettingsFile(), QSettings::IniFormat).setValue(AppKeys::livePreview, on);
-    });
-    connect(preview->liveCheck(), &QCheckBox::toggled, ui->action_live, &QAction::setChecked);
-    connect(ui->action_live, &QAction::toggled, preview->liveCheck(), &QCheckBox::setChecked);
+    if (ui->menuProgramSettings)
+        ui->menuProgramSettings->menuAction()->setVisible(false);
+    if (ui->action_10)
+        ui->action_10->setVisible(false);
+    if (ui->action_live)
+        ui->action_live->setVisible(false);
+    actionProgramSettings = new QAction(this);
+    if (ui->menu_2)
+    {
+        if (ui->menuProgramSettings)
+            ui->menu_2->insertAction(ui->menuProgramSettings->menuAction(), actionProgramSettings);
+        else
+            ui->menu_2->addAction(actionProgramSettings);
+    }
+    connect(actionProgramSettings, &QAction::triggered, this, &MainWindow::M_ProgramSettings);
     connect(preview->spinCheck(), &QCheckBox::toggled, this, [](bool on) {
         QSettings(appSettingsFile(), QSettings::IniFormat).setValue(AppKeys::globeSpin, on);
     });
@@ -155,6 +169,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     setupMainLayout();
     SetStyle();
+    retranslateExtras();
     achievementToasts = new AchievementToastHost(this);
 
     Settings_Get();
@@ -201,19 +216,37 @@ QString MainWindow::ReadText(QString path)
     return QString();
 }
 
-void MainWindow::M_Switch_Language()
+void MainWindow::M_ProgramSettings()
 {
-    if (language == "ru")
+    ProgramSettingsDialog dlg(language, livePreview, this);
+    if (dlg.exec() != QDialog::Accepted)
+        return;
+    livePreview = dlg.livePreview();
+    QSettings st(appSettingsFile(), QSettings::IniFormat);
+    st.setValue(AppKeys::livePreview, livePreview);
+    applyLanguage(dlg.language());
+}
+
+void MainWindow::applyLanguage(const QString &lang)
+{
+    QString next = lang;
+    if (next != QStringLiteral("ru"))
+        next = QStringLiteral("en");
+    if (next == language)
     {
-        qApp->removeTranslator(&qtLanguageTranslator);
-        language = "en";
+        QSettings(appSettingsFile(), QSettings::IniFormat).setValue(AppKeys::language, language);
+        return;
+    }
+    if (next == QStringLiteral("ru"))
+    {
+        qtLanguageTranslator.load(":/translations/QtLanguage_ru");
+        qApp->installTranslator(&qtLanguageTranslator);
     }
     else
     {
-        qtLanguageTranslator.load(":/translations/QtLanguage_ru");
-        language = "ru";
-        qApp->installTranslator(&qtLanguageTranslator);
+        qApp->removeTranslator(&qtLanguageTranslator);
     }
+    language = next;
     QSettings(appSettingsFile(), QSettings::IniFormat).setValue(AppKeys::language, language);
 }
 
@@ -222,6 +255,7 @@ void MainWindow::changeEvent(QEvent *event)
     if (event->type() == QEvent::LanguageChange)
     {
         ui->retranslateUi(this);
+        retranslateExtras();
         if (settingsPanel)
             settingsPanel->retranslate();
         if (preview)
@@ -274,7 +308,7 @@ void MainWindow::SetStyle()
         qApp->setStyleSheet(sheet);
         setStyleSheet(sheet);
     }
-    ui->btnLogo->setIcon(QIcon(":/images/res/images/logo.png"));
+    ui->btnLogo->hide();
 }
 
 void MainWindow::setupMainLayout()
@@ -284,55 +318,70 @@ void MainWindow::setupMainLayout()
     ui->line_4->hide();
     ui->pushButton_2->hide();
     ui->labelPlanetName->hide();
+    ui->btnLogo->hide();
 
-    ui->btnCreate->setStyleSheet(QString());
-    ui->btnRecreate->setStyleSheet(QString());
-    ui->btnCreate->setFixedWidth(480);
-    ui->btnCreate->setMinimumHeight(52);
-    ui->btnCreate->setMaximumHeight(64);
-    ui->btnRecreate->setFixedWidth(480);
-    ui->btnRecreate->setMinimumHeight(52);
-    ui->btnRecreate->setMaximumHeight(64);
-    ui->btnAutogen->setFixedSize(240, 80);
-    ui->btnViewPlanet->setFixedSize(122, 122);
-    ui->btnViewDescription->setFixedSize(122, 122);
-    ui->btnViewSystem->setFixedSize(122, 122);
-    ui->btnViewMap->setFixedSize(122, 122);
-    ui->btnLogo->setFixedSize(150, 150);
+    const int actionsWidth = 300;
+    auto sizeActionButton = [actionsWidth](QPushButton *btn) {
+        btn->setStyleSheet(QString());
+        btn->setFixedWidth(actionsWidth);
+        btn->setMinimumHeight(52);
+        btn->setMaximumHeight(64);
+        btn->setIcon(QIcon());
+        btn->setIconSize(QSize(0, 0));
+    };
+    sizeActionButton(ui->btnCreate);
+    sizeActionButton(ui->btnRecreate);
+    ui->btnAutogen->setStyleSheet(QString());
+    ui->btnAutogen->setMinimumHeight(52);
+    ui->btnAutogen->setMaximumHeight(64);
+    ui->btnAutogen->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+    ui->btnAutogen->setIcon(QIcon());
+    ui->btnAutogen->setIconSize(QSize(0, 0));
     ui->progressAutogen->setFixedHeight(31);
 
-    opConsole = new QTextEdit;
-    opConsole->setObjectName(QStringLiteral("opConsole"));
-    opConsole->setReadOnly(true);
-    opConsole->setUndoRedoEnabled(false);
-    opConsole->setAcceptRichText(false);
-    opConsole->setLineWrapMode(QTextEdit::WidgetWidth);
-    opConsole->setMinimumHeight(80);
-    opConsole->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
-    opConsole->setFont(QFont(QStringLiteral("Consolas"), 10));
-    opConsole->document()->setMaximumBlockCount(500);
+    auto sizeViewButton = [](QPushButton *btn) {
+        btn->setStyleSheet(QString());
+        btn->setIcon(QIcon());
+        btn->setIconSize(QSize(0, 0));
+        btn->setMinimumHeight(52);
+        btn->setMaximumHeight(64);
+        btn->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+    };
+    sizeViewButton(ui->btnViewPlanet);
+    sizeViewButton(ui->btnViewDescription);
+    sizeViewButton(ui->btnViewSystem);
+    sizeViewButton(ui->btnViewMap);
+
+    factsView = new QPlainTextEdit;
+    factsView->setObjectName(QStringLiteral("factsCard"));
+    factsView->setReadOnly(true);
+    factsView->setUndoRedoEnabled(false);
+    factsView->setMinimumHeight(80);
+    factsView->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+    factsView->setFont(QFont(QStringLiteral("Consolas"), 10));
 
     auto *autogenRow = new QHBoxLayout;
-    autogenRow->setSpacing(10);
-    autogenRow->addWidget(ui->btnAutogen);
+    autogenRow->setSpacing(8);
+    autogenRow->addWidget(ui->btnAutogen, 1);
     autogenRow->addWidget(ui->progressAutogen, 1);
 
-    auto *viewRow = new QHBoxLayout;
-    viewRow->setSpacing(0);
-    viewRow->addWidget(ui->btnViewPlanet);
-    viewRow->addWidget(ui->btnViewDescription);
-    viewRow->addWidget(ui->btnViewSystem);
-    viewRow->addWidget(ui->btnViewMap);
-    viewRow->addStretch();
+    auto *viewGrid = new QGridLayout;
+    viewGrid->setSpacing(8);
+    viewGrid->addWidget(ui->btnViewPlanet, 0, 0);
+    viewGrid->addWidget(ui->btnViewDescription, 0, 1);
+    viewGrid->addWidget(ui->btnViewSystem, 1, 0);
+    viewGrid->addWidget(ui->btnViewMap, 1, 1);
 
-    auto *actionsCol = new QVBoxLayout;
+    auto *actionsWrap = new QWidget;
+    actionsWrap->setFixedWidth(actionsWidth);
+    auto *actionsCol = new QVBoxLayout(actionsWrap);
+    actionsCol->setContentsMargins(0, 0, 0, 0);
     actionsCol->setSpacing(8);
     actionsCol->addWidget(ui->btnCreate);
     actionsCol->addWidget(ui->btnRecreate);
     actionsCol->addLayout(autogenRow);
-    actionsCol->addLayout(viewRow);
-    actionsCol->addWidget(ui->btnLogo, 0, Qt::AlignHCenter);
-    actionsCol->addWidget(opConsole, 1);
+    actionsCol->addLayout(viewGrid);
+    actionsCol->addWidget(factsView, 1);
 
     auto *previewCol = new QVBoxLayout;
     previewCol->setSpacing(8);
@@ -343,10 +392,59 @@ void MainWindow::setupMainLayout()
     root->setSpacing(12);
     root->addWidget(settingsPanel, 0);
     root->addLayout(previewCol, 1);
-    root->addLayout(actionsCol, 0);
+    root->addWidget(actionsWrap, 0);
 
-    setMinimumSize(1280, 620);
+    setMinimumSize(1200, 620);
     resize(1500, 680);
+}
+
+void MainWindow::retranslateExtras()
+{
+    ui->btnAutogen->setText(tr("Autogen"));
+    ui->btnViewPlanet->setText(tr("Planet"));
+    ui->btnViewDescription->setText(tr("Description"));
+    ui->btnViewSystem->setText(tr("Tags"));
+    ui->btnViewMap->setText(tr("Map"));
+    if (actionProgramSettings)
+        actionProgramSettings->setText(tr("Program settings"));
+    updateFactsCard();
+}
+
+void MainWindow::updateFactsCard()
+{
+    if (!factsView)
+        return;
+    if (isEmtyPlanet)
+    {
+        factsView->setPlainText(tr("Create a planet to see facts"));
+        return;
+    }
+    auto planetTr = [](const char *source) {
+        return QCoreApplication::translate("Planet", source);
+    };
+    QStringList lines;
+    lines << tr("seed        - %1").arg(planet.seed);
+    lines << planetTr("resources  - ") + planet.facts.resources;
+    lines << planetTr("life         ") + QString::number(planet.facts.life) + QStringLiteral("/12");
+    lines << planetTr("water        ") + QString::number(planet.facts.water) + QStringLiteral("/12");
+    lines << planetTr("ice          ") + QString::number(planet.facts.ice) + QStringLiteral("/12");
+    lines << planetTr("radiation    ") + QString::number(planet.facts.radiation) + QStringLiteral("/12");
+    lines << planetTr("temperature  ") + QString::number(planet.facts.temperature) + QStringLiteral("/12");
+    lines << planetTr("seismicity   ") + QString::number(planet.facts.seismicity) + QStringLiteral("/12");
+    QStringList tags;
+    for (const QString &key : planet.cardLabelKeys)
+    {
+        if (key.isEmpty())
+            continue;
+        tags << QCoreApplication::translate("PlanetTags", key.toUtf8().constData());
+    }
+    tags.sort();
+    if (!tags.isEmpty())
+    {
+        lines << QString();
+        lines << tags.join(QStringLiteral(" . "));
+    }
+    factsView->setPlainText(lines.join(QLatin1Char('\n')));
 }
 
 void MainWindow::AutoGen()
@@ -369,8 +467,6 @@ void MainWindow::AutoGen()
     Settings_Get();
     const PlanetSettings base = s;
     bool ok = true;
-    QElapsedTimer autogenTimer;
-    autogenTimer.start();
 
     if (box.mode == AutoGenMode::Collage)
     {
@@ -453,7 +549,6 @@ void MainWindow::AutoGen()
 
     if (ok)
         ui->progressAutogen->setValue(100);
-    logOp(tr("Autogen"), autogenTimer.elapsed(), ok, box.path);
     if (ok && autogenRunning)
     {
         bool allRandom = !box.isRndList.isEmpty();
@@ -555,36 +650,6 @@ void MainWindow::RecreatePlanet()
     startGeneration(isEmtyPlanet, 0, isEmtyPlanet ? GenOp::Create : GenOp::Recreate);
 }
 
-void MainWindow::logOp(const QString &action, qint64 ms, bool ok, const QString &detail)
-{
-    if (!opConsole)
-        return;
-    QString text = QStringLiteral("[%1] %2")
-                       .arg(QTime::currentTime().toString(QStringLiteral("HH:mm:ss")), action);
-    if (!detail.isEmpty())
-        text += QStringLiteral("  ") + detail;
-    text += QStringLiteral("  ") + QString::number(ms) + QStringLiteral(" ms");
-
-    QTextCursor cur = opConsole->textCursor();
-    cur.movePosition(QTextCursor::End);
-    QTextCharFormat okFmt;
-    okFmt.setForeground(QColor(0, 255, 0));
-    cur.setCharFormat(okFmt);
-    cur.insertText(text);
-    if (!ok)
-    {
-        QTextCharFormat errFmt;
-        errFmt.setForeground(QColor(255, 48, 48));
-        errFmt.setFontWeight(QFont::Bold);
-        cur.setCharFormat(errFmt);
-        cur.insertText(QStringLiteral("  [ERR]"));
-    }
-    cur.setCharFormat(okFmt);
-    cur.insertText(QStringLiteral("\n"));
-    opConsole->setTextCursor(cur);
-    opConsole->ensureCursorVisible();
-}
-
 void MainWindow::applyPlanetToView()
 {
     if (!preview)
@@ -605,6 +670,7 @@ void MainWindow::applyPlanetToView()
     planet.FinalImage();
     ShowPlanet();
     preview->setPlanetName(planet.name);
+    updateFactsCard();
 }
 
 void MainWindow::ShowPlanet()
@@ -643,8 +709,6 @@ void MainWindow::M_Save_Image()
     if (filename.isEmpty())
         return;
     rememberPath(AppKeys::dirImage, filename);
-    QElapsedTimer t;
-    t.start();
     if (!isEmtyPlanet && preview && preview->glWidget())
     {
         const QImage shot = preview->glWidget()->captureView();
@@ -652,9 +716,7 @@ void MainWindow::M_Save_Image()
             planet.img_view = shot;
     }
     const QImage out = planet.img_view.isNull() ? planet.img : planet.img_view;
-    const bool ok = out.save(filename);
-    logOp(tr("Save image"), t.elapsed(), ok, QFileInfo(filename).fileName());
-    if (!ok)
+    if (!out.save(filename))
         QMessageBox::critical(nullptr, tr("Error"), tr("0001 unable to save file"));
 }
 
@@ -667,8 +729,6 @@ void MainWindow::M_Save_Full_Image()
     if (filename.isEmpty())
         return;
     rememberPath(AppKeys::dirImage, filename);
-    QElapsedTimer t;
-    t.start();
     if (!isEmtyPlanet && preview && preview->glWidget())
     {
         const QImage shot = preview->glWidget()->captureView();
@@ -678,9 +738,7 @@ void MainWindow::M_Save_Full_Image()
             planet.FinalImage();
         }
     }
-    const bool ok = planet.img_final.save(filename);
-    logOp(tr("Save full image"), t.elapsed(), ok, QFileInfo(filename).fileName());
-    if (!ok)
+    if (!planet.img_final.save(filename))
         QMessageBox::critical(nullptr, tr("Error"), tr("0001 unable to save file"));
 }
 
@@ -693,12 +751,9 @@ void MainWindow::M_Load_Planet()
     if (filename.isEmpty())
         return;
     rememberPath(AppKeys::dirPlanet, filename);
-    QElapsedTimer t;
-    t.start();
     QFile file(filename);
     if (!file.open(QFile::ReadOnly | QFile::Text))
     {
-        logOp(tr("Load planet"), t.elapsed(), false, QFileInfo(filename).fileName());
         QMessageBox::critical(nullptr, tr("Error"), tr("0002 unable to load file"));
         return;
     }
@@ -707,7 +762,6 @@ void MainWindow::M_Load_Planet()
     const QJsonObject jobject = QJsonDocument::fromJson(a.toUtf8()).object();
     if (!s.JSON_deserialize(jobject["settings"].toObject()))
     {
-        logOp(tr("Load planet"), t.elapsed(), false, QFileInfo(filename).fileName());
         QMessageBox::critical(nullptr, tr("Error"), tr("0002 unable to load file"));
         return;
     }
@@ -726,8 +780,6 @@ void MainWindow::M_Save_Planet()
     if (filename.isEmpty())
         return;
     rememberPath(AppKeys::dirPlanet, filename);
-    QElapsedTimer t;
-    t.start();
     QFile file(filename);
     const bool ok = file.open(QFile::WriteOnly | QFile::Text);
     if (ok)
@@ -740,12 +792,10 @@ void MainWindow::M_Save_Planet()
         QTextStream stream(&file);
         stream << QJsonDocument(jobject).toJson();
         file.close();
-    }
-    logOp(tr("Save planet"), t.elapsed(), ok, QFileInfo(filename).fileName());
-    if (!ok)
-        QMessageBox::critical(nullptr, tr("Error"), tr("0001 unable to save file"));
-    else
         evaluateAchievements(false, true);
+    }
+    else
+        QMessageBox::critical(nullptr, tr("Error"), tr("0001 unable to save file"));
 }
 
 void MainWindow::Gen(bool isCreateNew, Planet *p, int seed)
@@ -793,8 +843,6 @@ void MainWindow::startGeneration(bool createNew, int seed, GenOp op)
 
     genRunning = true;
     genActiveOp = op;
-    if (op != GenOp::None)
-        genOpTimer.start();
     beginLoadingWatch();
 
     auto *work = new Planet;
@@ -835,22 +883,9 @@ void MainWindow::startGeneration(bool createNew, int seed, GenOp op)
         isEmtyPlanet = false;
         applyPlanetToView();
         const GenOp finishedOp = genActiveOp;
-        const qint64 elapsed = genOpTimer.elapsed();
         genActiveOp = GenOp::None;
         genRunning = false;
         endLoadingWatch();
-        if (finishedOp != GenOp::None)
-        {
-            QString action;
-            switch (finishedOp)
-            {
-            case GenOp::Create: action = tr("Create"); break;
-            case GenOp::Recreate: action = tr("Recreate"); break;
-            case GenOp::Load: action = tr("Load planet"); break;
-            default: break;
-            }
-            logOp(action, elapsed, true, planet.name);
-        }
         if (finishedOp != GenOp::Load)
             evaluateAchievements(finishedOp == GenOp::Create);
         if (queued)
@@ -862,12 +897,9 @@ void MainWindow::startGeneration(bool createNew, int seed, GenOp op)
 void MainWindow::M_Load_Base_Settings()
 {
     Settings_Get();
-    QElapsedTimer t;
-    t.start();
     const bool ok = s.Load(":/txt_files/res/txt_files/settingsbase.json");
     if (ok)
         Settings_Set();
-    logOp(tr("Load default settings"), t.elapsed(), ok);
     if (!ok)
         QMessageBox::critical(nullptr, tr("Error"), tr("0003 unable to load default settings"));
 }
@@ -896,10 +928,7 @@ void MainWindow::M_Save_Settings()
         return;
     rememberPath(AppKeys::dirSettings, filename);
     Settings_Get();
-    QElapsedTimer t;
-    t.start();
     const bool ok = s.Save(filename);
-    logOp(tr("Save settings"), t.elapsed(), ok, QFileInfo(filename).fileName());
     if (!ok)
         QMessageBox::critical(nullptr, tr("Error"), tr("0001 unable to save file"));
 }
@@ -913,12 +942,9 @@ void MainWindow::M_Load_Settings()
     if (filename.isEmpty())
         return;
     rememberPath(AppKeys::dirSettings, filename);
-    QElapsedTimer t;
-    t.start();
     QFile file(filename);
     if (!file.open(QFile::ReadOnly | QFile::Text))
     {
-        logOp(tr("Load settings"), t.elapsed(), false, QFileInfo(filename).fileName());
         QMessageBox::critical(nullptr, tr("Error"), tr("0002 unable to load file"));
         return;
     }
@@ -929,8 +955,7 @@ void MainWindow::M_Load_Settings()
         Settings_Set();
         update();
     }
-    logOp(tr("Load settings"), t.elapsed(), ok, QFileInfo(filename).fileName());
-    if (!ok)
+    else
         QMessageBox::critical(nullptr, tr("Error"), tr("0002 unable to load file"));
 }
 
@@ -966,14 +991,14 @@ void MainWindow::Report(QString s)
 
 void MainWindow::scheduleLivePreview()
 {
-    if (autogenRunning || isEmtyPlanet || liveSuspended || !ui->action_live->isChecked() || !liveTimer)
+    if (autogenRunning || isEmtyPlanet || liveSuspended || !livePreview || !liveTimer)
         return;
     liveTimer->start();
 }
 
 void MainWindow::runLivePreview()
 {
-    if (autogenRunning || isEmtyPlanet || liveSuspended || !ui->action_live->isChecked())
+    if (autogenRunning || isEmtyPlanet || liveSuspended || !livePreview)
         return;
     Settings_Get();
     if (appearanceOnlyLive && preview)

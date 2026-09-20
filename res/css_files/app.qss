@@ -164,66 +164,81 @@ QColorDialog QLineEdit {
     color: #202020;
     border: 1px solid #808080;
 }
-QPushButton#btnViewPlanet,
-QPushButton#btnAutogen,
-QPushButton#btnViewDescription,
-QPushButton#btnViewSystem,
-QPushButton#btnViewMap {
-    background-repeat: no-repeat;
-    background-position: center;
-    border: none;
-}
-QPushButton#btnViewPlanet { background-image: url(":/images/res/images/pushButton_m.png"); }
-QPushButton#btnViewPlanet:hover { background-image: url(":/images/res/images/pushButton_t.png"); }
-QPushButton#btnViewPlanet:pressed { background-image: url(":/images/res/images/pushButton_b.png"); }
-QPushButton#btnAutogen { background-image: url(":/images/res/images/pushButton_20_m.png"); }
-QPushButton#btnAutogen:hover { background-image: url(":/images/res/images/pushButton_20_t.png"); }
-QPushButton#btnAutogen:pressed { background-image: url(":/images/res/images/pushButton_20_b.png"); }
-QPushButton#btnViewDescription { background-image: url(":/images/res/images/pushButton_3_m.png"); }
-QPushButton#btnViewDescription:hover { background-image: url(":/images/res/images/pushButton_3_t.png"); }
-QPushButton#btnViewDescription:pressed { background-image: url(":/images/res/images/pushButton_3_b.png"); }
-QPushButton#btnViewSystem { background-image: url(":/images/res/images/pushButton_4_m.png"); }
-QPushButton#btnViewSystem:hover { background-image: url(":/images/res/images/pushButton_4_t.png"); }
-QPushButton#btnViewSystem:pressed { background-image: url(":/images/res/images/pushButton_4_b.png"); }
-QPushButton#btnViewMap { background-image: url(":/images/res/images/pushButton_5_m.png"); }
-QPushButton#btnViewMap:hover { background-image: url(":/images/res/images/pushButton_5_t.png"); }
-QPushButton#btnViewMap:pressed { background-image: url(":/images/res/images/pushButton_5_b.png"); }
 QPushButton#btnResetCamera,
 QPushButton#btnCreate,
-QPushButton#btnRecreate {
+QPushButton#btnRecreate,
+QPushButton#btnAutogen,
+QPushButton#btnViewPlanet,
+QPushButton#btnViewDescription,
+QPushButton#btnViewSystem,
+QPushButton#btnViewMap,
+QPushButton#btnProgramReset,
+QPushButton#btnProgramApply,
+QPushButton#btnProgramCancel {
     border: 2px solid rgb(110, 170, 200);
     color: rgb(110, 170, 200);
     background-color: rgb(0, 0, 0);
     font-family: Consolas;
 }
 QPushButton#btnResetCamera {
-    font-size: 11pt;
-    min-height: 32px;
-    padding: 6px 10px;
+    font-size: 10pt;
+    min-height: 28px;
+    padding: 4px 10px;
 }
 QPushButton#btnCreate,
-QPushButton#btnRecreate {
+QPushButton#btnRecreate,
+QPushButton#btnAutogen,
+QPushButton#btnProgramReset,
+QPushButton#btnProgramApply,
+QPushButton#btnProgramCancel {
     font-size: 18pt;
     min-height: 52px;
     padding: 8px 12px;
 }
+QPushButton#btnViewPlanet,
+QPushButton#btnViewDescription,
+QPushButton#btnViewSystem,
+QPushButton#btnViewMap {
+    font-size: 13pt;
+    min-height: 52px;
+    padding: 6px 8px;
+}
+QPushButton#btnProgramReset,
+QPushButton#btnProgramApply,
+QPushButton#btnProgramCancel {
+    font-size: 12pt;
+    min-height: 36px;
+    padding: 6px 10px;
+}
 QPushButton#btnResetCamera:hover,
 QPushButton#btnCreate:hover,
-QPushButton#btnRecreate:hover {
+QPushButton#btnRecreate:hover,
+QPushButton#btnAutogen:hover,
+QPushButton#btnViewPlanet:hover,
+QPushButton#btnViewDescription:hover,
+QPushButton#btnViewSystem:hover,
+QPushButton#btnViewMap:hover,
+QPushButton#btnProgramReset:hover,
+QPushButton#btnProgramApply:hover,
+QPushButton#btnProgramCancel:hover {
     border: 2px solid rgb(145, 200, 228);
     color: rgb(160, 210, 230);
     background-color: rgb(9, 24, 31);
-    padding-top: 5px;
-    padding-bottom: 5px;
 }
 QPushButton#btnResetCamera:pressed,
 QPushButton#btnCreate:pressed,
-QPushButton#btnRecreate:pressed {
+QPushButton#btnRecreate:pressed,
+QPushButton#btnAutogen:pressed,
+QPushButton#btnViewPlanet:pressed,
+QPushButton#btnViewDescription:pressed,
+QPushButton#btnViewSystem:pressed,
+QPushButton#btnViewMap:pressed,
+QPushButton#btnProgramReset:pressed,
+QPushButton#btnProgramApply:pressed,
+QPushButton#btnProgramCancel:pressed {
     border: 2px solid rgb(85, 135, 155);
     color: rgb(90, 145, 170);
     background-color: rgb(0, 0, 0);
-    padding-top: 7px;
-    padding-bottom: 7px;
 }
 QLabel#labelEmptyPreview {
     color: rgb(110, 170, 200);
@@ -231,33 +246,24 @@ QLabel#labelEmptyPreview {
 QLabel#labelPlanetName {
     color: rgb(110, 170, 200);
 }
-QCheckBox#checkLivePreview,
-QCheckBox#checkGlobeSpin {
+QWidget#previewHud {
+    background-color: rgba(0, 0, 0, 160);
+}
+QCheckBox#checkGlobeSpin,
+QCheckBox#checkProgramLive {
     color: rgb(110, 170, 200);
     font-family: Consolas;
-    font-size: 11pt;
-    min-height: 28px;
-    padding: 6px 8px 10px 4px;
-    border: 2px solid rgb(110, 170, 200);
+    font-size: 10pt;
+    min-height: 24px;
+    padding: 2px 6px;
 }
-QCheckBox#checkLivePreview:hover,
-QCheckBox#checkGlobeSpin:hover {
-    border-color: rgb(145, 200, 228);
-    color: rgb(160, 210, 230);
-    background-color: rgb(9, 24, 31);
-}
-QCheckBox#checkLivePreview:pressed,
-QCheckBox#checkGlobeSpin:pressed {
-    border-color: rgb(85, 135, 155);
-    color: rgb(90, 145, 170);
-}
-QTextEdit#opConsole {
+QPlainTextEdit#factsCard {
     background-color: rgb(0, 0, 0);
-    color: rgb(0, 255, 0);
-    border: 3px solid rgb(0, 255, 255);
+    color: rgb(110, 170, 200);
+    border: 2px solid rgb(110, 170, 200);
     font-family: Consolas;
     font-size: 10pt;
     padding: 6px;
     selection-background-color: rgb(0, 70, 70);
-    selection-color: rgb(0, 255, 127);
+    selection-color: rgb(160, 210, 230);
 }

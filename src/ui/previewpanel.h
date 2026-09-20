@@ -17,7 +17,6 @@ public:
     explicit PreviewPanel(QWidget *parent = nullptr);
 
     PlanetGLWidget *glWidget() const;
-    QCheckBox *liveCheck() const;
     QCheckBox *spinCheck() const;
     void setPlanetName(const QString &name);
     void setHasPlanet(bool hasPlanet);
@@ -36,7 +35,6 @@ private:
     QLabel *loadingLabel;
     class QMovie *loadingMovie;
     PlanetGLWidget *gl;
-    QCheckBox *live;
     QCheckBox *spin;
     QPushButton *btnResetCamera;
 };

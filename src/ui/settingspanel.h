@@ -36,6 +36,7 @@ private:
     void applyLandFromAverage(const QColor &center);
     void applyWaterFromAverage(const QColor &center);
     void updateStarDependentUi();
+    void fitToContents();
     template <typename T>
     T *child(const char *name) const;
 

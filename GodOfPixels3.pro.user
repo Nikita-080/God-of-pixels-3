@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE QtCreatorProject>
-<!-- Written by QtCreator 4.14.2, 2026-09-17T22:41:18. -->
+<!-- Written by QtCreator 4.14.2, 2026-09-19T21:16:04. -->
 <qtcreator>
  <data>
   <variable>EnvironmentId</variable>
@@ -66,6 +66,8 @@
    </valuemap>
    <valuemap type="QVariantMap" key="AutoTest.CheckStates">
     <value type="Qt::CheckState" key="C:/qtprojects/God-of-pixels-3/tests/test_planet.cpp:TestPlanet">Checked</value>
+    <value type="Qt::CheckState" key="C:/qtprojects/God-of-pixels-3/tests/test_planet.cpp:climateIceAtPoles">Checked</value>
+    <value type="Qt::CheckState" key="C:/qtprojects/God-of-pixels-3/tests/test_planet.cpp:climateIceFollowsTiltedPole">Checked</value>
     <value type="Qt::CheckState" key="C:/qtprojects/God-of-pixels-3/tests/test_planet.cpp:jsonRoundTrip">Checked</value>
     <value type="Qt::CheckState" key="C:/qtprojects/God-of-pixels-3/tests/test_planet.cpp:noiseHasNoMeridianSeam">Checked</value>
     <value type="Qt::CheckState" key="C:/qtprojects/God-of-pixels-3/tests/test_planet.cpp:oldDiamondSquareModeBecomesNoise">Checked</value>

@@ -81,43 +81,40 @@ PreviewPanel::PreviewPanel(QWidget *parent)
     overlayLayout->addStretch();
     overlay->hide();
 
+    spin = new QCheckBox;
+    spin->setObjectName(QStringLiteral("checkGlobeSpin"));
+    spin->setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Fixed);
+
+    btnResetCamera = new QPushButton;
+    btnResetCamera->setObjectName(QStringLiteral("btnResetCamera"));
+    connect(btnResetCamera, &QPushButton::clicked, gl, &PlanetGLWidget::resetCamera);
+
+    auto *hud = new QWidget;
+    hud->setObjectName(QStringLiteral("previewHud"));
+    hud->setAttribute(Qt::WA_StyledBackground, true);
+    hud->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Maximum);
+    auto *hudLayout = new QHBoxLayout(hud);
+    hudLayout->setContentsMargins(8, 6, 8, 6);
+    hudLayout->setSpacing(8);
+    hudLayout->addWidget(spin);
+    hudLayout->addStretch(1);
+    hudLayout->addWidget(btnResetCamera);
+
     auto *stage = new QWidget;
     auto *stageLayout = new QGridLayout(stage);
     stageLayout->setContentsMargins(0, 0, 0, 0);
     stageLayout->setSpacing(0);
     stageLayout->addWidget(stack, 0, 0);
+    stageLayout->addWidget(hud, 0, 0, Qt::AlignBottom);
     stageLayout->addWidget(overlay, 0, 0);
 
     previewBox = new SquareBox(stage);
-
-    live = new QCheckBox;
-    live->setObjectName(QStringLiteral("checkLivePreview"));
-    live->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
-    live->setMinimumHeight(32);
-
-    spin = new QCheckBox;
-    spin->setObjectName(QStringLiteral("checkGlobeSpin"));
-    spin->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
-    spin->setMinimumHeight(32);
-
-    auto *toggles = new QWidget;
-    auto *togglesLayout = new QHBoxLayout(toggles);
-    togglesLayout->setContentsMargins(0, 0, 0, 0);
-    togglesLayout->setSpacing(8);
-    togglesLayout->addWidget(live, 1);
-    togglesLayout->addWidget(spin, 1);
-
-    btnResetCamera = new QPushButton;
-    btnResetCamera->setObjectName(QStringLiteral("btnResetCamera"));
-    connect(btnResetCamera, &QPushButton::clicked, gl, &PlanetGLWidget::resetCamera);
 
     auto *layout = new QVBoxLayout(this);
     layout->setContentsMargins(0, 0, 0, 8);
     layout->setSpacing(10);
     layout->addWidget(nameLabel);
     layout->addWidget(previewBox, 1);
-    layout->addWidget(toggles);
-    layout->addWidget(btnResetCamera);
 
     retranslate();
     setHasPlanet(false);
@@ -126,11 +123,6 @@ PreviewPanel::PreviewPanel(QWidget *parent)
 PlanetGLWidget *PreviewPanel::glWidget() const
 {
     return gl;
-}
-
-QCheckBox *PreviewPanel::liveCheck() const
-{
-    return live;
 }
 
 QCheckBox *PreviewPanel::spinCheck() const
@@ -190,7 +182,6 @@ void PreviewPanel::setLoading(bool loading)
 void PreviewPanel::retranslate()
 {
     emptyLabel->setText(QCoreApplication::translate("MainWindow", "Create a planet to see the preview"));
-    live->setText(QCoreApplication::translate("MainWindow", "Quick update"));
     spin->setText(QCoreApplication::translate("MainWindow", "Rotation"));
     btnResetCamera->setText(QCoreApplication::translate("MainWindow", "Reset camera"));
 }

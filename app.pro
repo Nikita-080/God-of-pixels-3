@@ -29,6 +29,7 @@ SOURCES += \
     src/ui/colorswatch.cpp \
     src/ui/multislider.cpp \
     src/ui/previewpanel.cpp \
+    src/ui/programsettingsdialog.cpp \
     src/ui/settingspanel.cpp \
     src/ui/spectrumdialog.cpp \
     src/ui/windowsettings.cpp \
@@ -69,6 +70,7 @@ HEADERS += \
     src/ui/colorswatch.h \
     src/ui/multislider.h \
     src/ui/previewpanel.h \
+    src/ui/programsettingsdialog.h \
     src/ui/settingspanel.h \
     src/ui/spectrumdialog.h \
     src/ui/windowsettings.h \

@@ -10,7 +10,19 @@
     </message>
     <message>
         <source>Planet</source>
-        <translation type="vanished">Планета</translation>
+        <translation>Планета</translation>
+    </message>
+    <message>
+        <source>Description</source>
+        <translation>Описание</translation>
+    </message>
+    <message>
+        <source>Tags</source>
+        <translation>Теги</translation>
+    </message>
+    <message>
+        <source>Map</source>
+        <translation>Карта</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="304"/>
@@ -342,6 +354,42 @@
     <message>
         <source>Quick update</source>
         <translation>Быстрое обновление</translation>
+    </message>
+    <message>
+        <source>Create a planet to see facts</source>
+        <translation>Создайте планету, чтобы увидеть факты</translation>
+    </message>
+    <message>
+        <source>seed        - %1</source>
+        <translation>сид         - %1</translation>
+    </message>
+    <message>
+        <source>resources   - %1</source>
+        <translation>ресурсы     - %1</translation>
+    </message>
+    <message>
+        <source>life        - %1/12</source>
+        <translation>жизнь       - %1/12</translation>
+    </message>
+    <message>
+        <source>water       - %1/12</source>
+        <translation>вода        - %1/12</translation>
+    </message>
+    <message>
+        <source>ice         - %1/12</source>
+        <translation>лёд         - %1/12</translation>
+    </message>
+    <message>
+        <source>radiation   - %1/12</source>
+        <translation>радиация    - %1/12</translation>
+    </message>
+    <message>
+        <source>temperature - %1/12</source>
+        <translation>температура - %1/12</translation>
+    </message>
+    <message>
+        <source>seismicity  - %1/12</source>
+        <translation>сейсмика    - %1/12</translation>
     </message>
     <message>
         <source>Rotation</source>
@@ -1378,6 +1426,33 @@
     <message>
         <source>Create a world where one hour lasts seven years</source>
         <translation>Создайте мир, где один час длится семь лет</translation>
+    </message>
+</context>
+<context>
+    <name>ProgramSettingsDialog</name>
+    <message>
+        <source>Program settings</source>
+        <translation>Настройки программы</translation>
+    </message>
+    <message>
+        <source>Language</source>
+        <translation>Язык</translation>
+    </message>
+    <message>
+        <source>Quick update</source>
+        <translation>Быстрое обновление</translation>
+    </message>
+    <message>
+        <source>Reset settings</source>
+        <translation>Сбросить настройки</translation>
+    </message>
+    <message>
+        <source>Apply</source>
+        <translation>Применить</translation>
+    </message>
+    <message>
+        <source>Cancel</source>
+        <translation>Отмена</translation>
     </message>
 </context>
 </TS>

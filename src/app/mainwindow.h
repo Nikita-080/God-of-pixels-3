@@ -3,7 +3,6 @@
 
 #include <QMainWindow>
 #include <QTranslator>
-#include <QElapsedTimer>
 #include <QJsonObject>
 #include <planet.h>
 #include <autogensettings.h>
@@ -15,7 +14,8 @@ class PlanetGLWidget;
 class AchievementToastHost;
 class QTimer;
 class QThread;
-class QTextEdit;
+class QAction;
+class QPlainTextEdit;
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -42,6 +42,7 @@ private:
     };
 
     void setupMainLayout();
+    void retranslateExtras();
     void SetStyle();
     void Settings_Get();
     void Settings_Set();
@@ -54,7 +55,9 @@ private:
     void M_Save_Full_Image();
     void M_About();
     void M_Achievements();
-    void M_Switch_Language();
+    void M_ProgramSettings();
+    void applyLanguage(const QString &lang);
+    void updateFactsCard();
     void CreateNewPlanet();
     void RecreatePlanet();
     void AutoGen();
@@ -71,7 +74,6 @@ private:
     void applyPlanetToView();
     void evaluateAchievements(bool countCreate, bool planetSaved = false, bool autogenAllRandom = false);
     void startGeneration(bool createNew, int seed = 0, GenOp op = GenOp::None);
-    void logOp(const QString &action, qint64 ms, bool ok, const QString &detail = QString());
     void beginLoadingWatch();
     void endLoadingWatch();
     void showLoadingOverlay();
@@ -93,6 +95,7 @@ private:
     PlanetSettings s;
     AutoGenSettings box;
     QString language;
+    bool livePreview;
     bool isEmtyPlanet;
     bool liveSuspended;
     bool appearanceOnlyLive;
@@ -104,11 +107,11 @@ private:
     QJsonObject pendingView;
     bool autogenRunning;
     PlanetGLWidget *autogenGl;
-    QTextEdit *opConsole;
+    QPlainTextEdit *factsView;
+    QAction *actionProgramSettings;
     AchievementToastHost *achievementToasts;
     GenOp genActiveOp;
     GenOp genQueuedOp;
-    QElapsedTimer genOpTimer;
 };
 
 #endif

@@ -18,6 +18,7 @@
 #include <QFont>
 #include <QSizePolicy>
 #include <QColorDialog>
+#include <QTabBar>
 
 namespace {
 QColor averageRgb(const QList<QColor> &colors)
@@ -67,20 +68,8 @@ SettingsPanel::SettingsPanel(QTabWidget *tabs, QWidget *parent)
     auto *layout = new QVBoxLayout(this);
     layout->setContentsMargins(0, 0, 0, 0);
     layout->addWidget(tabs);
-    setFixedWidth(491);
-    setMinimumHeight(571);
     setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Expanding);
-    tabs->setMinimumSize(491, 571);
     tabs->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
-    for (int i = 0; i < tabs->count(); ++i)
-    {
-        QWidget *page = tabs->widget(i);
-        if (!page)
-            continue;
-        const QRect bounds = page->childrenRect();
-        page->setMinimumSize(qMax(bounds.right() + 12, 380),
-                             qMax(bounds.bottom() + 12, 500));
-    }
 
     tabs->setStyleSheet(QString());
     for (QSlider *slider : tabs->findChildren<QSlider *>())
@@ -187,12 +176,6 @@ SettingsPanel::SettingsPanel(QTabWidget *tabs, QWidget *parent)
         "}"));
     btnSpectrum->raise();
     btnSpectrum->show();
-    if (lightTab)
-    {
-        const QRect bounds = lightTab->childrenRect();
-        lightTab->setMinimumSize(qMax(bounds.right() + 12, 380),
-                                 qMax(bounds.bottom() + 12, 500));
-    }
 
     auto *lifeTab = child<QWidget>("tab_4");
     checkCiv = new QCheckBox(lifeTab);
@@ -234,12 +217,6 @@ SettingsPanel::SettingsPanel(QTabWidget *tabs, QWidget *parent)
     ringIntValue->setFont(QFont(QStringLiteral("Consolas"), 10));
     ringIntValue->setAlignment(Qt::AlignCenter);
     connect(sliderRingIntensity, &QSlider::valueChanged, ringIntValue, QOverload<int>::of(&QLabel::setNum));
-    if (ringTab)
-    {
-        const QRect bounds = ringTab->childrenRect();
-        ringTab->setMinimumSize(qMax(bounds.right() + 12, 380),
-                                qMax(bounds.bottom() + 12, 500));
-    }
 
     if (auto *slider = child<QSlider>("sliderIterations"))
         slider->setEnabled(false);
@@ -267,9 +244,6 @@ SettingsPanel::SettingsPanel(QTabWidget *tabs, QWidget *parent)
         labelSeismicity->show();
         sliderSeismicity->show();
         seisValue->show();
-        const QRect bounds = mainTab->childrenRect();
-        mainTab->setMinimumSize(qMax(bounds.right() + 12, 380),
-                                qMax(bounds.bottom() + 12, 500));
     }
 
     if (QWidget *colorTab = child<QWidget>("tab_3"))
@@ -287,9 +261,6 @@ SettingsPanel::SettingsPanel(QTabWidget *tabs, QWidget *parent)
         labelAvgColor->show();
         btnAvgLand->show();
         btnAvgWater->show();
-        const QRect bounds = colorTab->childrenRect();
-        colorTab->setMinimumSize(qMax(bounds.right() + 12, 380),
-                                 qMax(bounds.bottom() + 12, 500));
     }
 
     const char *valueSliders[] = {
@@ -367,12 +338,38 @@ SettingsPanel::SettingsPanel(QTabWidget *tabs, QWidget *parent)
     updateAlgoEnabled();
     updateStarDependentUi();
     retranslate();
+    fitToContents();
 }
 
 void SettingsPanel::notify(bool appearanceOnly)
 {
     if (!updating)
         emit settingsChanged(appearanceOnly);
+}
+
+void SettingsPanel::fitToContents()
+{
+    int contentRight = 0;
+    int contentBottom = 500;
+    for (int i = 0; i < tabs->count(); ++i)
+    {
+        QWidget *page = tabs->widget(i);
+        if (!page)
+            continue;
+        const QRect bounds = page->childrenRect();
+        const int w = qMax(bounds.right() + 12, 1);
+        const int h = qMax(bounds.bottom() + 12, 500);
+        page->setMinimumSize(w, h);
+        contentRight = qMax(contentRight, w);
+        contentBottom = qMax(contentBottom, h);
+    }
+    int tabBarW = tabs->iconSize().width() + 8;
+    if (QTabBar *bar = tabs->tabBar())
+        tabBarW = qMax(tabBarW, bar->sizeHint().width());
+    const int width = contentRight + tabBarW + 8;
+    setFixedWidth(width);
+    setMinimumHeight(contentBottom);
+    tabs->setMinimumSize(width, contentBottom);
 }
 
 void SettingsPanel::wireLiveUpdates()
