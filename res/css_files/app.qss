@@ -58,8 +58,10 @@ QSlider::sub-page:disabled {
     background: rgb(0, 170, 0);
 }
 QMenuBar {
-    background-color: rgb(0, 0, 0);
+    background-color: rgb(18, 24, 30);
     color: rgb(110, 170, 200);
+    border-bottom: 1px solid rgb(70, 100, 115);
+    padding-bottom: 1px;
 }
 QMenuBar::item:selected {
     background-color: rgb(50, 50, 50);
@@ -72,6 +74,43 @@ QMenu {
 QMenu::item:selected {
     background-color: rgb(50, 50, 50);
     color: rgb(0, 255, 127);
+}
+QStatusBar {
+    background-color: rgb(18, 24, 30);
+    color: rgb(110, 170, 200);
+    border-top: 1px solid rgb(70, 100, 115);
+}
+QStatusBar QLabel {
+    color: rgb(110, 170, 200);
+    background: transparent;
+    font-family: Consolas;
+    font-size: 10pt;
+    padding-right: 12px;
+}
+QSplitter#mainSplitter::handle {
+    background-color: rgb(40, 55, 65);
+    width: 4px;
+}
+QScrollArea#settingsScroll {
+    background-color: rgb(0, 0, 0);
+    border: none;
+}
+QToolButton#accordionToggle {
+    background-color: rgb(12, 18, 22);
+    color: rgb(110, 170, 200);
+    border: 1px solid rgb(70, 100, 115);
+    padding: 6px 8px;
+    font-family: Consolas;
+    font-size: 11pt;
+    text-align: left;
+}
+QToolButton#accordionToggle:hover {
+    border-color: rgb(0, 255, 127);
+    color: rgb(160, 210, 230);
+}
+QToolButton#accordionToggle:checked {
+    color: rgb(0, 255, 127);
+    border-color: rgb(85, 135, 155);
 }
 QTabWidget::pane {
     border: 3px solid rgb(128, 128, 128);
@@ -279,13 +318,48 @@ QPushButton#btnProgramCancel:pressed {
 QLabel#labelEmptyPreview {
     color: rgb(110, 170, 200);
 }
+QWidget#previewChrome {
+    background-color: transparent;
+}
 QLabel#labelPlanetName {
     color: rgb(110, 170, 200);
+    background-color: rgba(0, 0, 0, 150);
+    padding: 8px 12px;
+}
+QWidget#cropOverlay {
+    background-color: transparent;
 }
 QWidget#previewHud {
     background-color: rgba(0, 0, 0, 160);
 }
+QMessageBox {
+    background-color: rgb(18, 24, 30);
+    color: rgb(110, 170, 200);
+}
+QMessageBox QLabel {
+    background: transparent;
+    color: rgb(110, 170, 200);
+}
+QMessageBox QPushButton {
+    background-color: rgb(0, 0, 0);
+    color: rgb(110, 170, 200);
+    border: 2px solid rgb(110, 170, 200);
+    min-width: 88px;
+    min-height: 28px;
+    padding: 4px 12px;
+    font-family: Consolas;
+}
+QMessageBox QPushButton:hover {
+    border-color: rgb(145, 200, 228);
+    color: rgb(160, 210, 230);
+    background-color: rgb(9, 24, 31);
+}
+QMessageBox QPushButton:pressed {
+    border-color: rgb(85, 135, 155);
+    color: rgb(90, 145, 170);
+}
 QCheckBox#checkGlobeSpin,
+QCheckBox#checkCropFrame,
 QCheckBox#checkProgramLive {
     color: rgb(110, 170, 200);
     font-family: Consolas;

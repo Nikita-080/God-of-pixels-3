@@ -18,6 +18,8 @@ public:
 
     PlanetGLWidget *glWidget() const;
     QCheckBox *spinCheck() const;
+    QCheckBox *cropCheck() const;
+    bool isGlobeVisible() const;
     void setPlanetName(const QString &name);
     void setHasPlanet(bool hasPlanet);
     void showGlobe();
@@ -25,10 +27,18 @@ public:
     void setLoading(bool loading);
     void retranslate();
 
+protected:
+    void resizeEvent(QResizeEvent *event) override;
+
 private:
-    class SquareBox *previewBox;
+    void refreshCropOverlay();
+    void refreshCardPixmap();
+
     QStackedWidget *stack;
     QWidget *overlay;
+    QWidget *cropOverlay;
+    QWidget *hud;
+    QWidget *chrome;
     QLabel *emptyLabel;
     QLabel *nameLabel;
     QLabel *cardView;
@@ -36,7 +46,9 @@ private:
     class QMovie *loadingMovie;
     PlanetGLWidget *gl;
     QCheckBox *spin;
+    QCheckBox *crop;
     QPushButton *btnResetCamera;
+    QImage lastCard;
 };
 
 #endif

@@ -2,6 +2,7 @@
 #include "planet.h"
 #include "starspectrum.h"
 #include <QJsonObject>
+#include <QImage>
 #include <QMouseEvent>
 #include <QRandomGenerator>
 #include <QTimer>
@@ -535,12 +536,14 @@ void PlanetGLWidget::tickCameraReset()
     elevation = camFromEl + (kDefaultElevation - camFromEl) * e;
     cameraDistance = camFromDist + (defaultCameraDistance() - camFromDist) * e;
     update();
+    emit cameraChanged();
     if (t >= 1.0f)
     {
         azimuth = kDefaultAzimuth;
         elevation = kDefaultElevation;
         cameraDistance = defaultCameraDistance();
         stopCameraReset();
+        emit cameraChanged();
     }
 }
 
@@ -563,6 +566,7 @@ void PlanetGLWidget::resetCamera()
         elevation = kDefaultElevation;
         cameraDistance = defaultCameraDistance();
         update();
+        emit cameraChanged();
         return;
     }
     camResetClock.start();
@@ -694,14 +698,15 @@ void PlanetGLWidget::buildBlitQuad()
     blitVbo.release();
 }
 
-void PlanetGLWidget::ensureSceneFbo(int res)
+void PlanetGLWidget::ensureSceneFbo(int w, int h)
 {
-    res = qBound(16, res, 1024);
-    if (sceneFbo && sceneFbo->width() == res && sceneFbo->height() == res)
+    w = qBound(16, w, 2048);
+    h = qBound(16, h, 2048);
+    if (sceneFbo && sceneFbo->width() == w && sceneFbo->height() == h)
         return;
     QOpenGLFramebufferObjectFormat fmt;
     fmt.setAttachment(QOpenGLFramebufferObject::Depth);
-    sceneFbo.reset(new QOpenGLFramebufferObject(res, res, fmt));
+    sceneFbo.reset(new QOpenGLFramebufferObject(w, h, fmt));
 }
 
 void PlanetGLWidget::buildSphere(int slices, int stacks)
@@ -1293,16 +1298,24 @@ void PlanetGLWidget::paintGL()
         return;
     }
 
-    const int res = currentViewRes();
-    ensureSceneFbo(res);
+    const int dpr = qMax(1, int(devicePixelRatio()));
+    const int pixelW = qMax(1, width() * dpr);
+    const int pixelH = qMax(1, height() * dpr);
+    const int maxSide = qBound(16, currentViewRes(), 1024);
+    const int maxDim = qMax(pixelW, pixelH);
+    const float scale = (maxDim > maxSide) ? (float(maxSide) / float(maxDim)) : 1.0f;
+    const int fboW = qMax(16, qRound(pixelW * scale));
+    const int fboH = qMax(16, qRound(pixelH * scale));
+    ensureSceneFbo(fboW, fboH);
 
     QMatrix4x4 proj;
-    proj.perspective(kFovDeg, 1.0f, 0.1f, cameraDistance + 32.0f);
+    const float aspect = float(qMax(1, width())) / float(qMax(1, height()));
+    proj.perspective(kFovDeg, aspect, 0.1f, cameraDistance + 32.0f);
     QMatrix4x4 view;
     view.lookAt(cameraPos(), QVector3D(0, 0, 0), QVector3D(0, 1, 0));
 
     sceneFbo->bind();
-    glViewport(0, 0, res, res);
+    glViewport(0, 0, fboW, fboH);
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_CULL_FACE);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -1310,8 +1323,7 @@ void PlanetGLWidget::paintGL()
     sceneFbo->release();
 
     glBindFramebuffer(GL_FRAMEBUFFER, defaultFramebufferObject());
-    const int dpr = qMax(1, int(devicePixelRatio()));
-    glViewport(0, 0, width() * dpr, height() * dpr);
+    glViewport(0, 0, pixelW, pixelH);
     glDisable(GL_DEPTH_TEST);
     glDisable(GL_CULL_FACE);
     glClear(GL_COLOR_BUFFER_BIT);
@@ -1334,19 +1346,45 @@ void PlanetGLWidget::paintGL()
     blitProg.release();
 }
 
+namespace {
+QImage cropCenterSquare(const QImage &img)
+{
+    if (img.isNull())
+        return img;
+    const int side = qMin(img.width(), img.height());
+    if (side <= 0)
+        return img;
+    const int x = (img.width() - side) / 2;
+    const int y = (img.height() - side) / 2;
+    return img.copy(x, y, side, side);
+}
+}
+
 QImage PlanetGLWidget::captureView()
 {
-    const QImage shot = grabFramebuffer();
-    if (!shot.isNull())
-        return shot;
-    if (!sceneFbo || !sceneFbo->isValid())
-        return QImage();
-    makeCurrent();
-    const QImage raw = sceneFbo->toImage(true);
-    if (raw.isNull())
-        return QImage();
-    const int side = qMax(width(), 1);
-    return raw.scaled(side, side, Qt::IgnoreAspectRatio, Qt::FastTransformation);
+    QImage shot = grabFramebuffer();
+    if (shot.isNull() && sceneFbo && sceneFbo->isValid())
+    {
+        makeCurrent();
+        shot = sceneFbo->toImage(true);
+    }
+    return cropCenterSquare(shot);
+}
+
+float PlanetGLWidget::azimuthAngle() const
+{
+    return azimuth;
+}
+
+float PlanetGLWidget::elevationAngle() const
+{
+    return elevation;
+}
+
+float PlanetGLWidget::zoomPercent() const
+{
+    const float dist = qMax(0.01f, cameraDistance);
+    return 100.0f * defaultCameraDistance() / dist;
 }
 
 QJsonObject PlanetGLWidget::viewToJson() const
@@ -1377,6 +1415,7 @@ void PlanetGLWidget::applyViewJson(const QJsonObject &view)
     if (view.contains(QStringLiteral("ringSpin")))
         ringSpinDeg = wrapDeg(float(view.value(QStringLiteral("ringSpin")).toDouble()));
     update();
+    emit cameraChanged();
 }
 
 void PlanetGLWidget::mousePressEvent(QMouseEvent *event)
@@ -1396,6 +1435,7 @@ void PlanetGLWidget::mouseMoveEvent(QMouseEvent *event)
     elevation += d.y() * 0.4f;
     elevation = qBound(-89.0f, elevation, 89.0f);
     update();
+    emit cameraChanged();
 }
 
 void PlanetGLWidget::mouseReleaseEvent(QMouseEvent *)
@@ -1412,5 +1452,6 @@ void PlanetGLWidget::wheelEvent(QWheelEvent *event)
     cameraDistance *= qPow(0.9f, steps);
     cameraDistance = qBound(1.25f, cameraDistance, 12.0f);
     update();
+    emit cameraChanged();
     event->accept();
 }

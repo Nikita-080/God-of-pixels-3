@@ -498,6 +498,62 @@
         <translation>Сохранить планету</translation>
     </message>
     <message>
+        <source>Save planet as</source>
+        <translation>Сохранить планету как</translation>
+    </message>
+    <message>
+        <source>Crop frame</source>
+        <translation>Квадратная рамка</translation>
+    </message>
+    <message>
+        <source>Unsaved changes</source>
+        <translation>Несохранённые изменения</translation>
+    </message>
+    <message>
+        <source>The current planet has unsaved changes.</source>
+        <translation>У текущей планеты есть несохранённые изменения.</translation>
+    </message>
+    <message>
+        <source>Zoom %1%%    Az %2°    El %3°</source>
+        <translation>Зум %1%%    Аз %2°    Уг %3°</translation>
+    </message>
+    <message>
+        <source>Create (%1)</source>
+        <translation>Создать (%1)</translation>
+    </message>
+    <message>
+        <source>Recreate (%1)</source>
+        <translation>Пересоздать (%1)</translation>
+    </message>
+    <message>
+        <source>Autogen (%1)</source>
+        <translation>Автоген (%1)</translation>
+    </message>
+    <message>
+        <source>Planet (1)</source>
+        <translation>Планета (1)</translation>
+    </message>
+    <message>
+        <source>Description (2)</source>
+        <translation>Описание (2)</translation>
+    </message>
+    <message>
+        <source>Tags (3)</source>
+        <translation>Теги (3)</translation>
+    </message>
+    <message>
+        <source>Map (4)</source>
+        <translation>Карта (4)</translation>
+    </message>
+    <message>
+        <source>Undo</source>
+        <translation>Отменить</translation>
+    </message>
+    <message>
+        <source>Redo</source>
+        <translation>Повторить</translation>
+    </message>
+    <message>
         <location filename="mainwindow.cpp" line="174"/>
         <source>name - God of Pixels 3</source>
         <translation>название - God of Pixels 3</translation>

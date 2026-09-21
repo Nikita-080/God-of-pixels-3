@@ -17,6 +17,9 @@ class QTimer;
 class QThread;
 class QAction;
 class QPlainTextEdit;
+class QLabel;
+class QSplitter;
+class QUndoStack;
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -43,6 +46,7 @@ private:
     };
 
     void setupMainLayout();
+    void setupShortcuts();
     void retranslateExtras();
     void SetStyle();
     void Settings_Get();
@@ -51,7 +55,9 @@ private:
     void M_Load_Settings();
     void M_Load_Base_Settings();
     void M_Save_Image();
-    void M_Save_Planet();
+    bool M_Save_Planet();
+    bool M_Save_PlanetAs();
+    bool writePlanetFile(const QString &filename);
     void M_Load_Planet();
     void M_Save_Full_Image();
     void M_About();
@@ -59,6 +65,16 @@ private:
     void M_ProgramSettings();
     void applyLanguage(const QString &lang);
     void updateFactsCard();
+    void updateWindowTitle();
+    void updateCameraStatus();
+    void updateUndoActions();
+    bool sessionDirty() const;
+    bool confirmAbandonSession();
+    void beginSession(const QString &path, bool markDirty);
+    void applySettingsFromUndo(const PlanetSettings &settings, bool appearanceOnly);
+    void applyPlanetFromUndo(const Planet &p);
+    void commitSettingsUndo(bool appearanceOnly);
+    bool inputTakesDigits() const;
     void CreateNewPlanet();
     void RecreatePlanet();
     void AutoGen();
@@ -88,15 +104,20 @@ private:
     QTranslator qtLanguageTranslator;
     PreviewPanel *preview;
     SettingsPanel *settingsPanel;
+    QSplitter *mainSplitter;
+    QLabel *cameraStatus;
     QTimer *liveTimer;
     QTimer *loadingDelayTimer;
     QThread *genThread;
     Planet *genWork;
     Planet planet;
     Planet autoplanet;
+    Planet planetBeforeRecreate;
     PlanetSettings s;
+    PlanetSettings lastCommittedSettings;
     AutoGenSettings box;
     QString language;
+    QString sessionPath;
     bool livePreview;
     bool isEmtyPlanet;
     bool liveSuspended;
@@ -111,7 +132,15 @@ private:
     PlanetGLWidget *autogenGl;
     QPlainTextEdit *factsView;
     QAction *actionProgramSettings;
+    QAction *actionSavePlanetAs;
+    QAction *actionUndo;
+    QAction *actionRedo;
     AchievementToastHost *achievementToasts;
+    QUndoStack *undoStack;
+    bool sessionActive;
+    bool undoApplying;
+    bool pendingRecreateUndo;
+    QString pendingSessionPath;
     GenOp genActiveOp;
     GenOp genQueuedOp;
 };

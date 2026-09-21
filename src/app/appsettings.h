@@ -12,12 +12,14 @@ namespace AppKeys {
 const char language[] = "ui/language";
 const char livePreview[] = "ui/livePreview";
 const char globeSpin[] = "ui/globeSpin";
+const char cropFrame[] = "ui/cropFrame";
 const char dirImage[] = "paths/image";
 const char dirPlanet[] = "paths/planet";
 const char dirSettings[] = "paths/settings";
 const char dirAutogen[] = "paths/autogen";
 const char autogenSession[] = "autogen/session";
 const char windowGeometry[] = "ui/windowGeometry";
+const char splitter[] = "ui/splitter";
 const char achievementUnlockPrefix[] = "achievements/unlock/";
 const char achievementCreatedCount[] = "achievements/createdCount";
 }

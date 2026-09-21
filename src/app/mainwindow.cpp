@@ -13,9 +13,11 @@
 #include "achievementtoast.h"
 #include "achievementsdialog.h"
 #include "programsettingsdialog.h"
+#include "planetcommands.h"
 #include <QColorDialog>
 #include <QFile>
 #include <QFileDialog>
+#include <QFileInfo>
 #include <QTextStream>
 #include <QPainter>
 #include <QMessageBox>
@@ -41,6 +43,15 @@
 #include <QAction>
 #include <QMenu>
 #include <QIcon>
+#include <QShortcut>
+#include <QSplitter>
+#include <QUndoStack>
+#include <QLabel>
+#include <QStatusBar>
+#include <QComboBox>
+#include <QAbstractSpinBox>
+#include <QLineEdit>
+#include <QKeySequence>
 #include <algorithm>
 
 namespace {
@@ -71,6 +82,8 @@ MainWindow::MainWindow(QWidget *parent)
     , ui(new Ui::MainWindow)
     , preview(nullptr)
     , settingsPanel(nullptr)
+    , mainSplitter(nullptr)
+    , cameraStatus(nullptr)
     , liveTimer(nullptr)
     , loadingDelayTimer(nullptr)
     , genThread(nullptr)
@@ -88,7 +101,14 @@ MainWindow::MainWindow(QWidget *parent)
     , autogenGl(nullptr)
     , factsView(nullptr)
     , actionProgramSettings(nullptr)
+    , actionSavePlanetAs(nullptr)
+    , actionUndo(nullptr)
+    , actionRedo(nullptr)
     , achievementToasts(nullptr)
+    , undoStack(nullptr)
+    , sessionActive(false)
+    , undoApplying(false)
+    , pendingRecreateUndo(false)
     , genActiveOp(GenOp::None)
     , genQueuedOp(GenOp::None)
 {
@@ -104,16 +124,16 @@ MainWindow::MainWindow(QWidget *parent)
     }
 
     ui->setupUi(this);
-    ui->tabWidget->setIconSize(QSize(60, 60));
-    for (int i = 0; i < 10; ++i)
-    {
-        ui->tabWidget->setTabIcon(i, QIcon(":/images/res/images/TabIcon" + QString::number(i + 1) + ".png"));
-    }
+    ui->tabWidget->hide();
 
     preview = new PreviewPanel;
     preview->spinCheck()->setChecked(st.value(AppKeys::globeSpin, false).toBool());
+    preview->cropCheck()->setChecked(st.value(AppKeys::cropFrame, true).toBool());
     preview->glWidget()->setSpinning(preview->spinCheck()->isChecked());
     settingsPanel = new SettingsPanel(ui->tabWidget);
+
+    undoStack = new QUndoStack(this);
+    undoStack->setUndoLimit(20);
 
     liveTimer = new QTimer(this);
     liveTimer->setSingleShot(true);
@@ -138,11 +158,15 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->action_4, &QAction::triggered, this, &MainWindow::M_Load_Settings);
     connect(ui->action_5, &QAction::triggered, this, &MainWindow::M_Load_Base_Settings);
     connect(ui->action, &QAction::triggered, this, &MainWindow::M_Save_Image);
-    connect(ui->action_2, &QAction::triggered, this, &MainWindow::M_Save_Planet);
+    connect(ui->action_2, &QAction::triggered, this, [this]() { M_Save_Planet(); });
     connect(ui->action_6, &QAction::triggered, this, &MainWindow::M_About);
     connect(ui->action_achievements, &QAction::triggered, this, &MainWindow::M_Achievements);
     connect(ui->action_8, &QAction::triggered, this, &MainWindow::M_Save_Full_Image);
     connect(ui->action_9, &QAction::triggered, this, &MainWindow::M_Load_Planet);
+    actionSavePlanetAs = new QAction(this);
+    if (ui->menu)
+        ui->menu->insertAction(ui->action_9, actionSavePlanetAs);
+    connect(actionSavePlanetAs, &QAction::triggered, this, [this]() { M_Save_PlanetAs(); });
     if (ui->menuProgramSettings)
         ui->menuProgramSettings->menuAction()->setVisible(false);
     if (ui->action_10)
@@ -162,12 +186,31 @@ MainWindow::MainWindow(QWidget *parent)
         QSettings(appSettingsFile(), QSettings::IniFormat).setValue(AppKeys::globeSpin, on);
     });
     connect(preview->spinCheck(), &QCheckBox::toggled, preview->glWidget(), &PlanetGLWidget::setSpinning);
+    connect(preview->cropCheck(), &QCheckBox::toggled, this, [](bool on) {
+        QSettings(appSettingsFile(), QSettings::IniFormat).setValue(AppKeys::cropFrame, on);
+    });
+    connect(preview->glWidget(), &PlanetGLWidget::cameraChanged, this, &MainWindow::updateCameraStatus);
     connect(settingsPanel, &SettingsPanel::settingsChanged, this, [this](bool appearanceOnly) {
         appearanceOnlyLive = appearanceOnly;
         scheduleLivePreview();
     });
+    connect(settingsPanel, &SettingsPanel::settingsCommitted, this, &MainWindow::commitSettingsUndo);
+
+    actionUndo = undoStack->createUndoAction(this);
+    actionRedo = undoStack->createRedoAction(this);
+    actionUndo->setShortcut(QKeySequence::Undo);
+    actionRedo->setShortcuts({QKeySequence(QStringLiteral("Ctrl+Shift+Z")), QKeySequence::Redo});
+    addAction(actionUndo);
+    addAction(actionRedo);
+    connect(undoStack, &QUndoStack::cleanChanged, this, [this](bool) {
+        updateWindowTitle();
+        updateUndoActions();
+    });
+    connect(undoStack, &QUndoStack::canUndoChanged, this, [this](bool) { updateUndoActions(); });
+    connect(undoStack, &QUndoStack::canRedoChanged, this, [this](bool) { updateUndoActions(); });
 
     setupMainLayout();
+    setupShortcuts();
     SetStyle();
     retranslateExtras();
     achievementToasts = new AchievementToastHost(this);
@@ -175,10 +218,13 @@ MainWindow::MainWindow(QWidget *parent)
     Settings_Get();
     s.Load(":/txt_files/res/txt_files/settingsbase.json");
     Settings_Set();
+    lastCommittedSettings = s;
 
     ui->pushButton_6->hide();
     ui->pushButton_7->hide();
-    setWindowTitle("God of Pixels 3");
+    updateWindowTitle();
+    updateCameraStatus();
+    updateUndoActions();
 
     const QByteArray geo = st.value(AppKeys::windowGeometry).toByteArray();
     if (!geo.isEmpty())
@@ -204,7 +250,15 @@ MainWindow::~MainWindow()
 
 void MainWindow::closeEvent(QCloseEvent *event)
 {
-    QSettings(appSettingsFile(), QSettings::IniFormat).setValue(AppKeys::windowGeometry, saveGeometry());
+    if (!confirmAbandonSession())
+    {
+        event->ignore();
+        return;
+    }
+    QSettings st(appSettingsFile(), QSettings::IniFormat);
+    st.setValue(AppKeys::windowGeometry, saveGeometry());
+    if (mainSplitter)
+        st.setValue(AppKeys::splitter, mainSplitter->saveState());
     QMainWindow::closeEvent(event);
 }
 
@@ -320,18 +374,23 @@ void MainWindow::setupMainLayout()
     ui->labelPlanetName->hide();
     ui->btnLogo->hide();
 
-    const int actionsWidth = 300;
-    auto sizeActionButton = [actionsWidth](QPushButton *btn) {
+    auto sizeActionButton = [](QPushButton *btn) {
         btn->setStyleSheet(QString());
-        btn->setFixedWidth(actionsWidth);
+        btn->setMinimumWidth(0);
+        btn->setMaximumWidth(QWIDGETSIZE_MAX);
         btn->setMinimumHeight(52);
         btn->setMaximumHeight(64);
+        btn->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
         btn->setIcon(QIcon());
         btn->setIconSize(QSize(0, 0));
     };
     sizeActionButton(ui->btnCreate);
     sizeActionButton(ui->btnRecreate);
     sizeActionButton(ui->btnAutogen);
+    ui->btnCreate->setDefault(false);
+    ui->btnCreate->setAutoDefault(false);
+    ui->btnRecreate->setDefault(false);
+    ui->btnRecreate->setAutoDefault(false);
 
     auto sizeViewButton = [](QPushButton *btn) {
         btn->setStyleSheet(QString());
@@ -362,7 +421,8 @@ void MainWindow::setupMainLayout()
     viewGrid->addWidget(ui->btnViewMap, 1, 1);
 
     auto *actionsWrap = new QWidget;
-    actionsWrap->setFixedWidth(actionsWidth);
+    actionsWrap->setMinimumWidth(220);
+    actionsWrap->setMaximumWidth(420);
     auto *actionsCol = new QVBoxLayout(actionsWrap);
     actionsCol->setContentsMargins(0, 0, 0, 0);
     actionsCol->setSpacing(8);
@@ -375,16 +435,36 @@ void MainWindow::setupMainLayout()
     auto *previewCol = new QVBoxLayout;
     previewCol->setSpacing(8);
     previewCol->addWidget(preview, 1);
+    auto *previewWrap = new QWidget;
+    previewWrap->setLayout(previewCol);
+
+    mainSplitter = new QSplitter(Qt::Horizontal);
+    mainSplitter->setObjectName(QStringLiteral("mainSplitter"));
+    mainSplitter->setChildrenCollapsible(false);
+    settingsPanel->setMinimumWidth(260);
+    mainSplitter->addWidget(settingsPanel);
+    mainSplitter->addWidget(previewWrap);
+    mainSplitter->addWidget(actionsWrap);
+    mainSplitter->setStretchFactor(0, 0);
+    mainSplitter->setStretchFactor(1, 1);
+    mainSplitter->setStretchFactor(2, 0);
+    mainSplitter->setSizes({320, 800, 300});
 
     auto *root = new QHBoxLayout(ui->centralwidget);
     root->setContentsMargins(10, 8, 10, 8);
-    root->setSpacing(12);
-    root->addWidget(settingsPanel, 0);
-    root->addLayout(previewCol, 1);
-    root->addWidget(actionsWrap, 0);
+    root->setSpacing(0);
+    root->addWidget(mainSplitter);
+
+    cameraStatus = new QLabel;
+    cameraStatus->setObjectName(QStringLiteral("cameraStatus"));
+    statusBar()->addPermanentWidget(cameraStatus);
 
     setMinimumSize(1200, 620);
     resize(1500, 680);
+
+    const QByteArray split = QSettings(appSettingsFile(), QSettings::IniFormat).value(AppKeys::splitter).toByteArray();
+    if (!split.isEmpty())
+        mainSplitter->restoreState(split);
 }
 
 void MainWindow::retranslateExtras()
@@ -394,9 +474,205 @@ void MainWindow::retranslateExtras()
     ui->btnViewDescription->setText(tr("Description"));
     ui->btnViewSystem->setText(tr("Tags"));
     ui->btnViewMap->setText(tr("Map"));
+    ui->btnCreate->setToolTip(tr("Create (%1)").arg(QKeySequence(Qt::Key_Return).toString(QKeySequence::NativeText)));
+    ui->btnRecreate->setToolTip(tr("Recreate (%1)").arg(QKeySequence(Qt::CTRL | Qt::Key_Return).toString(QKeySequence::NativeText)));
+    ui->btnAutogen->setToolTip(tr("Autogen (%1)").arg(QKeySequence(QStringLiteral("Ctrl+G")).toString(QKeySequence::NativeText)));
+    ui->btnViewPlanet->setToolTip(tr("Planet (1)"));
+    ui->btnViewDescription->setToolTip(tr("Description (2)"));
+    ui->btnViewSystem->setToolTip(tr("Tags (3)"));
+    ui->btnViewMap->setToolTip(tr("Map (4)"));
     if (actionProgramSettings)
         actionProgramSettings->setText(tr("Program settings"));
+    if (actionSavePlanetAs)
+        actionSavePlanetAs->setText(tr("Save planet as"));
+    if (actionUndo)
+        actionUndo->setText(tr("Undo"));
+    if (actionRedo)
+        actionRedo->setText(tr("Redo"));
     updateFactsCard();
+    updateWindowTitle();
+    updateCameraStatus();
+}
+
+void MainWindow::setupShortcuts()
+{
+    ui->action->setShortcut(QKeySequence(QStringLiteral("Ctrl+E")));
+    ui->action_8->setShortcut(QKeySequence(QStringLiteral("Ctrl+Shift+E")));
+    ui->action_2->setShortcut(QKeySequence::Save);
+    ui->action_9->setShortcut(QKeySequence::Open);
+    if (actionSavePlanetAs)
+        actionSavePlanetAs->setShortcut(QKeySequence(QStringLiteral("Ctrl+Shift+S")));
+
+    auto *enterCut = new QShortcut(QKeySequence(Qt::Key_Enter), this);
+    enterCut->setContext(Qt::WindowShortcut);
+    connect(enterCut, &QShortcut::activated, this, [this]() {
+        if (inputTakesDigits())
+            return;
+        CreateNewPlanet();
+    });
+    auto *createCut = new QShortcut(QKeySequence(Qt::Key_Return), this);
+    createCut->setContext(Qt::WindowShortcut);
+    connect(createCut, &QShortcut::activated, this, [this]() {
+        if (inputTakesDigits())
+            return;
+        CreateNewPlanet();
+    });
+    auto *recreateCut = new QShortcut(QKeySequence(Qt::CTRL | Qt::Key_Return), this);
+    recreateCut->setContext(Qt::WindowShortcut);
+    connect(recreateCut, &QShortcut::activated, this, &MainWindow::RecreatePlanet);
+
+    auto *autogenCut = new QShortcut(QKeySequence(QStringLiteral("Ctrl+G")), this);
+    connect(autogenCut, &QShortcut::activated, this, &MainWindow::AutoGen);
+
+    auto bindView = [this](int key, void (MainWindow::*slot)()) {
+        auto *cut = new QShortcut(QKeySequence(key), this);
+        cut->setContext(Qt::WindowShortcut);
+        connect(cut, &QShortcut::activated, this, [this, slot]() {
+            if (inputTakesDigits())
+                return;
+            (this->*slot)();
+        });
+    };
+    bindView(Qt::Key_1, &MainWindow::ShowPlanet);
+    bindView(Qt::Key_2, &MainWindow::ShowDescription);
+    bindView(Qt::Key_3, &MainWindow::ShowSystem);
+    bindView(Qt::Key_4, &MainWindow::ShowMap);
+
+    auto *resetCut = new QShortcut(QKeySequence(Qt::Key_R), this);
+    resetCut->setContext(Qt::WindowShortcut);
+    connect(resetCut, &QShortcut::activated, this, [this]() {
+        if (inputTakesDigits())
+            return;
+        if (preview && preview->isGlobeVisible() && preview->glWidget())
+            preview->glWidget()->resetCamera();
+    });
+}
+
+bool MainWindow::inputTakesDigits() const
+{
+    QWidget *f = QApplication::focusWidget();
+    return qobject_cast<QComboBox *>(f)
+        || qobject_cast<QAbstractSpinBox *>(f)
+        || qobject_cast<QLineEdit *>(f)
+        || qobject_cast<QPlainTextEdit *>(f);
+}
+
+void MainWindow::updateCameraStatus()
+{
+    if (!cameraStatus || !preview || !preview->glWidget())
+        return;
+    PlanetGLWidget *gl = preview->glWidget();
+    cameraStatus->setText(tr("Zoom %1%%    Az %2°    El %3°")
+                              .arg(int(qRound(double(gl->zoomPercent()))))
+                              .arg(double(gl->azimuthAngle()), 0, 'f', 1)
+                              .arg(double(gl->elevationAngle()), 0, 'f', 1));
+}
+
+void MainWindow::updateWindowTitle()
+{
+    QString title = QStringLiteral("God of Pixels 3");
+    if (sessionActive)
+    {
+        QString name;
+        if (!sessionPath.isEmpty())
+            name = QFileInfo(sessionPath).fileName();
+        else if (!isEmtyPlanet)
+            name = planet.name;
+        if (!name.isEmpty())
+            title += QStringLiteral(" — ") + name;
+        if (sessionDirty())
+            title += QStringLiteral(" *");
+    }
+    setWindowTitle(title);
+}
+
+bool MainWindow::sessionDirty() const
+{
+    if (!sessionActive)
+        return false;
+    if (sessionPath.isEmpty())
+        return true;
+    return undoStack && !undoStack->isClean();
+}
+
+void MainWindow::updateUndoActions()
+{
+    const bool on = sessionActive && !undoApplying;
+    if (actionUndo)
+        actionUndo->setEnabled(on && undoStack && undoStack->canUndo());
+    if (actionRedo)
+        actionRedo->setEnabled(on && undoStack && undoStack->canRedo());
+}
+
+void MainWindow::beginSession(const QString &path, bool)
+{
+    sessionActive = true;
+    sessionPath = path;
+    if (undoStack)
+    {
+        undoStack->clear();
+        undoStack->setClean();
+    }
+    lastCommittedSettings = s;
+    updateWindowTitle();
+    updateUndoActions();
+}
+
+bool MainWindow::confirmAbandonSession()
+{
+    if (!sessionDirty())
+        return true;
+    const QMessageBox::StandardButton choice = QMessageBox::question(
+        this,
+        tr("Unsaved changes"),
+        tr("The current planet has unsaved changes."),
+        QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel,
+        QMessageBox::Save);
+    if (choice == QMessageBox::Cancel)
+        return false;
+    if (choice == QMessageBox::Save)
+        return M_Save_Planet();
+    return true;
+}
+
+void MainWindow::applySettingsFromUndo(const PlanetSettings &settings, bool appearanceOnly)
+{
+    undoApplying = true;
+    s = settings;
+    lastCommittedSettings = settings;
+    Settings_Set();
+    appearanceOnlyLive = appearanceOnly;
+    undoApplying = false;
+    scheduleLivePreview();
+    updateWindowTitle();
+}
+
+void MainWindow::applyPlanetFromUndo(const Planet &p)
+{
+    undoApplying = true;
+    planet = p;
+    s = planet.s;
+    lastCommittedSettings = s;
+    Settings_Set();
+    isEmtyPlanet = false;
+    applyPlanetToView();
+    undoApplying = false;
+    updateWindowTitle();
+}
+
+void MainWindow::commitSettingsUndo(bool appearanceOnly)
+{
+    if (undoApplying || !sessionActive || !settingsPanel || !undoStack)
+        return;
+    Settings_Get();
+    if (s.JSON_serialize() == lastCommittedSettings.JSON_serialize())
+        return;
+    auto apply = [this](const PlanetSettings &next, bool appearance) {
+        applySettingsFromUndo(next, appearance);
+    };
+    undoStack->push(new SettingsUndoCommand(lastCommittedSettings, s, appearanceOnly, apply));
+    lastCommittedSettings = s;
+    updateWindowTitle();
 }
 
 void MainWindow::updateFactsCard()
@@ -640,7 +916,10 @@ void MainWindow::CreateNewPlanet()
 {
     if (autogenRunning)
         return;
+    if (!confirmAbandonSession())
+        return;
     Settings_Get();
+    pendingSessionPath.clear();
     startGeneration(true, 0, GenOp::Create);
 }
 
@@ -649,7 +928,17 @@ void MainWindow::RecreatePlanet()
     if (autogenRunning)
         return;
     Settings_Get();
-    startGeneration(isEmtyPlanet, 0, isEmtyPlanet ? GenOp::Create : GenOp::Recreate);
+    if (isEmtyPlanet)
+    {
+        if (!confirmAbandonSession())
+            return;
+        pendingSessionPath.clear();
+        startGeneration(true, 0, GenOp::Create);
+        return;
+    }
+    planetBeforeRecreate = planet;
+    pendingRecreateUndo = true;
+    startGeneration(false, 0, GenOp::Recreate);
 }
 
 void MainWindow::applyPlanetToView()
@@ -762,42 +1051,69 @@ void MainWindow::M_Load_Planet()
     const QString a = file.readAll();
     file.close();
     const QJsonObject jobject = QJsonDocument::fromJson(a.toUtf8()).object();
-    if (!s.JSON_deserialize(jobject["settings"].toObject()))
+    PlanetSettings loaded;
+    if (!loaded.JSON_deserialize(jobject["settings"].toObject()))
     {
         QMessageBox::critical(nullptr, tr("Error"), tr("0002 unable to load file"));
         return;
     }
+    if (!confirmAbandonSession())
+        return;
+    s = loaded;
     Settings_Set();
+    lastCommittedSettings = s;
     restoreViewOnApply = jobject.contains(QStringLiteral("view")) && jobject.value(QStringLiteral("view")).isObject();
     pendingView = restoreViewOnApply ? jobject.value(QStringLiteral("view")).toObject() : QJsonObject();
+    pendingSessionPath = filename;
     startGeneration(true, jobject["seed"].toInt(), GenOp::Load);
 }
 
-void MainWindow::M_Save_Planet()
+bool MainWindow::M_Save_Planet()
+{
+    if (!sessionPath.isEmpty())
+        return writePlanetFile(sessionPath);
+    return M_Save_PlanetAs();
+}
+
+bool MainWindow::M_Save_PlanetAs()
 {
     QString filename = QFileDialog::getSaveFileName(this,
-                                                    tr("Save planet"),
-                                                    startPath(AppKeys::dirPlanet, planet.name),
+                                                    tr("Save planet as"),
+                                                    startPath(AppKeys::dirPlanet, isEmtyPlanet ? QString() : planet.name),
                                                     tr("Planet (*.planet);;All files (*.*)"));
     if (filename.isEmpty())
-        return;
+        return false;
     rememberPath(AppKeys::dirPlanet, filename);
+    return writePlanetFile(filename);
+}
+
+bool MainWindow::writePlanetFile(const QString &filename)
+{
+    if (isEmtyPlanet)
+        return false;
     QFile file(filename);
     const bool ok = file.open(QFile::WriteOnly | QFile::Text);
-    if (ok)
+    if (!ok)
     {
-        QJsonObject jobject;
-        jobject["seed"] = planet.seed;
-        jobject["settings"] = planet.s.JSON_serialize();
-        if (preview && preview->glWidget())
-            jobject["view"] = preview->glWidget()->viewToJson();
-        QTextStream stream(&file);
-        stream << QJsonDocument(jobject).toJson();
-        file.close();
-        evaluateAchievements(false, true);
-    }
-    else
         QMessageBox::critical(nullptr, tr("Error"), tr("0001 unable to save file"));
+        return false;
+    }
+    QJsonObject jobject;
+    jobject["seed"] = planet.seed;
+    jobject["settings"] = planet.s.JSON_serialize();
+    if (preview && preview->glWidget())
+        jobject["view"] = preview->glWidget()->viewToJson();
+    QTextStream stream(&file);
+    stream << QJsonDocument(jobject).toJson();
+    file.close();
+    sessionPath = filename;
+    sessionActive = true;
+    if (undoStack)
+        undoStack->setClean();
+    lastCommittedSettings = planet.s;
+    evaluateAchievements(false, true);
+    updateWindowTitle();
+    return true;
 }
 
 void MainWindow::Gen(bool isCreateNew, Planet *p, int seed)
@@ -888,6 +1204,18 @@ void MainWindow::startGeneration(bool createNew, int seed, GenOp op)
         genActiveOp = GenOp::None;
         genRunning = false;
         endLoadingWatch();
+        if (finishedOp == GenOp::Create)
+            beginSession(QString(), true);
+        else if (finishedOp == GenOp::Load)
+            beginSession(pendingSessionPath, false);
+        else if (finishedOp == GenOp::Recreate && pendingRecreateUndo && undoStack && sessionActive && !undoApplying)
+        {
+            auto apply = [this](const Planet &next) { applyPlanetFromUndo(next); };
+            undoStack->push(new PlanetUndoCommand(planetBeforeRecreate, planet, apply));
+            pendingRecreateUndo = false;
+            updateWindowTitle();
+        }
+        pendingRecreateUndo = (finishedOp == GenOp::Recreate) ? pendingRecreateUndo : false;
         if (finishedOp != GenOp::Load)
             evaluateAchievements(finishedOp == GenOp::Create);
         if (queued)
@@ -902,6 +1230,8 @@ void MainWindow::M_Load_Base_Settings()
     const bool ok = s.Load(":/txt_files/res/txt_files/settingsbase.json");
     if (ok)
         Settings_Set();
+    if (ok)
+        commitSettingsUndo(false);
     if (!ok)
         QMessageBox::critical(nullptr, tr("Error"), tr("0003 unable to load default settings"));
 }
@@ -955,6 +1285,7 @@ void MainWindow::M_Load_Settings()
     if (ok)
     {
         Settings_Set();
+        commitSettingsUndo(false);
         update();
     }
     else

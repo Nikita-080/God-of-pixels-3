@@ -1,5 +1,6 @@
 #include <QCoreApplication>
 #include "settingspanel.h"
+#include "collapsiblepanel.h"
 #include "multislider.h"
 #include "colorswatch.h"
 #include "spectrumdialog.h"
@@ -16,6 +17,9 @@
 #include <QList>
 #include <QVBoxLayout>
 #include <QFont>
+#include <QIcon>
+#include <QScrollArea>
+#include <QFrame>
 #include <QSizePolicy>
 #include <QColorDialog>
 #include <QTabBar>
@@ -52,25 +56,21 @@ QColor scaleRgb(const QColor &c, double k)
 template <typename T>
 T *SettingsPanel::child(const char *name) const
 {
-    return tabs->findChild<T *>(QLatin1String(name));
+    return host->findChild<T *>(QLatin1String(name));
 }
 
 SettingsPanel::SettingsPanel(QTabWidget *tabs, QWidget *parent)
     : QWidget(parent)
-    , tabs(tabs)
+    , host(tabs)
     , labelAvgColor(nullptr)
     , btnAvgLand(nullptr)
     , btnAvgWater(nullptr)
     , labelSeismicity(nullptr)
     , sliderSeismicity(nullptr)
     , updating(false)
+    , sliderDrag(false)
 {
-    auto *layout = new QVBoxLayout(this);
-    layout->setContentsMargins(0, 0, 0, 0);
-    layout->addWidget(tabs);
-    setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Expanding);
-    tabs->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
-
+    setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Expanding);
     tabs->setStyleSheet(QString());
     for (QSlider *slider : tabs->findChildren<QSlider *>())
         slider->setStyleSheet(QString());
@@ -334,42 +334,118 @@ SettingsPanel::SettingsPanel(QTabWidget *tabs, QWidget *parent)
     }
     refreshAverageSwatches();
 
+    const char *headingLabels[] = {
+        "label_10", "label_11", "label_12", "label_32", "label_39",
+        "label_40", "label_41", "label_43", "label_42", "label_9"
+    };
+    for (const char *name : headingLabels)
+    {
+        if (auto *label = child<QLabel>(name))
+            label->hide();
+    }
+
     wireLiveUpdates();
     updateAlgoEnabled();
     updateStarDependentUi();
+    buildAccordion(tabs);
     retranslate();
     fitToContents();
 }
 
 void SettingsPanel::notify(bool appearanceOnly)
 {
+    if (updating)
+        return;
+    emit settingsChanged(appearanceOnly);
+    if (!sliderDrag)
+        emit settingsCommitted(appearanceOnly);
+}
+
+void SettingsPanel::notifyLive(bool appearanceOnly)
+{
     if (!updating)
         emit settingsChanged(appearanceOnly);
 }
 
+void SettingsPanel::bindSlider(QSlider *slider, bool appearanceOnly)
+{
+    if (!slider)
+        return;
+    connect(slider, &QSlider::sliderPressed, this, [this]() { sliderDrag = true; });
+    connect(slider, &QSlider::valueChanged, this, [this, appearanceOnly](int) {
+        notifyLive(appearanceOnly);
+    });
+    connect(slider, &QSlider::sliderReleased, this, [this, appearanceOnly]() {
+        sliderDrag = false;
+        notify(appearanceOnly);
+    });
+}
+
+void SettingsPanel::buildAccordion(QTabWidget *tabs)
+{
+    static const char *kTitles[] = {
+        QT_TRANSLATE_NOOP("MainWindow", "Main"),
+        QT_TRANSLATE_NOOP("MainWindow", "Structure"),
+        QT_TRANSLATE_NOOP("MainWindow", "Colors"),
+        QT_TRANSLATE_NOOP("MainWindow", "Life"),
+        QT_TRANSLATE_NOOP("MainWindow", "Light"),
+        QT_TRANSLATE_NOOP("MainWindow", "Name"),
+        QT_TRANSLATE_NOOP("MainWindow", "Clouds"),
+        QT_TRANSLATE_NOOP("MainWindow", "Atmosphere"),
+        QT_TRANSLATE_NOOP("MainWindow", "Rings"),
+        QT_TRANSLATE_NOOP("MainWindow", "North")
+    };
+
+    auto *inner = new QWidget;
+    auto *col = new QVBoxLayout(inner);
+    col->setContentsMargins(0, 0, 0, 0);
+    col->setSpacing(4);
+
+    const int count = tabs->count();
+    for (int i = 0; i < count; ++i)
+    {
+        QWidget *page = tabs->widget(0);
+        tabs->removeTab(0);
+        const QString title = QCoreApplication::translate("MainWindow", kTitles[i]);
+        const QIcon icon(QStringLiteral(":/images/res/images/TabIcon%1.png").arg(i + 1));
+        auto *section = new CollapsiblePanel(title, icon, page, inner);
+        section->setExpanded(i == 0);
+        sections.append(section);
+        col->addWidget(section);
+    }
+    col->addStretch(1);
+
+    tabs->hide();
+    tabs->setParent(this);
+
+    host = inner;
+    auto *scroll = new QScrollArea;
+    scroll->setObjectName(QStringLiteral("settingsScroll"));
+    scroll->setWidgetResizable(true);
+    scroll->setFrameShape(QFrame::NoFrame);
+    scroll->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    scroll->setWidget(inner);
+
+    auto *layout = new QVBoxLayout(this);
+    layout->setContentsMargins(0, 0, 0, 0);
+    layout->addWidget(scroll);
+}
+
 void SettingsPanel::fitToContents()
 {
-    int contentRight = 0;
-    int contentBottom = 500;
-    for (int i = 0; i < tabs->count(); ++i)
+    int contentRight = 260;
+    for (CollapsiblePanel *section : sections)
     {
-        QWidget *page = tabs->widget(i);
+        QWidget *page = section ? section->contentWidget() : nullptr;
         if (!page)
             continue;
         const QRect bounds = page->childrenRect();
         const int w = qMax(bounds.right() + 12, 1);
-        const int h = qMax(bounds.bottom() + 12, 500);
+        const int h = qMax(bounds.bottom() + 12, 80);
         page->setMinimumSize(w, h);
         contentRight = qMax(contentRight, w);
-        contentBottom = qMax(contentBottom, h);
     }
-    int tabBarW = tabs->iconSize().width() + 8;
-    if (QTabBar *bar = tabs->tabBar())
-        tabBarW = qMax(tabBarW, bar->sizeHint().width());
-    const int width = contentRight + tabBarW + 8;
-    setFixedWidth(width);
-    setMinimumHeight(contentBottom);
-    tabs->setMinimumSize(width, contentBottom);
+    setMinimumWidth(contentRight + 24);
 }
 
 void SettingsPanel::wireLiveUpdates()
@@ -388,27 +464,24 @@ void SettingsPanel::wireLiveUpdates()
         "sliderNoise", "sliderCloudSize", "sliderCloudQuality", "sliderSeismicity"
     };
     for (const char *name : fullSliders)
-    {
-        if (auto *s = child<QSlider>(name))
-            connect(s, &QSlider::valueChanged, this, requestFull);
-    }
+        bindSlider(child<QSlider>(name), false);
     const char *appearanceSliders[] = {
         "sliderShine", "sliderAtmoTransparent", "sliderAtmoSize",
         "sliderRingInner", "sliderRingOuter", "sliderCloudTransparent"
     };
     for (const char *name : appearanceSliders)
-    {
-        if (auto *s = child<QSlider>(name))
-            connect(s, &QSlider::valueChanged, this, requestAppearance);
-    }
+        bindSlider(child<QSlider>(name), true);
 
-    connect(sliderShineLat, &QSlider::valueChanged, this, requestAppearance);
-    connect(sliderShineLon, &QSlider::valueChanged, this, requestAppearance);
+    bindSlider(sliderShineLat, true);
+    bindSlider(sliderShineLon, true);
+    bindSlider(sliderRingIntensity, true);
+    bindSlider(sliderPolarLat, false);
+    bindSlider(sliderPolarLon, false);
     connect(checkFillLight, &QCheckBox::toggled, this, requestAppearance);
     connect(checkStarfield, &QCheckBox::toggled, this, requestAppearance);
-    connect(checkHasStar, &QCheckBox::toggled, this, [this, requestFull](bool) {
+    connect(checkHasStar, &QCheckBox::toggled, this, [this](bool) {
         updateStarDependentUi();
-        requestFull();
+        notify(false);
     });
     connect(btnSpectrum, &QPushButton::clicked, this, [this]() {
         SpectrumDialog dlg(spectrumPreview->bands(), this);
@@ -418,9 +491,6 @@ void SettingsPanel::wireLiveUpdates()
         notify(false);
     });
     connect(radioRingGas, &QRadioButton::toggled, this, requestAppearance);
-    connect(sliderRingIntensity, &QSlider::valueChanged, this, requestAppearance);
-    connect(sliderPolarLat, &QSlider::valueChanged, this, requestFull);
-    connect(sliderPolarLon, &QSlider::valueChanged, this, requestFull);
     connect(ms, &MultiSlider::valueChanged, this, requestFull);
 
     const char *checks[] = {
@@ -642,6 +712,20 @@ void SettingsPanel::push(const PlanetSettings &s)
 
 void SettingsPanel::retranslate()
 {
+    static const char *kTitles[] = {
+        QT_TRANSLATE_NOOP("MainWindow", "Main"),
+        QT_TRANSLATE_NOOP("MainWindow", "Structure"),
+        QT_TRANSLATE_NOOP("MainWindow", "Colors"),
+        QT_TRANSLATE_NOOP("MainWindow", "Life"),
+        QT_TRANSLATE_NOOP("MainWindow", "Light"),
+        QT_TRANSLATE_NOOP("MainWindow", "Name"),
+        QT_TRANSLATE_NOOP("MainWindow", "Clouds"),
+        QT_TRANSLATE_NOOP("MainWindow", "Atmosphere"),
+        QT_TRANSLATE_NOOP("MainWindow", "Rings"),
+        QT_TRANSLATE_NOOP("MainWindow", "North")
+    };
+    for (int i = 0; i < sections.size() && i < 10; ++i)
+        sections.at(i)->setTitle(QCoreApplication::translate("MainWindow", kTitles[i]));
     ms->ReloadText();
     if (labelStarSize)
         labelStarSize->setText(QCoreApplication::translate("MainWindow", "Size"));

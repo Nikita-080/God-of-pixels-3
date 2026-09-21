@@ -17,6 +17,7 @@ INCLUDEPATH += \
 SOURCES += \
     src/app/main.cpp \
     src/app/mainwindow.cpp \
+    src/app/planetcommands.cpp \
     src/achievements/achievement.cpp \
     src/achievements/achievementcatalog.cpp \
     src/achievements/achievementcontext.cpp \
@@ -27,6 +28,7 @@ SOURCES += \
     src/ui/achievementsdialog.cpp \
     src/ui/achievementtoast.cpp \
     src/ui/colorswatch.cpp \
+    src/ui/collapsiblepanel.cpp \
     src/ui/multislider.cpp \
     src/ui/previewpanel.cpp \
     src/ui/programsettingsdialog.cpp \
@@ -58,6 +60,7 @@ HEADERS += \
     src/app/appsettings.h \
     src/app/global.h \
     src/app/mainwindow.h \
+    src/app/planetcommands.h \
     src/achievements/achievement.h \
     src/achievements/achievementcatalog.h \
     src/achievements/achievementcontext.h \
@@ -68,6 +71,7 @@ HEADERS += \
     src/ui/achievementsdialog.h \
     src/ui/achievementtoast.h \
     src/ui/colorswatch.h \
+    src/ui/collapsiblepanel.h \
     src/ui/multislider.h \
     src/ui/previewpanel.h \
     src/ui/programsettingsdialog.h \

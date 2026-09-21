@@ -9,6 +9,7 @@
 #include <QOpenGLTexture>
 #include <QMatrix4x4>
 #include <QVector3D>
+#include <QImage>
 #include <QElapsedTimer>
 #include <QWheelEvent>
 #include <QJsonObject>
@@ -33,6 +34,12 @@ public:
     QImage captureView();
     QJsonObject viewToJson() const;
     void applyViewJson(const QJsonObject &view);
+    float azimuthAngle() const;
+    float elevationAngle() const;
+    float zoomPercent() const;
+
+signals:
+    void cameraChanged();
 
 protected:
     void initializeGL() override;
@@ -48,7 +55,7 @@ private:
     void rebuildRings();
     void rebuildCities();
     void buildBlitQuad();
-    void ensureSceneFbo(int res);
+    void ensureSceneFbo(int w, int h);
     void uploadTexture(std::unique_ptr<QOpenGLTexture> &tex, const QImage &img, bool repeatU);
     void drawScene(const QMatrix4x4 &proj, const QMatrix4x4 &view);
     QVector3D poleAxis() const;
