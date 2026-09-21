@@ -767,89 +767,140 @@
 <context>
     <name>windowsettings</name>
     <message>
-        <location filename="windowsettings.ui" line="14"/>
-        <source>Dialog</source>
-        <translation>Диалог</translation>
-    </message>
-    <message>
         <source>Autogen</source>
         <translation>Автоген</translation>
     </message>
     <message>
-        <location filename="windowsettings.ui" line="69"/>
-        <source>collage</source>
-        <translation>коллаж</translation>
+        <source>Collage</source>
+        <translation>Коллаж</translation>
     </message>
     <message>
-        <location filename="windowsettings.ui" line="300"/>
-        <location filename="windowsettings.ui" line="735"/>
+        <source>Images</source>
+        <translation>Изображения</translation>
+    </message>
+    <message>
         <source>...</source>
         <translation>...</translation>
     </message>
     <message>
-        <location filename="windowsettings.ui" line="430"/>
         <source>height</source>
         <translation>высота</translation>
     </message>
     <message>
-        <location filename="windowsettings.ui" line="486"/>
         <source>width</source>
         <translation>ширина</translation>
     </message>
     <message>
-        <location filename="windowsettings.ui" line="865"/>
         <source>number</source>
         <translation>количество</translation>
     </message>
     <message>
-        <location filename="windowsettings.ui" line="922"/>
-        <source>images</source>
-        <translation>изображения</translation>
-    </message>
-    <message>
-        <location filename="windowsettings.ui" line="978"/>
-        <source>do random</source>
-        <translation>сделать случайным</translation>
-    </message>
-    <message>
-        <location filename="windowsettings.ui" line="1062"/>
-        <source>all</source>
-        <translation>все</translation>
-    </message>
-    <message>
-        <location filename="windowsettings.ui" line="1150"/>
-        <source>nothing</source>
-        <translation>ничего</translation>
-    </message>
-    <message>
-        <location filename="windowsettings.ui" line="1238"/>
-        <source>cancel</source>
-        <translation>отмена</translation>
-    </message>
-    <message>
-        <location filename="windowsettings.ui" line="1326"/>
-        <source>run</source>
-        <translation>пуск</translation>
-    </message>
-    <message>
-        <location filename="windowsettings.ui" line="1382"/>
         <source>extended format</source>
         <translation>расширенный формат</translation>
     </message>
     <message>
-        <location filename="windowsettings.cpp" line="87"/>
+        <source>Filter flags</source>
+        <translation>Фильтр флагов</translation>
+    </message>
+    <message>
+        <source>Do random</source>
+        <translation>Сделать случайным</translation>
+    </message>
+    <message>
+        <source>Invert</source>
+        <translation>Инвертировать</translation>
+    </message>
+    <message>
+        <source>Autogen progress</source>
+        <translation>Прогресс автогена</translation>
+    </message>
+    <message>
+        <source>Load</source>
+        <translation>Загрузить</translation>
+    </message>
+    <message>
+        <source>Save</source>
+        <translation>Сохранить</translation>
+    </message>
+    <message>
+        <source>Open folder</source>
+        <translation>Открыть папку</translation>
+    </message>
+    <message>
+        <source>Run</source>
+        <translation>Пуск</translation>
+    </message>
+    <message>
+        <source>Stop</source>
+        <translation>Стоп</translation>
+    </message>
+    <message>
+        <source>Close</source>
+        <translation>Закрыть</translation>
+    </message>
+    <message>
+        <source>Ready</source>
+        <translation>Готово</translation>
+    </message>
+    <message>
+        <source>Terrain</source>
+        <translation>Рельеф</translation>
+    </message>
+    <message>
+        <source>Colors</source>
+        <translation>Цвета</translation>
+    </message>
+    <message>
+        <source>Clouds</source>
+        <translation>Облака</translation>
+    </message>
+    <message>
+        <source>Atmosphere</source>
+        <translation>Атмосфера</translation>
+    </message>
+    <message>
+        <source>Rings</source>
+        <translation>Кольца</translation>
+    </message>
+    <message>
+        <source>Life</source>
+        <translation>Жизнь</translation>
+    </message>
+    <message>
+        <source>Star</source>
+        <translation>Звезда</translation>
+    </message>
+    <message>
         <source>Save collage</source>
         <translation>Сохранить коллаж</translation>
     </message>
     <message>
-        <location filename="windowsettings.cpp" line="89"/>
         <source>Image (*.png);;All files (*.*)</source>
         <translation>Изображения (*.png);;Все файлы (*.*)</translation>
     </message>
     <message>
-        <location filename="windowsettings.cpp" line="95"/>
         <source>Save images</source>
         <translation>Сохранить изображение</translation>
+    </message>
+    <message>
+        <source>Load autogen preset</source>
+        <translation>Загрузить пресет автогена</translation>
+    </message>
+    <message>
+        <source>Save autogen preset</source>
+        <translation>Сохранить пресет автогена</translation>
+    </message>
+    <message>
+        <source>Autogen (*.autogen);;All files (*.*)</source>
+        <translation>Автоген (*.autogen);;Все файлы (*.*)</translation>
+    </message>
+    <message>
+        <source>Unable to load autogen preset.</source>
+        <translation>Не удалось загрузить пресет автогена.</translation>
+    </message>
+    <message>
+        <source>Unable to save autogen preset.</source>
+        <translation>Не удалось сохранить пресет автогена.</translation>
     </message>
     <message>
         <source>Choose a file for the collage.</source>
@@ -860,12 +911,88 @@
         <translation>Выберите папку для изображений.</translation>
     </message>
     <message>
+        <source>Autogen — %1</source>
+        <translation>Автоген — %1</translation>
+    </message>
+    <message>
+        <source>collage</source>
+        <translation type="obsolete">коллаж</translation>
+    </message>
+    <message>
+        <source>images</source>
+        <translation type="obsolete">изображения</translation>
+    </message>
+    <message>
+        <source>do random</source>
+        <translation type="obsolete">сделать случайным</translation>
+    </message>
+    <message>
+        <source>all</source>
+        <translation type="obsolete">все</translation>
+    </message>
+    <message>
+        <source>nothing</source>
+        <translation type="obsolete">ничего</translation>
+    </message>
+    <message>
+        <source>cancel</source>
+        <translation type="obsolete">отмена</translation>
+    </message>
+    <message>
+        <source>run</source>
+        <translation type="obsolete">пуск</translation>
+    </message>
+    <message>
+        <source>Dialog</source>
+        <translation type="obsolete">Диалог</translation>
+    </message>
+    <message>
         <source>Collage width and height must be at least 1.</source>
-        <translation>Ширина и высота коллажа должны быть не меньше 1.</translation>
+        <translation type="obsolete">Ширина и высота коллажа должны быть не меньше 1.</translation>
     </message>
     <message>
         <source>Number of images must be at least 1.</source>
-        <translation>Количество изображений должно быть не меньше 1.</translation>
+        <translation type="obsolete">Количество изображений должно быть не меньше 1.</translation>
+    </message>
+    <message>
+        <source>meteorite manufacturing</source>
+        <translation type="obsolete">изготовление метеоритов</translation>
+    </message>
+    <message>
+        <source>reality stabilization</source>
+        <translation type="obsolete">стабилизация реальности</translation>
+    </message>
+    <message>
+        <source>core heating</source>
+        <translation type="obsolete">нагревание ядра</translation>
+    </message>
+    <message>
+        <source>antimatter filtration</source>
+        <translation type="obsolete">фильтрация антиматерии</translation>
+    </message>
+    <message>
+        <source>ocean filling</source>
+        <translation type="obsolete">заполнение океанов</translation>
+    </message>
+    <message>
+        <source>lithospheric plate dispersal</source>
+        <translation type="obsolete">разгон литосферных плит</translation>
+    </message>
+    <message>
+        <source>atmosphere cooling</source>
+        <translation type="obsolete">охлаждение атмосферы</translation>
+    </message>
+    <message>
+        <source>nucleon synthesis</source>
+        <translation type="obsolete">синтез нуклонов</translation>
+    </message>
+    <message>
+        <source>radiation measurement</source>
+        <translation type="obsolete">замер радиации</translation>
+    </message>
+    <message>
+        <source>dinosaur bone burial</source>
+        <translation type="obsolete">захоронение костей динозавров</translation>
     </message>
 </context>
 <context>

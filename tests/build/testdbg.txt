@@ -1,0 +1,15 @@
+********* Start testing of TestPlanet *********
+Config: Using QtTest library 5.15.2, Qt 5.15.2 (i386-little_endian-ilp32 shared (dynamic) release build; by GCC 8.1.0), windows 10
+PASS   : TestPlanet::initTestCase()
+PASS   : TestPlanet::transparentColorLerp()
+PASS   : TestPlanet::jsonRoundTrip()
+PASS   : TestPlanet::oldDiamondSquareModeBecomesNoise()
+PASS   : TestPlanet::sameSeedSameHeight()
+PASS   : TestPlanet::noiseHasNoMeridianSeam()
+PASS   : TestPlanet::sphericalFaultFinite()
+PASS   : TestPlanet::sameSeedSameTags()
+PASS   : TestPlanet::climateIceAtPoles()
+PASS   : TestPlanet::climateIceFollowsTiltedPole()
+PASS   : TestPlanet::cleanupTestCase()
+Totals: 11 passed, 0 failed, 0 skipped, 0 blacklisted, 1002ms
+********* Finished testing of TestPlanet *********

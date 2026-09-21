@@ -53,6 +53,7 @@
         <file>res/txt_files/planet_tags.json</file>
         <file>res/txt_files/metal_lex.json</file>
         <file>res/txt_files/achievements.json</file>
+        <file>res/txt_files/autogen_progress.json</file>
     </qresource>
     <qresource prefix="/translations">
         <file alias="QtLanguage_ru.qm">translations/QtLanguage_ru.qm</file>

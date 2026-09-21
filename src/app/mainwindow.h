@@ -12,6 +12,7 @@ class PreviewPanel;
 class SettingsPanel;
 class PlanetGLWidget;
 class AchievementToastHost;
+class windowsettings;
 class QTimer;
 class QThread;
 class QAction;
@@ -61,6 +62,7 @@ private:
     void CreateNewPlanet();
     void RecreatePlanet();
     void AutoGen();
+    void runAutogenWithDialog(windowsettings *dlg);
     QImage autogenPreviewTile();
     PlanetGLWidget *ensureAutogenGl();
     void finishAutogen();

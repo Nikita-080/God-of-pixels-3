@@ -79,20 +79,23 @@ QTabWidget::pane {
 }
 QTabBar::tab {
     background-color: black;
+    color: rgb(110, 170, 200);
     margin: 0px;
-    padding: 1px;
+    padding: 6px 12px;
 }
 QTabBar::tab:hover {
     background-color: black;
+    color: rgb(110, 170, 200);
     border: 1px solid rgb(0, 255, 0);
     margin: 0px;
-    padding: 1px;
+    padding: 6px 12px;
 }
 QTabBar::tab:selected {
     background-color: black;
+    color: rgb(0, 255, 127);
     border: 1px solid rgb(255, 0, 0);
     margin: 0px;
-    padding: 1px;
+    padding: 6px 12px;
 }
 QToolButton {
     border: 2px solid rgb(110, 170, 200);
@@ -160,6 +163,39 @@ QColorDialog QPushButton:hover {
 }
 QColorDialog QSpinBox,
 QColorDialog QLineEdit {
+    background-color: #ffffff;
+    color: #202020;
+    border: 1px solid #808080;
+}
+QFileDialog {
+    background-color: #f0f0f0;
+    color: #202020;
+}
+QFileDialog QWidget {
+    background-color: #f0f0f0;
+    color: #202020;
+}
+QFileDialog QLabel {
+    background: transparent;
+    color: #202020;
+}
+QFileDialog QPushButton {
+    background-color: #e6e6e6;
+    color: #202020;
+    border: 1px solid #808080;
+    min-width: 72px;
+    min-height: 24px;
+    padding: 4px 12px;
+}
+QFileDialog QLineEdit,
+QFileDialog QComboBox,
+QFileDialog QSpinBox {
+    background-color: #ffffff;
+    color: #202020;
+    border: 1px solid #808080;
+}
+QFileDialog QTreeView,
+QFileDialog QListView {
     background-color: #ffffff;
     color: #202020;
     border: 1px solid #808080;
