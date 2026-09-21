@@ -86,6 +86,8 @@ private:
     void ShowDescription();
     void ShowSystem();
     void ShowMap();
+    void syncViewButton(class QPushButton *active);
+    void updateViewButtonsEnabled();
     void Gen(bool isCreateNew, Planet *p, int seed = 0);
     void scheduleLivePreview();
     void runLivePreview();

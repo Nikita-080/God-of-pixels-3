@@ -17,6 +17,8 @@ public:
     QVector <double> GetTrueData();
     void SetData(QVector<int>);
     void ReloadText();
+    QSize sizeHint() const override;
+    QSize minimumSizeHint() const override;
     void paintEvent(QPaintEvent *) override;
     void mousePressEvent(QMouseEvent *event);
     void mouseReleaseEvent(QMouseEvent *event);

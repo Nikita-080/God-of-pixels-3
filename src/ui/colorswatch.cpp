@@ -7,7 +7,7 @@ void ColorSwatch::setColor(QPushButton *button, const QColor &color)
     if (!button)
         return;
     button->setProperty("swatchColor", color);
-    button->setStyleSheet(QString("QPushButton{background-color: rgb(%1,%2,%3);}")
+    button->setStyleSheet(QString("QPushButton{background-color: rgb(%1,%2,%3); border: 1px solid rgb(46,66,82); border-radius: 6px;}")
                               .arg(color.red())
                               .arg(color.green())
                               .arg(color.blue()));

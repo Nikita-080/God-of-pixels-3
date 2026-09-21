@@ -16,7 +16,6 @@
 #include <QPushButton>
 #include <QList>
 #include <QVBoxLayout>
-#include <QFont>
 #include <QIcon>
 #include <QScrollArea>
 #include <QFrame>
@@ -82,7 +81,7 @@ SettingsPanel::SettingsPanel(QTabWidget *tabs, QWidget *parent)
         debugB->hide();
 
     ms = new MultiSlider(child<QWidget>("tab_2"));
-    ms->setGeometry(8, 28, 210, 520);
+    ms->move(8, 8);
     ms->show();
     ms->raise();
 
@@ -91,13 +90,11 @@ SettingsPanel::SettingsPanel(QTabWidget *tabs, QWidget *parent)
         auto makeTitle = [parent](int y) {
             QLabel *label = new QLabel(parent);
             label->setGeometry(20, y, 200, 24);
-            label->setFont(QFont(QStringLiteral("Consolas"), 10));
             return label;
         };
         auto makeValue = [parent](int y) {
             QLabel *label = new QLabel(QStringLiteral("0"), parent);
             label->setGeometry(230, y, 41, 21);
-            label->setFont(QFont(QStringLiteral("Consolas"), 10));
             label->setAlignment(Qt::AlignCenter);
             return label;
         };
@@ -124,7 +121,6 @@ SettingsPanel::SettingsPanel(QTabWidget *tabs, QWidget *parent)
     checkHasStar = new QCheckBox(lightTab);
     checkHasStar->setObjectName(QStringLiteral("checkHasStar"));
     checkHasStar->setGeometry(10, 42, 260, 24);
-    checkHasStar->setFont(QFont(QStringLiteral("Consolas"), 10));
     checkHasStar->setChecked(true);
     if (auto *sizeTitle = child<QLabel>("label_13"))
     {
@@ -147,33 +143,18 @@ SettingsPanel::SettingsPanel(QTabWidget *tabs, QWidget *parent)
     checkFillLight = new QCheckBox(lightTab);
     checkFillLight->setObjectName(QStringLiteral("checkFillLight"));
     checkFillLight->setGeometry(10, 268, 260, 24);
-    checkFillLight->setFont(QFont(QStringLiteral("Consolas"), 10));
     checkFillLight->setChecked(true);
 
     checkStarfield = new QCheckBox(lightTab);
     checkStarfield->setObjectName(QStringLiteral("checkStarfield"));
     checkStarfield->setGeometry(10, 296, 260, 24);
-    checkStarfield->setFont(QFont(QStringLiteral("Consolas"), 10));
 
     spectrumPreview = new SpectrumWidget(lightTab);
     spectrumPreview->setGeometry(10, 328, 160, 52);
     spectrumPreview->setBands(defaultStarSpectrum());
     btnSpectrum = new QPushButton(lightTab);
     btnSpectrum->setObjectName(QStringLiteral("btnSpectrum"));
-    btnSpectrum->setGeometry(178, 328, 92, 52);
-    btnSpectrum->setFont(QFont(QStringLiteral("Consolas"), 10));
-    btnSpectrum->setStyleSheet(QStringLiteral(
-        "QPushButton {"
-        "  color: rgb(110, 170, 200);"
-        "  background-color: rgb(0, 0, 0);"
-        "  border-width: 2px;"
-        "  border-style: solid;"
-        "  border-color: rgb(110, 170, 200);"
-        "}"
-        "QPushButton:disabled {"
-        "  color: rgb(55, 75, 85);"
-        "  border-color: rgb(45, 65, 75);"
-        "}"));
+    btnSpectrum->setGeometry(178, 328, 92, 40);
     btnSpectrum->raise();
     btnSpectrum->show();
 
@@ -181,32 +162,26 @@ SettingsPanel::SettingsPanel(QTabWidget *tabs, QWidget *parent)
     checkCiv = new QCheckBox(lifeTab);
     checkCiv->setObjectName(QStringLiteral("checkCiv"));
     checkCiv->setGeometry(10, 84, 241, 22);
-    checkCiv->setFont(QFont(QStringLiteral("Consolas"), 10));
     btnColorCiv = new QPushButton(lifeTab);
     btnColorCiv->setObjectName(QStringLiteral("btnColorCiv"));
     btnColorCiv->setGeometry(10, 116, 141, 51);
-    btnColorCiv->setFont(QFont(QStringLiteral("Consolas"), 10));
     ColorSwatch::setColor(btnColorCiv, QColor(QStringLiteral("#ffcc66")));
 
     auto *ringTab = child<QWidget>("tab_9");
     labelRingMaterial = new QLabel(ringTab);
     labelRingMaterial->setGeometry(10, 250, 240, 24);
-    labelRingMaterial->setFont(QFont(QStringLiteral("Consolas"), 10));
     radioRingGas = new QRadioButton(ringTab);
     radioRingGas->setObjectName(QStringLiteral("radioRingGas"));
     radioRingGas->setGeometry(10, 274, 260, 28);
-    radioRingGas->setFont(QFont(QStringLiteral("Consolas"), 10));
     radioRingGas->setChecked(true);
     radioRingMeteor = new QRadioButton(ringTab);
     radioRingMeteor->setObjectName(QStringLiteral("radioRingMeteor"));
     radioRingMeteor->setGeometry(10, 302, 260, 28);
-    radioRingMeteor->setFont(QFont(QStringLiteral("Consolas"), 10));
     auto *ringGroup = new QButtonGroup(this);
     ringGroup->addButton(radioRingGas, 0);
     ringGroup->addButton(radioRingMeteor, 1);
     labelRingIntensity = new QLabel(ringTab);
     labelRingIntensity->setGeometry(10, 336, 240, 24);
-    labelRingIntensity->setFont(QFont(QStringLiteral("Consolas"), 10));
     sliderRingIntensity = new QSlider(Qt::Horizontal, ringTab);
     sliderRingIntensity->setObjectName(QStringLiteral("sliderRingIntensity"));
     sliderRingIntensity->setGeometry(10, 364, 221, 16);
@@ -214,7 +189,6 @@ SettingsPanel::SettingsPanel(QTabWidget *tabs, QWidget *parent)
     sliderRingIntensity->setValue(2);
     QLabel *ringIntValue = new QLabel(QStringLiteral("2"), ringTab);
     ringIntValue->setGeometry(230, 358, 41, 21);
-    ringIntValue->setFont(QFont(QStringLiteral("Consolas"), 10));
     ringIntValue->setAlignment(Qt::AlignCenter);
     connect(sliderRingIntensity, &QSlider::valueChanged, ringIntValue, QOverload<int>::of(&QLabel::setNum));
 
@@ -229,7 +203,6 @@ SettingsPanel::SettingsPanel(QTabWidget *tabs, QWidget *parent)
     {
         labelSeismicity = new QLabel(mainTab);
         labelSeismicity->setGeometry(20, 360, 171, 31);
-        labelSeismicity->setFont(QFont(QStringLiteral("Consolas"), 10));
         sliderSeismicity = new QSlider(Qt::Horizontal, mainTab);
         sliderSeismicity->setObjectName(QStringLiteral("sliderSeismicity"));
         sliderSeismicity->setGeometry(20, 400, 221, 16);
@@ -238,7 +211,6 @@ SettingsPanel::SettingsPanel(QTabWidget *tabs, QWidget *parent)
         QLabel *seisValue = new QLabel(QStringLiteral("0"), mainTab);
         seisValue->setObjectName(QStringLiteral("labelSeismicityValue"));
         seisValue->setGeometry(240, 390, 41, 21);
-        seisValue->setFont(QFont(QStringLiteral("Consolas"), 10));
         seisValue->setAlignment(Qt::AlignCenter);
         connect(sliderSeismicity, &QSlider::valueChanged, seisValue, QOverload<int>::of(&QLabel::setNum));
         labelSeismicity->show();
@@ -250,7 +222,6 @@ SettingsPanel::SettingsPanel(QTabWidget *tabs, QWidget *parent)
     {
         labelAvgColor = new QLabel(colorTab);
         labelAvgColor->setGeometry(290, 40, 80, 31);
-        labelAvgColor->setFont(QFont(QStringLiteral("Consolas")));
         labelAvgColor->setAlignment(Qt::AlignCenter);
         btnAvgLand = new QPushButton(colorTab);
         btnAvgLand->setObjectName(QStringLiteral("btnAvgLand"));
@@ -433,16 +404,32 @@ void SettingsPanel::buildAccordion(QTabWidget *tabs)
 
 void SettingsPanel::fitToContents()
 {
+    const int pad = 8;
     int contentRight = 260;
     for (CollapsiblePanel *section : sections)
     {
         QWidget *page = section ? section->contentWidget() : nullptr;
         if (!page)
             continue;
-        const QRect bounds = page->childrenRect();
-        const int w = qMax(bounds.right() + 12, 1);
-        const int h = qMax(bounds.bottom() + 12, 80);
-        page->setMinimumSize(w, h);
+        QRect bounds = page->childrenRect();
+        if (!bounds.isNull() && bounds.top() != pad)
+        {
+            const int dy = bounds.top() - pad;
+            const auto kids = page->children();
+            for (QObject *obj : kids)
+            {
+                auto *w = qobject_cast<QWidget *>(obj);
+                if (!w || w->isHidden())
+                    continue;
+                w->move(w->x(), w->y() - dy);
+            }
+            bounds = page->childrenRect();
+        }
+        const int w = qMax(bounds.right() + pad, 1);
+        const int h = qMax(bounds.bottom() + pad, 1);
+        page->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed);
+        page->setFixedHeight(h);
+        page->setMinimumWidth(w);
         contentRight = qMax(contentRight, w);
     }
     setMinimumWidth(contentRight + 24);

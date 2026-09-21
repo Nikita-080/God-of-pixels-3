@@ -1,13 +1,43 @@
 #include "multislider.h"
-#include <QPainter>
-#include <QMouseEvent>
-#include <QVector>
 #include <QCoreApplication>
+#include <QMouseEvent>
+#include <QPainter>
+#include <QVector>
+
+namespace {
+constexpr int kDataMin = 40;
+constexpr int kHandle = 15;
+constexpr int kPad = 8;
+constexpr int kTrackX = 20;
+
+int paintY(int dataY)
+{
+    return dataY - kDataMin + kPad;
+}
+
+int contentHeight()
+{
+    const int dataMax = kDataMin + 55 * 7;
+    return kPad + (dataMax - kDataMin) + kHandle + kPad;
+}
+}
+
 MultiSlider::MultiSlider(QWidget *parent) : QWidget(parent)
 {
     for (int i=0;i<8;i++){data.append(40+55*i);}
     for (int i=0;i<6;i++){capture[i]=false;}
+    setFixedSize(210, contentHeight());
     ReloadText();
+}
+
+QSize MultiSlider::sizeHint() const
+{
+    return QSize(210, contentHeight());
+}
+
+QSize MultiSlider::minimumSizeHint() const
+{
+    return sizeHint();
 }
 
 void MultiSlider::ReloadText()
@@ -23,20 +53,30 @@ void MultiSlider::ReloadText()
 
 void MultiSlider::paintEvent(QPaintEvent *) {
   QPainter painter(this);
-  painter.setPen(QPen(QColor(110,170,200),4));
-  painter.setBrush(QBrush(QColor(0,0,0)));
-  painter.drawLine(28,48,28,433);
+  painter.setRenderHint(QPainter::Antialiasing, true);
+  painter.setPen(QPen(QColor(46, 66, 82), 1));
+  painter.setBrush(QBrush(QColor(18, 24, 32)));
+  const int y0 = paintY(data.first()) + kHandle / 2;
+  const int y1 = paintY(data.last()) + kHandle / 2;
+  painter.drawLine(kTrackX + kHandle / 2, y0, kTrackX + kHandle / 2, y1);
+  painter.setPen(QPen(QColor(94, 234, 212), 1));
+  painter.setBrush(QBrush(QColor(18, 24, 32)));
   for (int i=0;i<8;i++){
-      painter.drawEllipse(20,data[i],15,15);
+      painter.drawEllipse(kTrackX, paintY(data[i]), kHandle, kHandle);
   }
+  painter.setPen(QPen(QColor(197, 216, 228), 1));
   for (int i=0;i<7;i++){
-      int pos=(data[i]+data[i+1]+14)/2;
-      painter.drawText(QRect(35,pos-15,100,30),names[i]);
+      int pos=(paintY(data[i])+paintY(data[i+1])+kHandle)/2;
+      painter.drawText(QRect(kTrackX + kHandle + 8, pos-15, 120, 30), names[i]);
   }
 }
 void MultiSlider::mousePressEvent(QMouseEvent *event){
     for (int i=0;i<6;i++){
-        if ((event->x()-28)*(event->x()-28)+(event->y()-data[i+1])*(event->y()-data[i+1])<=65){
+        const int hx = kTrackX + kHandle / 2;
+        const int hy = paintY(data[i+1]) + kHandle / 2;
+        const int dx = event->x() - hx;
+        const int dy = event->y() - hy;
+        if (dx * dx + dy * dy <= 65){
             capture[i]=true;
         }
     }

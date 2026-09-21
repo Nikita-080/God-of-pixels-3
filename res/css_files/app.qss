@@ -58,59 +58,167 @@ QSlider::sub-page:disabled {
     background: rgb(0, 170, 0);
 }
 QMenuBar {
-    background-color: rgb(18, 24, 30);
-    color: rgb(110, 170, 200);
-    border-bottom: 1px solid rgb(70, 100, 115);
+    background-color: rgb(11, 15, 20);
+    color: rgb(197, 216, 228);
+    border-bottom: 1px solid rgb(46, 66, 82);
+    font-family: "Segoe UI";
+    font-size: 10pt;
     padding-bottom: 1px;
 }
 QMenuBar::item:selected {
-    background-color: rgb(50, 50, 50);
-    color: rgb(0, 255, 127);
+    background-color: rgb(18, 24, 32);
+    color: rgb(94, 234, 212);
 }
 QMenu {
-    background-color: rgb(0, 0, 0);
-    color: rgb(110, 170, 200);
+    background-color: rgb(11, 15, 20);
+    color: rgb(197, 216, 228);
+    border: 1px solid rgb(46, 66, 82);
+    font-family: "Segoe UI";
 }
 QMenu::item:selected {
-    background-color: rgb(50, 50, 50);
-    color: rgb(0, 255, 127);
+    background-color: rgb(18, 24, 32);
+    color: rgb(94, 234, 212);
 }
 QStatusBar {
-    background-color: rgb(18, 24, 30);
-    color: rgb(110, 170, 200);
-    border-top: 1px solid rgb(70, 100, 115);
+    background-color: rgb(11, 15, 20);
+    color: rgb(122, 147, 163);
+    border-top: 1px solid rgb(46, 66, 82);
 }
 QStatusBar QLabel {
-    color: rgb(110, 170, 200);
+    color: rgb(122, 147, 163);
     background: transparent;
-    font-family: Consolas;
-    font-size: 10pt;
+    font-family: "Segoe UI";
+    font-size: 9pt;
     padding-right: 12px;
 }
+QMainWindow {
+    background-color: rgb(11, 15, 20);
+    color: rgb(197, 216, 228);
+    font-family: "Segoe UI";
+    font-size: 10pt;
+}
+QMainWindow QLabel,
+QMainWindow QRadioButton,
+QMainWindow QCheckBox {
+    color: rgb(197, 216, 228);
+    background-color: transparent;
+    font-family: "Segoe UI";
+    font-size: 10pt;
+}
+QMainWindow QLabel:disabled,
+QMainWindow QRadioButton:disabled,
+QMainWindow QCheckBox:disabled {
+    color: rgb(90, 110, 122);
+}
+QMainWindow QCheckBox::indicator,
+QMainWindow QRadioButton::indicator {
+    width: 14px;
+    height: 14px;
+    border: 1px solid rgb(46, 66, 82);
+    background: rgb(18, 24, 32);
+}
+QMainWindow QCheckBox::indicator {
+    border-radius: 3px;
+}
+QMainWindow QRadioButton::indicator {
+    border-radius: 7px;
+}
+QMainWindow QCheckBox::indicator:checked,
+QMainWindow QRadioButton::indicator:checked {
+    background: rgb(94, 234, 212);
+    border-color: rgb(94, 234, 212);
+}
+QMainWindow QSlider::groove:horizontal {
+    height: 4px;
+    background: rgb(46, 66, 82);
+    border-radius: 2px;
+}
+QMainWindow QSlider::handle:horizontal,
+QMainWindow QSlider::handle {
+    background-color: rgb(197, 216, 228);
+    width: 12px;
+    height: 12px;
+    margin: -4px 0;
+    border-radius: 6px;
+    border: 1px solid rgb(94, 234, 212);
+}
+QMainWindow QSlider::add-page:horizontal,
+QMainWindow QSlider::add-page {
+    background: rgb(46, 66, 82);
+    margin: 4px;
+    margin-right: 0px;
+}
+QMainWindow QSlider::sub-page:horizontal,
+QMainWindow QSlider::sub-page {
+    background: rgb(94, 234, 212);
+    margin: 4px;
+    margin-left: 0px;
+}
+QMainWindow QSlider::handle:disabled {
+    background-color: rgb(90, 110, 122);
+    border-color: rgb(46, 66, 82);
+}
+QMainWindow QComboBox {
+    background-color: rgb(18, 24, 32);
+    color: rgb(197, 216, 228);
+    border: 1px solid rgb(46, 66, 82);
+    border-radius: 8px;
+    padding: 4px 8px;
+    min-height: 24px;
+    font-family: "Segoe UI";
+    font-size: 10pt;
+}
+QMainWindow QComboBox:hover {
+    border-color: rgb(94, 234, 212);
+}
+QMainWindow QComboBox::drop-down {
+    subcontrol-origin: padding;
+    subcontrol-position: center right;
+    width: 22px;
+    border-left: 1px solid rgb(46, 66, 82);
+    background: rgb(18, 24, 32);
+    border-top-right-radius: 8px;
+    border-bottom-right-radius: 8px;
+}
+QMainWindow QComboBox::down-arrow {
+    width: 8px;
+    height: 8px;
+    background-color: rgb(94, 234, 212);
+}
 QSplitter#mainSplitter::handle {
-    background-color: rgb(40, 55, 65);
-    width: 4px;
+    background-color: rgb(46, 66, 82);
+    width: 2px;
 }
 QScrollArea#settingsScroll {
-    background-color: rgb(0, 0, 0);
+    background-color: rgb(11, 15, 20);
     border: none;
 }
+QWidget#accordionHeader {
+    background-color: rgb(18, 24, 32);
+    border: 1px solid rgb(46, 66, 82);
+    border-radius: 8px;
+}
 QToolButton#accordionToggle {
-    background-color: rgb(12, 18, 22);
-    color: rgb(110, 170, 200);
-    border: 1px solid rgb(70, 100, 115);
-    padding: 6px 8px;
-    font-family: Consolas;
-    font-size: 11pt;
+    background-color: transparent;
+    color: rgb(197, 216, 228);
+    border: none;
+    padding: 0px;
+    font-family: "Segoe UI";
+    font-size: 10pt;
     text-align: left;
 }
 QToolButton#accordionToggle:hover {
-    border-color: rgb(0, 255, 127);
-    color: rgb(160, 210, 230);
+    color: rgb(220, 236, 242);
 }
 QToolButton#accordionToggle:checked {
-    color: rgb(0, 255, 127);
-    border-color: rgb(85, 135, 155);
+    color: rgb(94, 234, 212);
+}
+QLabel#accordionIcon,
+QLabel#accordionChevron {
+    background: transparent;
+    color: rgb(122, 147, 163);
+    font-family: "Segoe UI";
+    font-size: 11pt;
 }
 QTabWidget::pane {
     border: 3px solid rgb(128, 128, 128);
@@ -239,6 +347,17 @@ QFileDialog QListView {
     color: #202020;
     border: 1px solid #808080;
 }
+QPushButton#btnProgramReset,
+QPushButton#btnProgramApply,
+QPushButton#btnProgramCancel {
+    border: 2px solid rgb(110, 170, 200);
+    color: rgb(110, 170, 200);
+    background-color: rgb(0, 0, 0);
+    font-family: Consolas;
+    font-size: 12pt;
+    min-height: 36px;
+    padding: 6px 10px;
+}
 QPushButton#btnResetCamera,
 QPushButton#btnCreate,
 QPushButton#btnRecreate,
@@ -247,58 +366,69 @@ QPushButton#btnViewPlanet,
 QPushButton#btnViewDescription,
 QPushButton#btnViewSystem,
 QPushButton#btnViewMap,
-QPushButton#btnProgramReset,
-QPushButton#btnProgramApply,
-QPushButton#btnProgramCancel {
-    border: 2px solid rgb(110, 170, 200);
-    color: rgb(110, 170, 200);
-    background-color: rgb(0, 0, 0);
-    font-family: Consolas;
+QPushButton#btnSpectrum {
+    border: 1px solid rgb(46, 66, 82);
+    border-radius: 8px;
+    color: rgb(197, 216, 228);
+    background-color: rgb(18, 24, 32);
+    font-family: "Segoe UI";
 }
 QPushButton#btnResetCamera {
     font-size: 10pt;
     min-height: 28px;
     padding: 4px 10px;
 }
-QPushButton#btnCreate,
+QPushButton#btnCreate {
+    font-size: 13pt;
+    min-height: 40px;
+    padding: 6px 12px;
+    border-color: rgb(94, 234, 212);
+    color: rgb(94, 234, 212);
+    background-color: rgb(22, 53, 58);
+}
 QPushButton#btnRecreate,
-QPushButton#btnAutogen,
-QPushButton#btnProgramReset,
-QPushButton#btnProgramApply,
-QPushButton#btnProgramCancel {
-    font-size: 18pt;
-    min-height: 52px;
-    padding: 8px 12px;
+QPushButton#btnAutogen {
+    font-size: 13pt;
+    min-height: 40px;
+    padding: 6px 12px;
 }
 QPushButton#btnViewPlanet,
 QPushButton#btnViewDescription,
 QPushButton#btnViewSystem,
 QPushButton#btnViewMap {
-    font-size: 13pt;
-    min-height: 52px;
+    font-size: 11pt;
+    min-height: 40px;
     padding: 6px 8px;
 }
-QPushButton#btnProgramReset,
-QPushButton#btnProgramApply,
-QPushButton#btnProgramCancel {
-    font-size: 12pt;
-    min-height: 36px;
-    padding: 6px 10px;
+QPushButton#btnSpectrum {
+    font-size: 10pt;
+    min-height: 32px;
+    padding: 4px 8px;
 }
 QPushButton#btnResetCamera:hover,
-QPushButton#btnCreate:hover,
 QPushButton#btnRecreate:hover,
 QPushButton#btnAutogen:hover,
 QPushButton#btnViewPlanet:hover,
 QPushButton#btnViewDescription:hover,
 QPushButton#btnViewSystem:hover,
 QPushButton#btnViewMap:hover,
-QPushButton#btnProgramReset:hover,
-QPushButton#btnProgramApply:hover,
-QPushButton#btnProgramCancel:hover {
-    border: 2px solid rgb(145, 200, 228);
-    color: rgb(160, 210, 230);
-    background-color: rgb(9, 24, 31);
+QPushButton#btnSpectrum:hover {
+    border: 1px solid rgb(94, 234, 212);
+    color: rgb(220, 236, 242);
+    background-color: rgb(22, 40, 52);
+}
+QPushButton#btnCreate:hover {
+    border: 1px solid rgb(160, 245, 230);
+    color: rgb(220, 255, 248);
+    background-color: rgb(28, 70, 76);
+}
+QPushButton#btnViewPlanet:checked,
+QPushButton#btnViewDescription:checked,
+QPushButton#btnViewSystem:checked,
+QPushButton#btnViewMap:checked {
+    border: 1px solid rgb(94, 234, 212);
+    color: rgb(94, 234, 212);
+    background-color: rgb(22, 53, 58);
 }
 QPushButton#btnResetCamera:pressed,
 QPushButton#btnCreate:pressed,
@@ -308,6 +438,18 @@ QPushButton#btnViewPlanet:pressed,
 QPushButton#btnViewDescription:pressed,
 QPushButton#btnViewSystem:pressed,
 QPushButton#btnViewMap:pressed,
+QPushButton#btnSpectrum:pressed {
+    border: 1px solid rgb(46, 66, 82);
+    color: rgb(122, 147, 163);
+    background-color: rgb(11, 15, 20);
+}
+QPushButton#btnProgramReset:hover,
+QPushButton#btnProgramApply:hover,
+QPushButton#btnProgramCancel:hover {
+    border: 2px solid rgb(145, 200, 228);
+    color: rgb(160, 210, 230);
+    background-color: rgb(9, 24, 31);
+}
 QPushButton#btnProgramReset:pressed,
 QPushButton#btnProgramApply:pressed,
 QPushButton#btnProgramCancel:pressed {
@@ -316,21 +458,30 @@ QPushButton#btnProgramCancel:pressed {
     background-color: rgb(0, 0, 0);
 }
 QLabel#labelEmptyPreview {
-    color: rgb(110, 170, 200);
+    color: rgb(197, 216, 228);
+    font-family: "Segoe UI";
 }
 QWidget#previewChrome {
     background-color: transparent;
 }
 QLabel#labelPlanetName {
-    color: rgb(110, 170, 200);
-    background-color: rgba(0, 0, 0, 150);
+    color: rgb(197, 216, 228);
+    background-color: rgba(11, 15, 20, 150);
     padding: 8px 12px;
+    font-family: Consolas;
+    border-bottom: 1px solid rgba(46, 66, 82, 120);
 }
 QWidget#cropOverlay {
     background-color: transparent;
 }
 QWidget#previewHud {
-    background-color: rgba(0, 0, 0, 160);
+    background-color: rgba(11, 15, 20, 170);
+    border-top: 1px solid rgba(46, 66, 82, 140);
+}
+QWidget#actionsWrap {
+    background-color: rgb(18, 24, 32);
+    border: 1px solid rgb(46, 66, 82);
+    border-radius: 8px;
 }
 QMessageBox {
     background-color: rgb(18, 24, 30);
@@ -359,7 +510,13 @@ QMessageBox QPushButton:pressed {
     color: rgb(90, 145, 170);
 }
 QCheckBox#checkGlobeSpin,
-QCheckBox#checkCropFrame,
+QCheckBox#checkCropFrame {
+    color: rgb(197, 216, 228);
+    font-family: "Segoe UI";
+    font-size: 10pt;
+    min-height: 24px;
+    padding: 2px 6px;
+}
 QCheckBox#checkProgramLive {
     color: rgb(110, 170, 200);
     font-family: Consolas;
@@ -368,12 +525,13 @@ QCheckBox#checkProgramLive {
     padding: 2px 6px;
 }
 QPlainTextEdit#factsCard {
-    background-color: rgb(0, 0, 0);
-    color: rgb(110, 170, 200);
-    border: 2px solid rgb(110, 170, 200);
+    background-color: rgb(11, 15, 20);
+    color: rgb(197, 216, 228);
+    border: 1px solid rgb(46, 66, 82);
+    border-radius: 8px;
     font-family: Consolas;
     font-size: 10pt;
-    padding: 6px;
-    selection-background-color: rgb(0, 70, 70);
-    selection-color: rgb(160, 210, 230);
+    padding: 10px;
+    selection-background-color: rgb(22, 53, 58);
+    selection-color: rgb(220, 236, 242);
 }

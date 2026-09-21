@@ -1,5 +1,6 @@
 _build_check/
 build-check/
+build-ui-check/
 _build_app/
 _build_star/
 .idea/

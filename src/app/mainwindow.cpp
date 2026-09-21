@@ -40,6 +40,7 @@
 #include <QCoreApplication>
 #include <QStringList>
 #include <QPushButton>
+#include <QButtonGroup>
 #include <QAction>
 #include <QMenu>
 #include <QIcon>
@@ -378,8 +379,8 @@ void MainWindow::setupMainLayout()
         btn->setStyleSheet(QString());
         btn->setMinimumWidth(0);
         btn->setMaximumWidth(QWIDGETSIZE_MAX);
-        btn->setMinimumHeight(52);
-        btn->setMaximumHeight(64);
+        btn->setMinimumHeight(40);
+        btn->setMaximumHeight(48);
         btn->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
         btn->setIcon(QIcon());
         btn->setIconSize(QSize(0, 0));
@@ -396,14 +397,24 @@ void MainWindow::setupMainLayout()
         btn->setStyleSheet(QString());
         btn->setIcon(QIcon());
         btn->setIconSize(QSize(0, 0));
-        btn->setMinimumHeight(52);
-        btn->setMaximumHeight(64);
+        btn->setCheckable(true);
+        btn->setAutoExclusive(false);
+        btn->setMinimumHeight(40);
+        btn->setMaximumHeight(48);
         btn->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
     };
     sizeViewButton(ui->btnViewPlanet);
     sizeViewButton(ui->btnViewDescription);
     sizeViewButton(ui->btnViewSystem);
     sizeViewButton(ui->btnViewMap);
+    auto *viewGroup = new QButtonGroup(this);
+    viewGroup->setExclusive(true);
+    viewGroup->addButton(ui->btnViewPlanet);
+    viewGroup->addButton(ui->btnViewDescription);
+    viewGroup->addButton(ui->btnViewSystem);
+    viewGroup->addButton(ui->btnViewMap);
+    ui->btnViewPlanet->setChecked(true);
+    updateViewButtonsEnabled();
 
     factsView = new QPlainTextEdit;
     factsView->setObjectName(QStringLiteral("factsCard"));
@@ -421,10 +432,12 @@ void MainWindow::setupMainLayout()
     viewGrid->addWidget(ui->btnViewMap, 1, 1);
 
     auto *actionsWrap = new QWidget;
+    actionsWrap->setObjectName(QStringLiteral("actionsWrap"));
+    actionsWrap->setAttribute(Qt::WA_StyledBackground, true);
     actionsWrap->setMinimumWidth(220);
     actionsWrap->setMaximumWidth(420);
     auto *actionsCol = new QVBoxLayout(actionsWrap);
-    actionsCol->setContentsMargins(0, 0, 0, 0);
+    actionsCol->setContentsMargins(10, 10, 10, 10);
     actionsCol->setSpacing(8);
     actionsCol->addWidget(ui->btnCreate);
     actionsCol->addWidget(ui->btnRecreate);
@@ -959,6 +972,7 @@ void MainWindow::applyPlanetToView()
     if (!shot.isNull())
         planet.img_view = shot;
     planet.FinalImage();
+    updateViewButtonsEnabled();
     ShowPlanet();
     preview->setPlanetName(planet.name);
     updateFactsCard();
@@ -968,6 +982,7 @@ void MainWindow::ShowPlanet()
 {
     if (preview)
         preview->showGlobe();
+    syncViewButton(ui->btnViewPlanet);
 }
 
 void MainWindow::ShowDescription()
@@ -975,6 +990,7 @@ void MainWindow::ShowDescription()
     if (isEmtyPlanet || !preview)
         return;
     preview->showCard(planet.img_dsc);
+    syncViewButton(ui->btnViewDescription);
 }
 
 void MainWindow::ShowSystem()
@@ -982,6 +998,7 @@ void MainWindow::ShowSystem()
     if (isEmtyPlanet || !preview)
         return;
     preview->showCard(planet.img_sys);
+    syncViewButton(ui->btnViewSystem);
 }
 
 void MainWindow::ShowMap()
@@ -989,6 +1006,21 @@ void MainWindow::ShowMap()
     if (isEmtyPlanet || !preview)
         return;
     preview->showCard(planet.img_gal);
+    syncViewButton(ui->btnViewMap);
+}
+
+void MainWindow::syncViewButton(QPushButton *active)
+{
+    if (active)
+        active->setChecked(true);
+}
+
+void MainWindow::updateViewButtonsEnabled()
+{
+    const bool on = !isEmtyPlanet;
+    ui->btnViewDescription->setEnabled(on);
+    ui->btnViewSystem->setEnabled(on);
+    ui->btnViewMap->setEnabled(on);
 }
 
 void MainWindow::M_Save_Image()
