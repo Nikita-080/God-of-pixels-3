@@ -22,6 +22,7 @@
     </message>
     <message>
         <source>Map</source>
+        <extracomment>Planet map tab, not a dictionary.</extracomment>
         <translation>Карта</translation>
     </message>
     <message>
@@ -32,6 +33,7 @@
     <message>
         <location filename="mainwindow.ui" line="446"/>
         <source>Change</source>
+        <extracomment>Button that edits the current planet. Verb, not the noun and not money.</extracomment>
         <translation>Изменить</translation>
     </message>
     <message>
@@ -52,6 +54,7 @@
     <message>
         <location filename="mainwindow.ui" line="1693"/>
         <source>t change</source>
+        <extracomment>Temperature change. The letter t stands for temperature.</extracomment>
         <translation>t change</translation>
     </message>
     <message>
@@ -133,6 +136,7 @@
     </message>
     <message>
         <source>Average</source>
+        <extracomment>An average value, not the verb.</extracomment>
         <translation>Среднее</translation>
     </message>
     <message>
@@ -208,6 +212,7 @@
     <message>
         <location filename="mainwindow.ui" line="4605"/>
         <source>Light</source>
+        <extracomment>Scene lighting, not weight and not a color theme.</extracomment>
         <translation>Свет</translation>
     </message>
     <message>
@@ -218,6 +223,7 @@
     <message>
         <location filename="mainwindow.ui" line="4940"/>
         <source>human-friendly</source>
+        <extracomment>A planet name that is easy for a person to read, as opposed to a generated code.</extracomment>
         <translation>человекочитаемое</translation>
     </message>
     <message>
