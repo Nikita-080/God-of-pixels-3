@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Name=God of Pixels 3
+Comment=Procedural planet editor
+Exec=GodOfPixels3 %f
+Icon=godofpixels3
+Terminal=false
+Categories=Graphics;Education;
+MimeType=application/x-godofpixels3-planet;
+StartupWMClass=GodOfPixels3

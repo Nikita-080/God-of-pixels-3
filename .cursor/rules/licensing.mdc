@@ -1,0 +1,12 @@
+---
+description: License constraints for God of Pixels 3 (MIT app + Qt LGPLv3)
+alwaysApply: true
+---
+
+# Licensing
+
+- App source is MIT. Do not relicense it as GPL because Qt is used.
+- Qt is LGPLv3, dynamically linked only. No static Qt. No GPL-only Qt modules (Charts, Graphs, Quick 3D, Virtual Keyboard, MQTT, qtshadertools, …).
+- Keep NOTICE.txt, LICENSES/, licenses.qrc, and the Licenses menu in the app and in all packages.
+- Do not forbid reverse engineering in the installer.
+- Do not embed proprietary font files. New dependencies need NOTICE + LICENSES entries.

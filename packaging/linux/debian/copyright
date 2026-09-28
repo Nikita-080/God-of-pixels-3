@@ -1,0 +1,14 @@
+Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
+Upstream-Name: God of Pixels 3
+Source: https://github.com/Nikita-080/God-of-pixels-3
+
+Files: *
+Copyright: 2021 Nikita-080
+License: MIT
+ See /opt/GodOfPixels3/licenses/MIT.txt
+
+Files: opt/GodOfPixels3/lib/* opt/GodOfPixels3/plugins/*
+Copyright: The Qt Company Ltd. and other contributors
+License: LGPL-3
+ Qt is dynamically linked. See /opt/GodOfPixels3/NOTICE.txt
+ and /opt/GodOfPixels3/licenses/.

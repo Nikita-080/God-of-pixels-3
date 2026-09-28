@@ -1,18 +1,69 @@
 #include "mainwindow.h"
 #include "appsettings.h"
 #include <QApplication>
+#include <QEvent>
+#include <QFile>
+#include <QFileOpenEvent>
+#include <QObject>
 #include <QSurfaceFormat>
+#include <QtGlobal>
 #include <QTranslator>
 
-int main(int argc, char *argv[]){
+namespace {
+
+class FileOpenFilter : public QObject
+{
+public:
+    explicit FileOpenFilter(MainWindow *window)
+        : QObject(window)
+        , win(window)
+    {
+    }
+
+protected:
+    bool eventFilter(QObject *watched, QEvent *event) override
+    {
+        Q_UNUSED(watched);
+        if (event->type() == QEvent::FileOpen)
+        {
+            auto *open = static_cast<QFileOpenEvent *>(event);
+            if (win && !open->file().isEmpty())
+                win->loadPlanetFromPath(open->file());
+            return true;
+        }
+        return QObject::eventFilter(watched, event);
+    }
+
+private:
+    MainWindow *win;
+};
+
+} // namespace
+
+int main(int argc, char *argv[])
+{
     QSurfaceFormat fmt;
+    fmt.setRenderableType(QSurfaceFormat::OpenGL);
+    fmt.setVersion(2, 1);
+    fmt.setProfile(QSurfaceFormat::CompatibilityProfile);
     fmt.setDepthBufferSize(24);
     QSurfaceFormat::setDefaultFormat(fmt);
+
     QApplication a(argc, argv);
     a.setOrganizationName(QStringLiteral("NikitaRiabovSoft"));
     a.setApplicationName(QStringLiteral("GodOfPixels3"));
     migrateAppSettingsFromRegistry();
+
     MainWindow w;
+    FileOpenFilter filter(&w);
+    a.installEventFilter(&filter);
+
+#ifndef Q_OS_MACOS
+    const QStringList args = a.arguments();
+    if (args.size() > 1 && QFile::exists(args.at(1)))
+        w.loadPlanetFromPath(args.at(1));
+#endif
+
     w.show();
     return a.exec();
 }

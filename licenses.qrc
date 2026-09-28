@@ -1,0 +1,8 @@
+<RCC>
+    <qresource prefix="/licenses">
+        <file alias="NOTICE.txt">NOTICE.txt</file>
+        <file alias="MIT.txt">LICENSES/MIT.txt</file>
+        <file alias="LGPL-3.0.txt">LICENSES/LGPL-3.0.txt</file>
+        <file alias="GPL-3.0.txt">LICENSES/GPL-3.0.txt</file>
+    </qresource>
+</RCC>

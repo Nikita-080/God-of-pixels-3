@@ -3,7 +3,7 @@
 #include <QJsonArray>
 #include <QJsonDocument>
 #include <QJsonObject>
-#include <QRegExp>
+#include <QRegularExpression>
 #include <QTextStream>
 #include <QtGlobal>
 
@@ -19,7 +19,7 @@ QStringList readLines(const QString &resourcePath)
     if (bytes.startsWith("\xEF\xBB\xBF"))
         bytes = bytes.mid(3);
     QStringList lines;
-    const QStringList raw = QString::fromUtf8(bytes).split(QRegExp(QStringLiteral("\\r?\\n")), Qt::SkipEmptyParts);
+    const QStringList raw = QString::fromUtf8(bytes).split(QRegularExpression(QStringLiteral("\\r?\\n")), Qt::SkipEmptyParts);
     for (QString line : raw)
     {
         line = line.trimmed();

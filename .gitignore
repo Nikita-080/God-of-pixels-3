@@ -3,5 +3,6 @@ build-check/
 build-ui-check/
 _build_app/
 _build_star/
+_build_agent/
 .idea/
 tests/

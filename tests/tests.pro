@@ -1,5 +1,5 @@
 QT += testlib widgets
-CONFIG += console testcase c++11
+CONFIG += console testcase c++17
 CONFIG -= app_bundle
 
 TARGET = gop3_tests

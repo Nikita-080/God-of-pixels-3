@@ -1298,9 +1298,9 @@ void PlanetGLWidget::paintGL()
         return;
     }
 
-    const int dpr = qMax(1, int(devicePixelRatio()));
-    const int pixelW = qMax(1, width() * dpr);
-    const int pixelH = qMax(1, height() * dpr);
+    const qreal dpr = devicePixelRatioF();
+    const int pixelW = qMax(1, qRound(qreal(width()) * dpr));
+    const int pixelH = qMax(1, qRound(qreal(height()) * dpr));
     const int maxSide = qBound(16, currentViewRes(), 1024);
     const int maxDim = qMax(pixelW, pixelH);
     const float scale = (maxDim > maxSide) ? (float(maxSide) / float(maxDim)) : 1.0f;
@@ -1422,15 +1422,15 @@ void PlanetGLWidget::mousePressEvent(QMouseEvent *event)
 {
     stopCameraReset();
     dragging = true;
-    lastPos = event->pos();
+    lastPos = event->position().toPoint();
 }
 
 void PlanetGLWidget::mouseMoveEvent(QMouseEvent *event)
 {
     if (!dragging)
         return;
-    const QPoint d = event->pos() - lastPos;
-    lastPos = event->pos();
+    const QPoint d = event->position().toPoint() - lastPos;
+    lastPos = event->position().toPoint();
     azimuth -= d.x() * 0.4f;
     elevation += d.y() * 0.4f;
     elevation = qBound(-89.0f, elevation, 89.0f);

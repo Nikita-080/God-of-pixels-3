@@ -1,0 +1,11 @@
+Package: godofpixels3
+Version: 0.0.0
+Section: graphics
+Priority: optional
+Architecture: amd64
+Depends: libc6, libgl1
+Maintainer: Nikita Riabov <riabovnick080@yandex.ru>
+Description: Procedural planet editor
+ God of Pixels 3 is a graphical planet editor with procedural generation.
+ Qt libraries are bundled and licensed under LGPLv3.
+Homepage: https://github.com/Nikita-080/God-of-pixels-3

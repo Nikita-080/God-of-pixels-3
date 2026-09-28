@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mime-info xmlns="http://www.freedesktop.org/standards/shared-mime-info">
+  <mime-type type="application/x-godofpixels3-planet">
+    <comment>God of Pixels 3 planet</comment>
+    <glob pattern="*.planet"/>
+  </mime-type>
+</mime-info>

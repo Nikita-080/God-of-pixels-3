@@ -1,0 +1,187 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "[0-9]+.[0-9]+.[0-9]+*"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  QT_VERSION: "6.8.3"
+
+jobs:
+  build:
+    name: ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-latest
+            qt_arch: win64_msvc2022_64
+            qt_archives: qtbase qtsvg qttools
+          - os: ubuntu-22.04
+            qt_arch: gcc_64
+            qt_archives: qtbase qtsvg qttools icu
+          - os: macos-latest
+            qt_arch: clang_64
+            qt_archives: qtbase qtsvg qttools
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Linux packages
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            build-essential \
+            libgl1-mesa-dev \
+            libegl1-mesa-dev \
+            libfontconfig1-dev \
+            libxkbcommon-dev \
+            libxkbcommon-x11-dev \
+            libx11-xcb-dev \
+            libxcb-cursor-dev \
+            libxcb-icccm4-dev \
+            libxcb-image0-dev \
+            libxcb-keysyms1-dev \
+            libxcb-randr0-dev \
+            libxcb-render-util0-dev \
+            libxcb-shape0-dev \
+            libxcb-shm0-dev \
+            libxcb-sync-dev \
+            libxcb-util-dev \
+            libxcb-xfixes0-dev \
+            libxcb-xinerama0-dev \
+            libxcb-xkb-dev \
+            libdbus-1-dev \
+            libfuse2 \
+            dpkg-dev \
+            libgl1 \
+            tree
+
+      - uses: ilammy/msvc-dev-cmd@v1
+        if: runner.os == 'Windows'
+
+      - name: Install Qt
+        uses: jurplel/install-qt-action@v4
+        with:
+          version: ${{ env.QT_VERSION }}
+          target: desktop
+          arch: ${{ matrix.qt_arch }}
+          archives: ${{ matrix.qt_archives }}
+          cache: true
+
+      - name: Configure
+        run: |
+          mkdir build
+          cd build
+          qmake ../GodOfPixels3.pro CONFIG+=release
+
+      - name: Build (Windows)
+        if: runner.os == 'Windows'
+        working-directory: build
+        run: nmake
+
+      - name: Build (Unix)
+        if: runner.os != 'Windows'
+        working-directory: build
+        run: make -j"$(nproc 2>/dev/null || sysctl -n hw.ncpu)"
+
+      - name: Test
+        shell: bash
+        run: |
+          TESTBIN=$(find build \( -name gop3_tests.exe -o -name gop3_tests \) | head -n 1)
+          echo "Running $TESTBIN"
+          if [ "${{ runner.os }}" != "Windows" ]; then
+            export QT_QPA_PLATFORM=offscreen
+          fi
+          "$TESTBIN"
+
+      - name: Package Windows
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          $tag = if ($env:GITHUB_REF_TYPE -eq 'tag') { $env:GITHUB_REF_NAME } else { 'dev' }
+          $exe = "build/app/release/GodOfPixels3.exe"
+          $deploy = "dist/windows"
+          New-Item -ItemType Directory -Force -Path $deploy | Out-Null
+          Copy-Item $exe $deploy
+          windeployqt --release --compiler-runtime "$deploy/GodOfPixels3.exe"
+          python packaging/copy_licenses.py $deploy
+          New-Item -ItemType Directory -Force -Path dist | Out-Null
+          Compress-Archive -Path "$deploy/*" -DestinationPath "dist/GodOfPixels3-$tag-windows-x64.zip"
+          choco install innosetup --no-progress -y
+          $iscc = "C:\Program Files (x86)\Inno Setup 6\ISCC.exe"
+          $deployAbs = (Resolve-Path $deploy).Path
+          & $iscc "/DMyAppVersion=$tag" "/DDeployDir=$deployAbs" packaging\windows\installer.iss
+          Copy-Item "packaging\windows\GodOfPixels3-$tag-windows-x64-setup.exe" dist\
+
+      - name: Package Linux
+        if: runner.os == 'Linux'
+        run: |
+          set -euo pipefail
+          TAG="${GITHUB_REF_NAME}"
+          if [ "${GITHUB_REF_TYPE}" != "tag" ]; then TAG=dev; fi
+          chmod +x packaging/linux/build_deb.sh
+          BIN=build/app/GodOfPixels3
+          mkdir -p dist AppDir
+          wget -q -O linuxdeploy https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage
+          wget -q -O linuxdeploy-plugin-qt https://github.com/linuxdeploy/linuxdeploy-plugin-qt/releases/download/continuous/linuxdeploy-plugin-qt-x86_64.AppImage
+          chmod +x linuxdeploy linuxdeploy-plugin-qt
+          export LD_LIBRARY_PATH="${QTDIR}/lib:${LD_LIBRARY_PATH:-}"
+          export QMAKE="${QTDIR}/bin/qmake"
+          ./linuxdeploy --appimage-extract-and-run \
+            --appdir AppDir \
+            -e "$BIN" \
+            -d packaging/linux/godofpixels3.desktop \
+            -i res/images/logo.png \
+            --plugin qt \
+            --output appimage
+          python3 packaging/copy_licenses.py AppDir/usr
+          python3 packaging/copy_licenses.py AppDir/usr/share/doc/godofpixels3
+          mkdir -p AppDir/usr/share/mime/packages
+          cp packaging/linux/godofpixels3.xml AppDir/usr/share/mime/packages/
+          ./linuxdeploy --appimage-extract-and-run \
+            --appdir AppDir \
+            --output appimage
+          APPIMAGE=$(ls -1 GodOfPixels3*.AppImage | head -n 1)
+          mv "$APPIMAGE" "dist/GodOfPixels3-${TAG}-linux-x86_64.AppImage"
+          chmod +x "dist/GodOfPixels3-${TAG}-linux-x86_64.AppImage"
+          packaging/linux/build_deb.sh "$TAG" AppDir "dist/GodOfPixels3-${TAG}-linux-amd64.deb"
+
+      - name: Package macOS
+        if: runner.os == 'macOS'
+        run: |
+          set -euo pipefail
+          TAG="${GITHUB_REF_NAME}"
+          if [ "${GITHUB_REF_TYPE}" != "tag" ]; then TAG=dev; fi
+          APP=build/app/GodOfPixels3.app
+          macdeployqt "$APP" -always-overwrite
+          python3 packaging/copy_licenses.py "$APP/Contents/Resources"
+          mkdir -p dist
+          ditto -c -k --sequesterRsrc --keepParent "$APP" "dist/GodOfPixels3-${TAG}-macos.zip"
+          macdeployqt "$APP" -dmg
+          mv build/app/GodOfPixels3.dmg "dist/GodOfPixels3-${TAG}-macos.dmg" || mv GodOfPixels3.dmg "dist/GodOfPixels3-${TAG}-macos.dmg"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: GodOfPixels3-${{ runner.os }}-${{ github.ref_name }}
+          path: dist/*
+          if-no-files-found: error
+
+      - name: GitHub Release
+        if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: dist/*
+          generate_release_notes: true
+          fail_on_unmatched_files: true

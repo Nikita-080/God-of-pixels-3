@@ -1,9 +1,12 @@
-QT       += core gui widgets
+QT       += core gui widgets opengl openglwidgets
 
-CONFIG += c++11
+CONFIG += c++17
 
 TARGET = GodOfPixels3
 TEMPLATE = app
+VERSION = 2.0.0
+
+QMAKE_INFO_PLIST = $$PWD/packaging/macos/Info.plist
 
 INCLUDEPATH += \
     $$PWD/src \
@@ -35,6 +38,7 @@ SOURCES += \
     src/ui/settingspanel.cpp \
     src/ui/spectrumdialog.cpp \
     src/ui/windowsettings.cpp \
+    src/ui/licensesdialog.cpp \
     src/planet/planet.cpp \
     src/planet/planet_assets.cpp \
     src/planet/planet_cards.cpp \
@@ -78,6 +82,7 @@ HEADERS += \
     src/ui/settingspanel.h \
     src/ui/spectrumdialog.h \
     src/ui/windowsettings.h \
+    src/ui/licensesdialog.h \
     src/planet/planet.h \
     src/planet/planet_p.h \
     src/gen/coloremotion.h \
@@ -97,7 +102,8 @@ FORMS += \
     src/ui/windowsettings.ui
 
 RESOURCES += \
-    resources.qrc
+    resources.qrc \
+    licenses.qrc
 
 qnx: target.path = /tmp/$${TARGET}/bin
 else: unix:!android: target.path = /opt/$${TARGET}/bin

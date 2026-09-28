@@ -1,0 +1,19 @@
+God of Pixels 3
+Copyright (c) 2021 Nikita-080
+
+This program is licensed under the MIT License. See LICENSES/MIT.txt or
+LICENSE in the source repository.
+
+This program uses Qt (https://www.qt.io) under the GNU Lesser General
+Public License version 3 (LGPLv3). Qt is dynamically linked. You may
+replace the bundled Qt libraries with a compatible build of the same
+major version. The Qt source code corresponding to the bundled libraries
+is available from The Qt Company.
+
+LGPLv3 incorporates the GNU General Public License version 3 by
+reference. Copies of both licenses are in the licenses/ folder of this
+package (LICENSES/ in the source tree). Additional license texts that
+ship with the Qt SDK may be in licenses/qt/.
+
+Application source code:
+https://github.com/Nikita-080/God-of-pixels-3

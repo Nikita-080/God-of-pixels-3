@@ -32,6 +32,8 @@ public:
     explicit MainWindow(QWidget *parent = nullptr);
     ~MainWindow() override;
 
+    void loadPlanetFromPath(const QString &filename);
+
 protected:
     void changeEvent(QEvent *event) override;
     void closeEvent(QCloseEvent *event) override;
@@ -61,6 +63,7 @@ private:
     void M_Load_Planet();
     void M_Save_Full_Image();
     void M_About();
+    void M_Licenses();
     void M_Achievements();
     void M_ProgramSettings();
     void applyLanguage(const QString &lang);
@@ -135,6 +138,7 @@ private:
     QPlainTextEdit *factsView;
     QAction *actionProgramSettings;
     QAction *actionSavePlanetAs;
+    QAction *actionLicenses;
     QAction *actionUndo;
     QAction *actionRedo;
     AchievementToastHost *achievementToasts;

@@ -3,6 +3,7 @@
 #include "achievementstore.h"
 #include <QCoreApplication>
 #include <QDateTime>
+#include <QLocale>
 #include <QHBoxLayout>
 #include <QLabel>
 #include <QPixmap>
@@ -72,7 +73,7 @@ QWidget *makeCard(const AchievementDef &def, bool unlocked, const QDateTime &whe
     col->addWidget(desc);
     if (unlocked && when.isValid())
     {
-        auto *whenLabel = new QLabel(when.toLocalTime().toString(Qt::DefaultLocaleShortDate), card);
+        auto *whenLabel = new QLabel(QLocale::system().toString(when.toLocalTime(), QLocale::ShortFormat), card);
         whenLabel->setStyleSheet(QStringLiteral("color: rgb(90, 120, 140); font-size: 10px;"));
         col->addWidget(whenLabel);
     }

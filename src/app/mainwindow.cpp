@@ -13,6 +13,7 @@
 #include "achievementtoast.h"
 #include "achievementsdialog.h"
 #include "programsettingsdialog.h"
+#include "licensesdialog.h"
 #include "planetcommands.h"
 #include <QColorDialog>
 #include <QFile>
@@ -53,6 +54,7 @@
 #include <QAbstractSpinBox>
 #include <QLineEdit>
 #include <QKeySequence>
+#include <QStandardPaths>
 #include <algorithm>
 
 namespace {
@@ -103,6 +105,7 @@ MainWindow::MainWindow(QWidget *parent)
     , factsView(nullptr)
     , actionProgramSettings(nullptr)
     , actionSavePlanetAs(nullptr)
+    , actionLicenses(nullptr)
     , actionUndo(nullptr)
     , actionRedo(nullptr)
     , achievementToasts(nullptr)
@@ -162,6 +165,10 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->action_2, &QAction::triggered, this, [this]() { M_Save_Planet(); });
     connect(ui->action_6, &QAction::triggered, this, &MainWindow::M_About);
     connect(ui->action_achievements, &QAction::triggered, this, &MainWindow::M_Achievements);
+    actionLicenses = new QAction(this);
+    if (ui->menu_3)
+        ui->menu_3->insertAction(ui->action_6, actionLicenses);
+    connect(actionLicenses, &QAction::triggered, this, &MainWindow::M_Licenses);
     connect(ui->action_8, &QAction::triggered, this, &MainWindow::M_Save_Full_Image);
     connect(ui->action_9, &QAction::triggered, this, &MainWindow::M_Load_Planet);
     actionSavePlanetAs = new QAction(this);
@@ -327,9 +334,16 @@ void MainWindow::M_About()
     message.append(PROGRAM_VERSION);
     message.append("\n");
     message.append(tr("author - Riabov Nikita") + "\n");
-    message.append(tr("feedback - riabovnick080@yandex.ru"));
+    message.append(tr("feedback - riabovnick080@yandex.ru") + "\n");
+    message.append(tr("This program is MIT licensed. Qt is used under LGPLv3."));
     msb.setText(message);
     msb.exec();
+}
+
+void MainWindow::M_Licenses()
+{
+    LicensesDialog dlg(this);
+    dlg.exec();
 }
 
 void MainWindow::M_Achievements()
@@ -498,6 +512,8 @@ void MainWindow::retranslateExtras()
         actionProgramSettings->setText(tr("Program settings"));
     if (actionSavePlanetAs)
         actionSavePlanetAs->setText(tr("Save planet as"));
+    if (actionLicenses)
+        actionLicenses->setText(tr("Licenses"));
     if (actionUndo)
         actionUndo->setText(tr("Undo"));
     if (actionRedo)
@@ -1074,10 +1090,17 @@ void MainWindow::M_Load_Planet()
     if (filename.isEmpty())
         return;
     rememberPath(AppKeys::dirPlanet, filename);
+    loadPlanetFromPath(filename);
+}
+
+void MainWindow::loadPlanetFromPath(const QString &filename)
+{
+    if (filename.isEmpty())
+        return;
     QFile file(filename);
     if (!file.open(QFile::ReadOnly | QFile::Text))
     {
-        QMessageBox::critical(nullptr, tr("Error"), tr("0002 unable to load file"));
+        QMessageBox::critical(this, tr("Error"), tr("0002 unable to load file"));
         return;
     }
     const QString a = file.readAll();
@@ -1086,7 +1109,7 @@ void MainWindow::M_Load_Planet()
     PlanetSettings loaded;
     if (!loaded.JSON_deserialize(jobject["settings"].toObject()))
     {
-        QMessageBox::critical(nullptr, tr("Error"), tr("0002 unable to load file"));
+        QMessageBox::critical(this, tr("Error"), tr("0002 unable to load file"));
         return;
     }
     if (!confirmAbandonSession())
@@ -1326,7 +1349,7 @@ void MainWindow::M_Load_Settings()
 
 void MainWindow::Img_Report()
 {
-    QString path = "C:/Users/Никита/Desktop/";
+    const QString path = QStandardPaths::writableLocation(QStandardPaths::DesktopLocation) + QLatin1Char('/');
     planet.ImageReport(planet.t_map, QColor(0, 0, 255), QColor(255, 0, 0)).save(path + "t.png");
     planet.ImageReport(planet.matrix, QColor(0, 0, 0), QColor(255, 255, 255)).save(path + "m.png");
     planet.ImageReport(planet.r_map, QColor(252, 221, 118), QColor(0, 0, 255)).save(path + "r.png");
@@ -1334,18 +1357,22 @@ void MainWindow::Img_Report()
 
 void MainWindow::BiomGrad()
 {
+    const QString biomPath = QStandardPaths::writableLocation(QStandardPaths::DesktopLocation)
+            + QStringLiteral("/biom");
+    QDir().mkpath(biomPath);
+    const QDir biomDir(biomPath);
     for (int i = -50; i <= 50; ++i)
     {
         s.temperature = i;
         Gen(false, &planet);
         QString name = QString::number(i + 50) + " (" + QString::number(i) + ").png";
-        planet.img.save("C:/Users/Никита/Desktop/biom/" + name);
+        planet.img.save(biomDir.filePath(name));
     }
 }
 
 void MainWindow::Report(QString s)
 {
-    QFile file("C:/Users/Никита/Desktop/DATA.txt");
+    QFile file(QStandardPaths::writableLocation(QStandardPaths::DesktopLocation) + QStringLiteral("/DATA.txt"));
     if (file.open(QIODevice::ReadWrite))
     {
         QTextStream stream(&file);
