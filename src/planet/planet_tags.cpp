@@ -19,8 +19,6 @@
 
 namespace {
 
-const int kTagCols = 28;
-const int kTagRows = 13;
 const double kValuablePrevalence = 10.0;
 const double kOreShareCut = 0.12;
 const double kRuggedLandShare = 0.08;
@@ -410,7 +408,7 @@ const QVector<PlanetTagDef> &tagCatalog()
                 for (const QJsonValue &lab : labs)
                 {
                     const QString s = lab.toString().trimmed();
-                    if (!s.isEmpty() && s.size() <= kTagCols)
+                    if (!s.isEmpty() && s.size() <= planetCardTagCols())
                         d.labels.append(s);
                 }
                 if (!d.id.isEmpty())
@@ -547,21 +545,21 @@ QChar radioNoiseChar(QRandomGenerator &rnd)
     return QLatin1Char(kNoise[rnd.bounded(5)]);
 }
 
-QString jamCivEasterText(QString text, int radio, QRandomGenerator &rnd)
+QString jamCivEasterText(QString text, int radio, QRandomGenerator &rnd, int tagCols)
 {
     if (text.isEmpty())
         return text;
     const int n = qBound(0, radio, kStarBandMax);
     if (n <= 0)
         return text;
-    const int room = kTagCols - text.size();
+    const int room = tagCols - text.size();
     const int toInsert = qMin(n, qMax(0, room));
     for (int i = 0; i < toInsert; ++i)
         text.insert(rnd.bounded(text.size() + 1), radioNoiseChar(rnd));
     return text;
 }
 
-QVector<PlacedTag> packTags(const QVector<QPair<QString, QColor>> &picked)
+QVector<PlacedTag> packTags(const QVector<QPair<QString, QColor>> &picked, int tagCols, int tagRows)
 {
     QVector<PlacedTag> out;
     int col = 0;
@@ -569,14 +567,14 @@ QVector<PlacedTag> packTags(const QVector<QPair<QString, QColor>> &picked)
     for (const auto &item : picked)
     {
         const int tw = item.first.size();
-        if (tw <= 0 || tw > kTagCols)
+        if (tw <= 0 || tw > tagCols)
             continue;
-        if (col > 0 && col + 1 + tw > kTagCols)
+        if (col > 0 && col + 1 + tw > tagCols)
         {
             col = 0;
             ++row;
         }
-        if (row >= kTagRows)
+        if (row >= tagRows)
             break;
         PlacedTag t;
         t.text = item.first;
@@ -585,7 +583,7 @@ QVector<PlacedTag> packTags(const QVector<QPair<QString, QColor>> &picked)
         t.row = row;
         out.append(t);
         col += tw;
-        if (col < kTagCols)
+        if (col < tagCols)
             ++col;
         else
         {
@@ -612,9 +610,11 @@ QSet<QString> planetActiveTagIds(const Planet &planet)
 
 void planetPaintTagCard(Planet &planet)
 {
-    planet.img_sys = planetCachedImage(QStringLiteral(":/images/res/images/window.png")).copy();
+    planet.img_sys = planetCardCanvas();
     planet.cardTagIds.clear();
     planet.cardLabelKeys.clear();
+    const int tagCols = planetCardTagCols();
+    const int tagRows = planetCardTagRows();
     const TagWorld world = makeTagWorld(planet);
     const QVector<PlanetOre> ores = planetOreInventory(planet);
     QVector<PlanetTagDef> chosen;
@@ -662,7 +662,7 @@ void planetPaintTagCard(Planet &planet)
             else if (share >= 0.12)
                 kind = 1;
             const QString text = orePhrase(ores[i].symbol, kind, planet.rnd);
-            if (text.isEmpty() || text.size() > kTagCols)
+            if (text.isEmpty() || text.size() > tagCols)
                 continue;
             PlanetTagDef d;
             d.id = QLatin1String("oreq_") + ores[i].symbol;
@@ -717,32 +717,44 @@ void planetPaintTagCard(Planet &planet)
             const int radio = planet.s.has_star
                                   ? starBand(planet.s.star_spectrum, StarRadio)
                                   : 0;
-            text = jamCivEasterText(text, radio, planet.rnd);
+            text = jamCivEasterText(text, radio, planet.rnd, tagCols);
         }
-        if (text.size() > kTagCols)
+        if (text.size() > tagCols)
             continue;
         planet.cardTagIds.insert(d.id);
         if (!labelKey.isEmpty())
             planet.cardLabelKeys.insert(labelKey);
         picked.append(qMakePair(text, toneColor(d.tone)));
     }
-    const QVector<PlacedTag> placed = packTags(picked);
+    const QVector<PlacedTag> placed = packTags(picked, tagCols, tagRows);
 
     QPainter p;
     p.begin(&planet.img_sys);
-    QFont font(QStringLiteral("Consolas"), 8);
+    p.setRenderHint(QPainter::Antialiasing, false);
+    const QFont font = planetCardFont();
     p.setFont(font);
     const QFontMetrics fm(font);
-    const int x0 = 40;
-    const int y0 = 27;
-    const int lh = fm.lineSpacing();
-    const int cw = qMax(1, fm.averageCharWidth());
+    const QRect content = planetCardContentRect();
+    p.setClipRect(content);
+    const int x0 = content.left();
+    const int y0 = content.top();
+    const int lh = qMax(1, fm.lineSpacing());
+    const int pitch = planetCardTagRowPitch();
+    const int cw = qMax(1, fm.horizontalAdvance(QLatin1Char('M')));
     for (const PlacedTag &t : placed)
     {
-        const QRect box(x0 + t.col * cw, y0 + t.row * lh, t.text.size() * cw, lh);
+        const int x = x0 + t.col * cw;
+        const int y = y0 + t.row * pitch;
+        if (y + lh > content.top() + content.height())
+            break;
+        const int textW = fm.horizontalAdvance(t.text);
+        const int maxW = content.left() + content.width() - x;
+        if (maxW <= 0)
+            continue;
+        const QRect box(x, y, qMin(textW, maxW), lh);
         QColor fill = t.color;
         fill.setAlpha(70);
-        p.fillRect(box.adjusted(0, 1, 0, -1), fill);
+        p.fillRect(box, fill);
         p.setPen(t.color);
         p.drawText(box, Qt::AlignLeft | Qt::AlignVCenter, t.text);
     }

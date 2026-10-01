@@ -4,15 +4,117 @@
 #include "facts.h"
 #include <QCoreApplication>
 #include <QPainter>
+#include <QPen>
 #include <QtMath>
 #include <QHash>
 #include <QFont>
 #include <QFontMetrics>
 #include <algorithm>
 
+QFont planetCardFont()
+{
+    QFont font(QStringLiteral("Consolas"));
+    font.setPixelSize(11);
+    font.setStyleHint(QFont::TypeWriter);
+    font.setFixedPitch(true);
+    return font;
+}
+
+int planetCardCharWidth()
+{
+    return qMax(1, QFontMetrics(planetCardFont()).horizontalAdvance(QLatin1Char('M')));
+}
+
+int planetCardLineHeight()
+{
+    return qMax(1, QFontMetrics(planetCardFont()).lineSpacing());
+}
+
+int planetCardTagCols()
+{
+    return qMax(1, planetCardContentRect().width() / planetCardCharWidth());
+}
+
+int planetCardTagRowPitch()
+{
+    return planetCardLineHeight() + kPlanetCardTagRowGap;
+}
+
+int planetCardTagRows()
+{
+    return qMax(1, planetCardContentRect().height() / planetCardTagRowPitch());
+}
+
+void planetPaintCardFrame(QPainter &p)
+{
+    p.save();
+    p.setRenderHint(QPainter::Antialiasing, false);
+    QPen pen(planetCardInk(), 1);
+    pen.setCapStyle(Qt::FlatCap);
+    pen.setJoinStyle(Qt::MiterJoin);
+    p.setPen(pen);
+    p.setBrush(Qt::NoBrush);
+
+    const int L = 8;
+    const int T = 8;
+    const int R = kPlanetCardSize - 9;
+    const int B = kPlanetCardSize - 9;
+    const int gap = 26;
+    const int inset = 4;
+
+    auto hEdge = [&](int y, int x0, int x1) {
+        p.drawLine(x0, y, x1, y);
+    };
+    auto vEdge = [&](int x, int y0, int y1) {
+        p.drawLine(x, y0, x, y1);
+    };
+    for (int d : {0, inset})
+    {
+        hEdge(T + d, L + gap, R - gap);
+        hEdge(B - d, L + gap, R - gap);
+        vEdge(L + d, T + gap, B - gap);
+        vEdge(R - d, T + gap, B - gap);
+    }
+
+    auto corner = [&](int x, int y, int sx, int sy) {
+        const int arm = 22;
+        const int cut = 10;
+        for (int d : {0, inset})
+        {
+            const int cx = x + sx * d;
+            const int cy = y + sy * d;
+            p.drawLine(QPoint(cx, cy + sy * arm), QPoint(cx, cy + sy * cut));
+            p.drawLine(QPoint(cx, cy + sy * cut), QPoint(cx + sx * cut, cy));
+            p.drawLine(QPoint(cx + sx * cut, cy), QPoint(cx + sx * arm, cy));
+        }
+    };
+    corner(L, T, +1, +1);
+    corner(R, T, -1, +1);
+    corner(L, B, +1, -1);
+    corner(R, B, -1, -1);
+
+    const int midY = kPlanetCardSize / 2;
+    for (int i = -2; i <= 1; ++i)
+    {
+        const int y = midY + i * 5;
+        p.drawLine(L + 1, y, L + 8, y);
+        p.drawLine(R - 8, y, R - 1, y);
+    }
+
+    p.restore();
+}
+
+QImage planetCardCanvas()
+{
+    QImage img(kPlanetCardSize, kPlanetCardSize, QImage::Format_RGB32);
+    img.fill(QColor(0, 0, 0));
+    QPainter p(&img);
+    planetPaintCardFrame(p);
+    return img;
+}
+
 namespace {
 const double kMineralColorMaxDist = 88.0;
-const int kCardLineWidth = 28;
 const int kNearestPerLayer = 5;
 
 double colorDist(const QColor &a, const QColor &b)
@@ -208,96 +310,147 @@ void Planet::CalculateDescription()
     facts.temperature = qBound(0, qRound((s.effectiveTemperature() + 90) * 12.0 / 230), 12);
 }
 
-void Planet::Level(QString start, int string, int lvl, QString type, QPainter &p)
+namespace {
+void paintAsciiBar(QPainter &p, const QRect &row, const QString &label,
+                   int lvl, int maxLvl, int barSlots, const QColor &fill)
 {
-    lvl = qBound(0, lvl, 12);
-    p.setPen(QPen(QColor(110, 170, 200)));
-    QString s;
-    s.fill('\n', string - 1);
-    s += start + "|            |";
-    p.drawText(QRect(40, 27, 400, 400), s);
+    if (!row.isValid() || row.height() <= 0 || row.width() <= 0 || barSlots <= 0)
+        return;
+    const QString track = QLatin1Char('|') + QString(barSlots, QLatin1Char(' ')) + QLatin1Char('|');
+    p.setPen(QPen(planetCardInk()));
+    p.drawText(row, Qt::AlignLeft | Qt::AlignVCenter, label + track);
+    const int filled = planetCardBarFill(lvl, maxLvl, barSlots);
+    if (filled <= 0)
+        return;
+    p.setPen(QPen(fill));
+    const QString hashes = QString(label.size() + 1, QLatin1Char(' ')) + QString(filled, QLatin1Char('#'));
+    p.drawText(row, Qt::AlignLeft | Qt::AlignVCenter, hashes);
+}
+
+QString paddedBandLabel(const QString &label)
+{
+    return label.leftJustified(3, QLatin1Char(' '));
+}
+}
+
+void Planet::Level(const QString &start, const QRect &row, int lvl, const QString &type, QPainter &p)
+{
+    if (!row.isValid() || row.height() <= 0 || row.width() <= 0)
+        return;
+    lvl = qBound(0, lvl, kPlanetCardBarMax);
     const DescriptionBarColor tone = planetDescriptionBarColor(lvl, type);
-    QColor color(110, 170, 200);
+    QColor color = planetCardInk();
     if (tone == DescriptionBarColor::Red)
         color = QColor(200, 0, 0);
     else if (tone == DescriptionBarColor::Green)
         color = QColor(0, 200, 0);
     else if (tone == DescriptionBarColor::Yellow)
         color = QColor(200, 200, 0);
-    p.setPen(QPen(color));
-    s.fill('\n', string - 1);
-    QString a(start.length() + 1, ' ');
-    QString b(lvl, '#');
-    s += a + b;
-    p.drawText(QRect(40, 27, 400, 400), s);
+    paintAsciiBar(p, row, start, lvl, kPlanetCardBarMax, kPlanetCardBarSlots, color);
 }
 
 void Planet::DrawDescription()
 {
-    img_dsc = planetCachedImage(QStringLiteral(":/images/res/images/window.png"));
+    img_dsc = planetCardCanvas();
     const QString classes = QStringLiteral("OBAFGKMCSLTY");
+    const QRect content = planetCardContentRect();
 
     QPainter p;
     p.begin(&img_dsc);
-    p.setPen(QPen(QColor(110, 170, 200)));
-    p.setFont(QFont("Consolas", 8));
+    p.setRenderHint(QPainter::Antialiasing, false);
+    p.setPen(QPen(planetCardInk()));
+    p.setFont(planetCardFont());
+    p.setClipRect(content);
 
-    QString head;
-    head += QCoreApplication::translate("Planet", "name       - ") + name + "\n";
-    head += QCoreApplication::translate("Planet", "resources  - ") + facts.resources;
+    const QFontMetrics fm = p.fontMetrics();
+    const int lh = fm.lineSpacing();
+    const int cw = qMax(1, fm.horizontalAdvance(QLatin1Char('M')));
+    int y = content.top();
+    auto drawLine = [&](const QString &text) {
+        if (y + lh > content.top() + content.height())
+            return false;
+        p.drawText(QRect(content.left(), y, content.width(), lh),
+                   Qt::AlignLeft | Qt::AlignVCenter, text);
+        y += lh;
+        return true;
+    };
+
+    drawLine(QCoreApplication::translate("Planet", "name       - ") + name);
+    QString resources = facts.resources;
+    if (resources.endsWith(QLatin1Char('\n')))
+        resources.chop(1);
+    drawLine(QCoreApplication::translate("Planet", "resources  - ") + resources);
+
+    QString starLine;
     if (starclass.isEmpty())
-        head += QCoreApplication::translate("Planet", "star       - [not found]");
+        starLine = QCoreApplication::translate("Planet", "star       - [not found]");
     else if (s.has_star && isStarBlackHole(s.star_spectrum))
-        head += QCoreApplication::translate("Planet", "star       - black hole");
+        starLine = QCoreApplication::translate("Planet", "star       - black hole");
     else
     {
-        head += QCoreApplication::translate("Planet", "star       - ");
+        starLine = QCoreApplication::translate("Planet", "star       - ");
         for (int i = 0; i < starclass.length(); i++)
         {
             if (starclass[i] < 0 || starclass[i] >= classes.size())
                 continue;
-            head += classes[starclass[i]];
-            head += QLatin1Char(' ');
+            starLine += classes[starclass[i]];
+            starLine += QLatin1Char(' ');
         }
     }
-    head += QLatin1Char('\n');
-    head += QCoreApplication::translate("Planet", "spectrum:") + QLatin1Char('\n');
-    p.drawText(QRect(40, 27, 400, 400), head);
-    const int specY = 27 + p.fontMetrics().lineSpacing() * 4;
-    const QRect specRect(40, specY, 220, 36);
-    if (s.has_star && isStarBlackHole(s.star_spectrum))
+    drawLine(starLine);
+    drawLine(QCoreApplication::translate("Planet", "spectrum:"));
+
+    const bool blackHole = s.has_star && isStarBlackHole(s.star_spectrum);
+    if (blackHole)
     {
-        p.fillRect(specRect, QColor(8, 12, 16));
-        p.setPen(QColor(40, 70, 90));
-        p.drawRect(specRect.adjusted(0, 0, -1, -1));
-        const QString err = QCoreApplication::translate("Planet", "[ERROR]");
-        QFont errFont(QStringLiteral("Consolas"), 8, QFont::Bold);
-        for (int pt = 22; pt >= 8; --pt)
-        {
-            errFont.setPointSize(pt);
-            const QFontMetrics fm(errFont);
-            if (fm.horizontalAdvance(err) <= specRect.width() - 8
-                && fm.height() <= specRect.height() - 4)
-                break;
-        }
-        p.setFont(errFont);
         p.setPen(QColor(220, 20, 20));
-        p.drawText(specRect, Qt::AlignCenter, err);
-        p.setFont(QFont(QStringLiteral("Consolas"), 8));
-        p.setPen(QPen(QColor(110, 170, 200)));
+        drawLine(QCoreApplication::translate("Planet", "[ERROR]"));
+        p.setPen(QPen(planetCardInk()));
     }
     else
     {
-        paintStarSpectrum(p, specRect,
-                          this->s.has_star ? this->s.star_spectrum : QVector<int>(StarBandCount, 0));
+        const QVector<int> bands = s.has_star ? s.star_spectrum : QVector<int>(StarBandCount, 0);
+        const int colW = content.width() / 2;
+        const int colChars = qMax(1, colW / cw);
+        const int specSlots = qMax(1, colChars - 3 - 2);
+        const int leftBands[4] = {StarGamma, StarXray, StarUv, StarIr};
+        const int rightBands[4] = {StarRed, StarGreen, StarBlue, StarRadio};
+        const QString leftLabels[4] = {
+            QString(QChar(0x03B3)), QStringLiteral("X"), QStringLiteral("UV"), QStringLiteral("IR")
+        };
+        const QString rightLabels[4] = {
+            QStringLiteral("R"), QStringLiteral("G"), QStringLiteral("B"), QStringLiteral("Ra")
+        };
+        for (int i = 0; i < 4; ++i)
+        {
+            if (y + lh > content.top() + content.height())
+                break;
+            const QRect left(content.left(), y, colW, lh);
+            const QRect right(content.left() + colW, y, content.width() - colW, lh);
+            paintAsciiBar(p, left, paddedBandLabel(leftLabels[i]),
+                          starBand(bands, leftBands[i]), kStarBandMax, specSlots, planetCardInk());
+            paintAsciiBar(p, right, paddedBandLabel(rightLabels[i]),
+                          starBand(bands, rightBands[i]), kStarBandMax, specSlots, planetCardInk());
+            y += lh;
+        }
+        p.setPen(QPen(planetCardInk()));
     }
 
-    Level(QCoreApplication::translate("Planet", "life         "), 9, facts.life, "good", p);
-    Level(QCoreApplication::translate("Planet", "water        ", nullptr), 10, facts.water, "neutral", p);
-    Level(QCoreApplication::translate("Planet", "ice          "), 11, facts.ice, "bad", p);
-    Level(QCoreApplication::translate("Planet", "radiation    "), 12, facts.radiation, "bad", p);
-    Level(QCoreApplication::translate("Planet", "temperature  "), 13, facts.temperature, "neutral", p);
-    Level(QCoreApplication::translate("Planet", "seismicity   "), 14, facts.seismicity, "bad", p);
+    drawLine(QString(qMax(1, content.width() / cw), QLatin1Char('-')));
+
+    auto nextRow = [&]() {
+        if (y + lh > content.top() + content.height())
+            return QRect();
+        const QRect row(content.left(), y, content.width(), lh);
+        y += lh;
+        return row;
+    };
+    Level(QCoreApplication::translate("Planet", "life         "), nextRow(), facts.life, QStringLiteral("good"), p);
+    Level(QCoreApplication::translate("Planet", "water        "), nextRow(), facts.water, QStringLiteral("neutral"), p);
+    Level(QCoreApplication::translate("Planet", "ice          "), nextRow(), facts.ice, QStringLiteral("bad"), p);
+    Level(QCoreApplication::translate("Planet", "radiation    "), nextRow(), facts.radiation, QStringLiteral("bad"), p);
+    Level(QCoreApplication::translate("Planet", "temperature  "), nextRow(), facts.temperature, QStringLiteral("neutral"), p);
+    Level(QCoreApplication::translate("Planet", "seismicity   "), nextRow(), facts.seismicity, QStringLiteral("bad"), p);
     p.end();
 }
 
@@ -321,14 +474,20 @@ QString Planet::Resources()
         facts.radiation = qBound(0, qRound(12.0 * double(radioScore) / double(totalScore)), 12);
 
     const QString prefix = QCoreApplication::translate("Planet", "resources  - ");
-    const int budget = qMax(1, kCardLineWidth - prefix.size());
+    const int cols = qMax(1, planetCardContentRect().width() / qMax(1,
+        QFontMetrics(planetCardFont()).horizontalAdvance(QLatin1Char('W'))));
+    const int budget = qMax(1, cols - prefix.size());
     QString res;
+    int shown = 0;
     for (const PlanetOre &item : ranked)
     {
+        if (shown >= kPlanetCardResourceMax)
+            break;
         const QString next = res.isEmpty() ? item.symbol : (res + QLatin1Char(' ') + item.symbol);
         if (next.size() > budget)
             break;
         res = next;
+        ++shown;
     }
     if (res.isEmpty())
         return notFound;
@@ -342,9 +501,10 @@ void Planet::SystemMap()
 
 void Planet::GalaxyMap()
 {
-    img_gal = planetCachedImage(QStringLiteral(":/images/res/images/window.png")).copy();
-    const int outW = 257;
-    const int outH = 257;
+    img_gal = planetCardCanvas();
+    const QRect view = planetCardViewport();
+    const int outW = view.width();
+    const int outH = view.height();
     QImage atlas(outW, outH, QImage::Format_ARGB32);
     atlas.fill(Qt::transparent);
 
@@ -469,28 +629,35 @@ void Planet::GalaxyMap()
 
     QPainter p;
     p.begin(&img_gal);
-    p.drawImage(QRect(36, 36, 257, 257), atlas);
+    p.drawImage(view, atlas);
     p.end();
 }
 
 void Planet::FinalImage()
 {
-    img_final = QImage(658, 658, QImage::Format_RGB32);
-    const QImage &img_window = planetCachedImage(QStringLiteral(":/images/res/images/window.png"));
+    const int size = kPlanetCardSize;
+    img_final = QImage(size * 2, size * 2, QImage::Format_RGB32);
+    img_final.fill(QColor(0, 0, 0));
+    QImage globeCard = planetCardCanvas();
+    {
+        QPainter gp(&globeCard);
+        QImage globe = img_view.isNull() ? img : img_view;
+        gp.drawImage(planetCardViewport(),
+                     globe.scaled(planetCardViewport().size(), Qt::IgnoreAspectRatio, Qt::FastTransformation));
+    }
     QPainter p;
     p.begin(&img_final);
-    p.drawImage(QRect(0, 0, 329, 329), img_window);
-    QImage globe = img_view.isNull() ? img : img_view;
-    p.drawImage(QRect(36, 36, 257, 257), globe.scaled(257, 257, Qt::IgnoreAspectRatio, Qt::FastTransformation));
-    p.drawImage(QRect(329, 0, 329, 329), img_dsc);
-    p.drawImage(QRect(0, 329, 329, 329), img_sys);
-    p.drawImage(QRect(329, 329, 329, 329), img_gal);
+    p.drawImage(QRect(0, 0, size, size), globeCard);
+    p.drawImage(QRect(size, 0, size, size), img_dsc);
+    p.drawImage(QRect(0, size, size, size), img_sys);
+    p.drawImage(QRect(size, size, size, size), img_gal);
     p.end();
 }
 
 void Planet::ImagesScale()
 {
-    img_dsc = img_dsc.scaled(658, 658);
-    img_gal = img_gal.scaled(658, 658);
-    img_sys = img_sys.scaled(658, 658);
+    const QSize hi(kPlanetCardSize * 2, kPlanetCardSize * 2);
+    img_dsc = img_dsc.scaled(hi, Qt::IgnoreAspectRatio, Qt::FastTransformation);
+    img_gal = img_gal.scaled(hi, Qt::IgnoreAspectRatio, Qt::FastTransformation);
+    img_sys = img_sys.scaled(hi, Qt::IgnoreAspectRatio, Qt::FastTransformation);
 }

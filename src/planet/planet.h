@@ -4,6 +4,7 @@
 #include <QImage>
 #include <QColor>
 #include <QSet>
+#include <QRect>
 #include <QtGlobal>
 #include <QRandomGenerator>
 #include <planetsettings.h>
@@ -138,7 +139,7 @@ private:
     QString Name_gop2();
     QString Name_readable();
     QString Name_random();
-    void Level(QString, int, int, QString, QPainter &);
+    void Level(const QString &start, const QRect &row, int lvl, const QString &type, QPainter &p);
     QColor DispersionColor(QColor color, int disp);
     QColor LowerColor(QColor color, double koef);
     int RAND(int a, int b);
